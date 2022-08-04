@@ -1,0 +1,198 @@
+{
+  "id": "1567452",
+  "name": "layui-extend-data",
+  "font_family": "iconfont",
+  "css_prefix_text": "layui-icon-sav-",
+  "description": "数据中台图标",
+  "glyphs": [
+    {
+      "icon_id": "5829508",
+      "name": "数据源管理",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-",
+      "unicode": "e7ec",
+      "unicode_decimal": 59372
+    },
+    {
+      "icon_id": "5829509",
+      "name": "数据仓库",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-1",
+      "unicode": "e7ed",
+      "unicode_decimal": 59373
+    },
+    {
+      "icon_id": "5829510",
+      "name": "原始库数据",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-2",
+      "unicode": "e7ee",
+      "unicode_decimal": 59374
+    },
+    {
+      "icon_id": "5829511",
+      "name": "采集任务配置",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-3",
+      "unicode": "e7ef",
+      "unicode_decimal": 59375
+    },
+    {
+      "icon_id": "5829513",
+      "name": "全文检索库",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-4",
+      "unicode": "e7f0",
+      "unicode_decimal": 59376
+    },
+    {
+      "icon_id": "5829514",
+      "name": "图片存储库",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-5",
+      "unicode": "e7f1",
+      "unicode_decimal": 59377
+    },
+    {
+      "icon_id": "5829515",
+      "name": "数据监控",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-6",
+      "unicode": "e7f2",
+      "unicode_decimal": 59378
+    },
+    {
+      "icon_id": "5829516",
+      "name": "平台监控",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-7",
+      "unicode": "e7f3",
+      "unicode_decimal": 59379
+    },
+    {
+      "icon_id": "5829517",
+      "name": "开放专题库",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-8",
+      "unicode": "e7f4",
+      "unicode_decimal": 59380
+    },
+    {
+      "icon_id": "5829518",
+      "name": "代码项",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-9",
+      "unicode": "e7f5",
+      "unicode_decimal": 59381
+    },
+    {
+      "icon_id": "5829519",
+      "name": "数据元",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-10",
+      "unicode": "e7f6",
+      "unicode_decimal": 59382
+    },
+    {
+      "icon_id": "5829520",
+      "name": "服务列表",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-11",
+      "unicode": "e7f7",
+      "unicode_decimal": 59383
+    },
+    {
+      "icon_id": "5829521",
+      "name": "服务配置",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-12",
+      "unicode": "e7f8",
+      "unicode_decimal": 59384
+    },
+    {
+      "icon_id": "5829522",
+      "name": "目录视图",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-13",
+      "unicode": "e7f9",
+      "unicode_decimal": 59385
+    },
+    {
+      "icon_id": "5829523",
+      "name": "表视图",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-14",
+      "unicode": "e7fa",
+      "unicode_decimal": 59386
+    },
+    {
+      "icon_id": "5829524",
+      "name": "用户管理",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-15",
+      "unicode": "e7fb",
+      "unicode_decimal": 59387
+    },
+    {
+      "icon_id": "5829525",
+      "name": "部门管理",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-16",
+      "unicode": "e7fc",
+      "unicode_decimal": 59388
+    },
+    {
+      "icon_id": "5829527",
+      "name": "角色管理",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-17",
+      "unicode": "e7fd",
+      "unicode_decimal": 59389
+    },
+    {
+      "icon_id": "5829528",
+      "name": "权限管理",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-18",
+      "unicode": "e7fe",
+      "unicode_decimal": 59390
+    },
+    {
+      "icon_id": "5829536",
+      "name": "实时任务配置",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-19",
+      "unicode": "e7ff",
+      "unicode_decimal": 59391
+    },
+    {
+      "icon_id": "5829537",
+      "name": "要素管理",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-20",
+      "unicode": "e800",
+      "unicode_decimal": 59392
+    },
+    {
+      "icon_id": "5829538",
+      "name": "全局管理",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-21",
+      "unicode": "e801",
+      "unicode_decimal": 59393
+    },
+    {
+      "icon_id": "5829539",
+      "name": "警种管理",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-22",
+      "unicode": "e802",
+      "unicode_decimal": 59394
+    },
+    {
+      "icon_id": "5829540",
+      "name": "来源部门",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-23",
+      "unicode": "e803",
+      "unicode_decimal": 59395
+    },
+    {
+      "icon_id": "5829541",
+      "name": "数据工厂",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-24",
+      "unicode": "e804",
+      "unicode_decimal": 59396
+    },
+    {
+      "icon_id": "5829542",
+      "name": "定时",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-25",
+      "unicode": "e805",
+      "unicode_decimal": 59397
+    },
+    {
+      "icon_id": "5829543",
+      "name": "交换任务",
+      "font_class": "wulumuqishigongandashujuguanlipingtai-ico-26",
+      "unicode": "e806",
+      "unicode_decimal": 59398
+    }
+  ]
+}

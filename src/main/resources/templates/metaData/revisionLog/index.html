@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">修订日志</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="schoolcode" placeholder="学校代码/名称(模糊查询)"
+                           type="text">
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input class="layui-input" id="metadata-date" placeholder="(创建)开始时间-结束时间" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <select lay-filter="operationType" name="operationType">
+                        <option value=""> 操作类型</option>
+                        <option value="1"> 更新</option>
+                        <option value="0"> 新增</option>
+                    </select></div>
+                <div class="layui-inline">
+                    <select lay-filter="operationStatus" name="operationStatus">
+                        <option value=""> 采纳状态</option>
+                        <option value="1"> 已采纳</option>
+                        <option value="0"> 未采纳</option>
+                    </select></div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                            lay-filter="hup-file-search" lay-submit="">查找
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <table id="metadata-apiTable" lay-filter="metadata-apiTable"></table>
+            <script id="TableTopToolbar" type="text/html">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal " lay-event="Create">批量处理</button>
+                </div>
+            </script>
+            <script id="TableToolbar" type="text/html">
+                <button class="layui-btn layui-btn-xs layui-btn-primary" lay-event="find">查看</button>
+            </script>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'laytpl', 'laydate', 'util'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , table = layui.table
+            , admin = layui.admin
+            , laydate = layui.laydate
+            , laytpl = layui.laytpl
+            , util = layui.util
+            , SavingFunction = layui.SavingFunction;
+        let field = [
+            {type: 'checkbox'},
+            {type: 'numbers', title: '序号', align: 'center'}
+            , {
+                field: 'schoolcode', title: '学校代码/学校名称', align: 'center', templet: function (d) {
+                    return d.schoolcode + "/" + d.schoolname;
+                }
+            }
+            , {field: 'tablename', title: '修改表名', align: 'center'}
+            , {field: 'filedname', title: '修改字段名', align: 'center'}
+            , {field: 'operationType', title: '操作类型', align: 'center'}
+            , {
+                field: 'createtime', title: '操作日期', align: 'center', templet: function (d) {
+                    return util.toDateString(d.createtime);
+                }
+            }
+            , {
+                field: 'operationStatus', title: '是否处理', align: 'center', templet: function (d) {
+                    return d.operationStatus === 1 ? '<span class="layui-badge" style="margin-left: 5px">已采纳</span>' : '<span class="layui-badge layui-bg-gray" style="margin-left: 5px">未采纳</span>'
+                }
+            }
+            , {title: '操作', width: 180, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+        ];
+        laydate.render({
+            elem: '#metadata-date'
+            , range: true
+        });
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-apiTable'
+            , url: '[[@{/metadata/revisionlog/listPage.json}]]'
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+        });
+        table.on('toolbar(metadata-apiTable)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-apiTable');
+            let datas = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < datas.length; i++) {
+                ids[i] = datas[i].id;
+            }
+            switch (obj.event) {
+                case 'Create':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认采纳并更新到标准中?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/revisionlog/dispose.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('采纳成功,已增加进标准库中！');
+                                userTable.reload()
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+        $('input[name="schoolcode"]').keyup(function () {
+            intoTable();
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            intoTable();
+        });
+
+        form.on('select(operationType)', function (data) {
+            intoTable();
+        });
+
+        form.on('select(operationStatus)', function (data) {
+            intoTable();
+        });
+
+        function intoTable() {
+            userTable.reload({
+                where: {
+                    schoolcode: $('input[name="schoolcode"]').val(),
+                    startDate: $('#metadata-date').val().split(' - ')[0],
+                    endDate: $('#metadata-date').val().split(' - ')[1],
+                    operationType: $('select[name="operationType"]').val(),
+                    operationStatus: $('select[name="operationStatus"]').val()
+                }, page: {curr: 1}
+            });
+        }
+
+        table.on('tool(metadata-apiTable)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'find') {
+                parent.layer.open({
+                    title: '查看'
+                    , type: 2
+                    , content: '[[@{/popup/revisionLogPopup.page}]]?id=' + data.id
+                    , maxmin: true
+                    , area: ['95%', '95%']
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        parent.layer.close(index);
+                    }
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

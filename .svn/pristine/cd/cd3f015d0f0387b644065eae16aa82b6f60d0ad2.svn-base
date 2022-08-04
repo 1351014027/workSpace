@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.ApiPermissionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.ApiPermission">
+        <id column="ID_" property="id"/>
+        <result column="Table_Id_" property="tableId"/>
+        <result column="Chinese_Table_Name_" property="chieseTableName"/>
+        <result column="Tag_" property="tag"/>
+        <result column="Api_Table_Id_" property="apiTableId"/>
+        <result column="Sys_Name_" property="sysName"/>
+        <result column="Is_Save_" property="isSave"/>
+        <result column="Is_Update_" property="isUpdate"/>
+        <result column="Is_Delete_Cur_" property="isDeleteCur"/>
+        <result column="Is_Get_" property="isGet"/>
+        <result column="IsDelete_" property="isdelete"/>
+        <result column="School_Code_" property="schoolCode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="Create_Time_" property="createTime"/>
+        <result column="Create_IP_" property="creatorIp"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="Update_Time_" property="updateTime"/>
+        <result column="Update_IP_" property="updateIp"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, Table_Id_,Chinese_Table_Name_,Tag_, Api_Table_Id_, Sys_Name_, Is_Save_, Is_Update_, Is_Delete_Cur_, Is_Get_, IsDelete_, School_Code_, Creator_, Create_Time_,Create_IP_, Updateor_, Update_Time_,Update_IP_
+    </sql>
+    <select id="getApiPermission" resultType="com.saving.metadata.pojo.ApiPermission">
+        select A.ID_ AS Api_Table_Id_, A.Sys_Name_ AS Sys_Name_,B.Is_Save_,B.Is_Update_,B.Is_Get_,B.Is_Delete_Cur_ FROM
+        METADATA_B_API_TABLE A LEFT JOIN (select * from METADATA_B_API_PERMISSION_ where Table_Id_ = #{tableId}) B
+        ON A.ID_ = B.Api_Table_Id_
+        <where>
+            <if test="schoolCode!=null and schoolCode!=''">
+                and A.School_Code_=#{schoolCode}
+            </if>
+            <if test="sysName!=null and sysName!=''">
+                and A.Sys_Name_ like '%'+#{sysName}+'%'
+            </if>
+        </where>
+    </select>
+
+</mapper>

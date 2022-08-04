@@ -1,0 +1,249 @@
+package com.saving.metadata.controller;
+
+
+import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.pojo.Hierarchy;
+import com.saving.metadata.pojo.Option;
+import com.saving.metadata.pojo.User;
+import com.saving.metadata.service.HierarchyService;
+import com.saving.metadata.service.OptionService;
+import com.saving.metadata.utils.DateUtil;
+import com.saving.metadata.utils.IpUtils;
+import com.saving.metadata.utils.JsonMapperUtil;
+import com.saving.metadata.utils.UUID64Utils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 前端控制器
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2019-12-18
+ */
+@RestController
+@RequestMapping("/metadata/option")
+@Slf4j
+@Api(tags = "选项管理相关接口")
+public class OptionController {
+
+
+    private final OptionService optionService;
+
+    private final HierarchyService hierarchyService;
+
+    @Value("${application.isCloud}")
+    private Boolean isCloud;
+
+    @Autowired
+    public OptionController(OptionService optionService, HierarchyService hierarchyService) {
+        this.optionService = optionService;
+        this.hierarchyService = hierarchyService;
+    }
+
+    @PostMapping(value = "deletes.json")
+    @ApiOperation(value = "批量删除类型接口", notes = "字段删除")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "ids", value = "选项对象主键组", required = true, paramType = "query")
+    })
+    public ServerResponse del(@RequestBody List<String> ids) {
+
+        List<Option> hierarchies = optionService.listByIds(ids);
+        StringBuffer errMsg = new StringBuffer();
+        hierarchies.forEach(obj -> {
+            int num = optionService.count(new QueryWrapper<Option>().lambda().eq(Option::getParent, obj.getSortId()));
+            if (num > 0) {
+                errMsg.append(obj.getName()).append("(").append(obj.getKey()).append(")在类型管理中存在引用记录;");
+            }
+        });
+        if (StringUtils.isNotEmpty(errMsg.toString())) {
+            throw new ParamException(errMsg.toString());
+        }
+        if (!ids.isEmpty()) {
+            optionService.removeByIds(ids);
+            optionService.update(Option.builder().cdmpVersion(DateUtil.getYyyyMmDd()).build(), new QueryWrapper<Option>().lambda().in(Option::getId, ids));
+            HttpServletRequest request = RequestHolder.getCurrenRequest();
+            User user = RequestHolder.getCurrenSysUser();
+            log.error("【数据中台系统】卡号为{}的用户删除了ID为{}的选项管理数据，删除记录数量为{},删除IP为{}", user.getUsername(), ids, ids.size(), IpUtils.getIpAddr(request));
+
+        }
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "update.json")
+    @ApiOperation(value = "更新选项接口", notes = "更新类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "param", value = "选项对象，用于更新", required = true, paramType = "query")
+    })
+    public ServerResponse update(Option option) {
+        Option byId = optionService.getById(option.getId());
+        if (byId == null) {
+            throw new ParamException("待更新的对象不存在!");
+        }
+        if (StringUtils.isEmpty(option.getKey()) || StringUtils.isEmpty(option.getName())) {
+            throw new ParamException("选项代码和选项名称不能为空!");
+        }
+        if (checkExist(option.getKey(), option.getName(), option.getHierarchyId(), option.getId())) {
+            throw new ParamException("存在相同的选项代码或名称");
+        }
+        if (option.getIsStandard() == null) {
+            option.setIsStandard(0);
+        }
+        option.setCdmpVersion(DateUtil.getYyyyMmDd());
+        optionService.updateById(option);
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "save.json")
+    @ApiOperation(value = "新增选项接口", notes = "新增类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "param", value = "选项对象，用于新增", required = true, paramType = "query")
+    })
+    public ServerResponse save(Option option) {
+        if (StringUtils.isEmpty(option.getKey()) || StringUtils.isEmpty(option.getName())) {
+            throw new ParamException("选项代码和选项名称不能为空!");
+        }
+        if (StringUtils.isEmpty(option.getHierarchyId())) {
+            throw new ParamException("尚未选择类型!");
+        }
+        if (checkExist(option.getKey(), option.getName(), option.getHierarchyId(), null)) {
+            throw new ParamException("存在相同的选项代码或名称");
+        }
+        Hierarchy byId = hierarchyService.getById(option.getHierarchyId());
+        if (byId == null) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        option.setHierarchyKey(byId.getTypeName() + "(" + byId.getTypeKey() + ")");
+        option.setId(UUID64Utils.get64UUIDString());
+        option.setSort(String.valueOf(optionService.count(new QueryWrapper<Option>().lambda()
+                .eq(Option::getHierarchyKey, option.getHierarchyId()).eq(Option::getIsDelete, 0)) + 1));
+        option.setCdmpVersion(DateUtil.getYyyyMmDd());
+        if (isCloud) {
+            option.setIsStandard(1);
+        }
+        optionService.save(option);
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping("listPage.json")
+    @ApiOperation(value = "选项分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "startDate", value = "过滤上传日期开始时间"),
+            @ApiImplicitParam(name = "endDate", value = "过滤上传日期结束时间"),
+            @ApiImplicitParam(name = "option", value = "类型对象，用于过滤")
+    })
+    public ServerResponse<Page<Option>> listPage(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize
+            , Option option
+            , String startDate
+            , String endDate) {
+        User user = RequestHolder.getCurrenSysUser();
+        QueryWrapper<Option> wrapper = new QueryWrapper<Option>().and(StringUtils.isNoneBlank(option.getName()), obj -> obj.like(StringUtils.isNoneBlank(option.getName()), "Name_", option.getName()).or()
+                .like(StringUtils.isNoneBlank(option.getName()), "Key_", option.getKey()))
+                .eq("Hierarchy_ID_", option.getHierarchyId())
+                .between(StringUtils.isNoneBlank(startDate) && StringUtils.isNoneBlank(endDate), "CreateTime_", startDate, endDate).eq("SchoolCode_", user.getSchoolCode())
+                .orderByAsc("cast(Sort_ as int)")
+                .orderByAsc("SortId_")
+                .orderByAsc("CreateTime_");
+        Page<Option> page = optionService.page(new Page<>(pageNum, pageSize), wrapper);
+        return ServerResponse.createBySuccess(page);
+    }
+
+    @PostMapping("updateSort.json")
+    @ApiOperation(value = "更新排序接口", notes = "两个排序对象ID必须传")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "oneId", value = "第一个交换sort值的对象", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "twoId", value = "第二个交换sort值的对象", required = true, paramType = "query")
+    })
+    public ServerResponse updateSort(String oneId, String twoId) {
+        if (StringUtils.isBlank(oneId) || StringUtils.isBlank(twoId)) {
+            return ServerResponse.createByErrorMessage(ResponseCode.ERRORPARAM);
+        }
+        Option fileStore1 = optionService.getById(oneId), fileStore2 = optionService.getById(twoId);
+        String store1Sort = fileStore1.getSort(), store2Sort = fileStore2.getSort();
+        Option fileStoreOne = Option.builder().id(fileStore1.getId()).cdmpVersion(DateUtil.getYyyyMmDd()).sort(store2Sort).build(),
+                fileStoreTwo = Option.builder().id(fileStore2.getId()).cdmpVersion(DateUtil.getYyyyMmDd()).sort(store1Sort).build();
+        optionService.updateById(fileStoreOne);
+        optionService.updateById(fileStoreTwo);
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping("list.json")
+    @ApiOperation(value = "查询接口", notes = "无分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "Option", value = "选项对象，用于过滤", required = true, paramType = "query")
+    })
+    public ServerResponse<List<Option>> list(Option option) {
+        return ServerResponse.createBySuccess(optionService.list(new QueryWrapper<>(option).orderByAsc("cast(Sort_ as int)").orderByAsc("SortId_").orderByDesc("CreateTime_")));
+    }
+
+    @PostMapping("import.json")
+    @ResponseBody
+    @ApiOperation(value = "批量导入", notes = "批量导入")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "file", value = "文件流", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "hierarchyId", value = "父类型", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "remark", value = "备注", required = true, paramType = "query")
+    })
+    public ServerResponse<? extends Object> importExcel(@RequestParam(value = "file", required = false) MultipartFile file, String hierarchyId, String remark) throws IOException {
+        if (StringUtils.isEmpty(hierarchyId)) {
+            throw new ParamException("尚未选择左侧类型!");
+        }
+        List<Map<Integer, String>> listMap = EasyExcel.read(file.getInputStream()).sheet().doReadSync();
+        for (Map<Integer, String> data : listMap) {
+            log.info("读取到数据:{}", JsonMapperUtil.object2String(data));
+        }
+        optionService.importExcel(listMap, hierarchyId, remark, isCloud);
+        log.info("hierarchyId:{},remark:{}", hierarchyId, remark);
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping("updateSortUser.json")
+    @ApiOperation(value = "更新排序接口", notes = "两个排序对象ID必须传")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "oneId", value = "第一个交换sort值的对象", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "twoId", value = "第二个交换sort值的对象", required = true, paramType = "query")
+    })
+    public ServerResponse updateSortUser(String oneId, String twoId) {
+        if (StringUtils.isBlank(oneId) || StringUtils.isBlank(twoId)) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        Option fileStore1 = optionService.getById(oneId), fileStore2 = optionService.getById(twoId);
+        if (fileStore1 == null || fileStore2 == null) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        String store1Sort = String.valueOf(Integer.parseInt(fileStore2.getSort()) - 1);
+        Option fileStoreOne = Option.builder().id(fileStore1.getId()).cdmpVersion(DateUtil.getYyyyMmDd()).sort(store1Sort).build();
+        optionService.updateById(fileStoreOne);
+        return ServerResponse.createBySuccess();
+    }
+
+    private Boolean checkExist(String typeKey, String typeName, String hierarchyId, String id) {
+        return optionService.count(new QueryWrapper<Option>().lambda().and(wrapper -> wrapper.eq(Option::getKey, typeKey).or().eq(Option::getName, typeName)).eq(Option::getHierarchyId, hierarchyId).ne(StringUtils.isNotEmpty(id), Option::getId, id)) > 0;
+    }
+}
+

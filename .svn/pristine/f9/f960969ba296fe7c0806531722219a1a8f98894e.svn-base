@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body class="layui-box">
+<div class="layui-card">
+    <div class="layui-card-header" style="font-size: 23px"
+         th:text="|${metadataTable.tableName +'('+metadataTable.chineseTableName+')'}表关系数据可视化|"></div>
+    <div class="layui-card-body">
+        <div class="layui-form-item">
+            <div class="layui-col-md3">
+                <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-retreat"
+                        lay-filter="hup-file-retreat"
+                        lay-submit><i class="layui-icon layui-icon-return"></i>后退
+                </button>
+            </div>
+        </div>
+        <div id="mountNode"></div>
+    </div>
+</div>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'antvG6', 'echarts'], function () {
+        var $ = layui.$
+            , SavingFunction = layui.SavingFunction
+            , antvG6 = layui.antvG6;
+        $(document).on('click', '#hup-file-retreat', function () {
+            history.back();
+        });
+        let loadIndex = SavingFunction.loading();
+        SavingFunction.req({
+            url: '[[@{/AntV/getChartsData.json}]]',
+            data: {tableId: '[[${metadataTable.id}]]'}
+            , done: function (data) {
+                top.layer.close(loadIndex);
+                let res = data;
+                const width = document.getElementById('mountNode').scrollWidth;
+                const height = window.innerHeight - 88;
+                $('#mountNode').height($(window).height() - 130);
+                let option = {
+                    tooltip: {
+                        formatter(x) {
+                            return x.data.showName;
+                        }
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            dataView: {show: true, readOnly: true},
+                            restore: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    animationDuration: 3000,
+                    animationEasingUpdate: 'quinticInOut',
+                    series: [{
+                        name: '[[${metadataTable.id}]]',
+                        type: 'graph',
+                        layout: 'force',
+                        force: {
+                            repulsion: 10000
+                        },
+                        data: res[0],
+                        links: res[1],
+                        categories: res[2],
+                        focusNodeAdjacency: true,
+                        edgeSymbol: ['', 'arrow'],
+                        symbolSize: 58,
+                        draggable: true,
+                        roam: true,
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top',
+                                formatter: function (params) {
+                                    return params.data.showName;
+                                }
+                            }
+                            , formatter(x) {
+                                return x.data.showName;
+                            }
+                        },
+                        edgeLabel: {
+                            normal: {
+                                show: true,
+                                textStyle: {
+                                    fontSize: 16
+                                },
+                                formatter(x) {
+                                    return x.data.showName;
+                                }
+                            }
+                            , formatter(x) {
+                                return x.data.showName;
+                            }
+                        },
+                        lineStyle: {
+                            normal: {
+                                color: 'source',
+                                curveness: 0,
+                                type: "solid"
+                            }
+                        }
+                    }]
+                };
+                let dom = document.getElementById("mountNode");
+                let myChartNM = echarts.init(dom);
+                myChartNM.setOption(option);
+                window.onresize = myChartNM.resize;
+                // const graph = new antvG6.TreeGraph({
+                //     container: 'mountNode',
+                //     width,
+                //     height,
+                //     modes: {
+                //         default: [
+                //             {
+                //                 type: 'collapse-expand',
+                //                 onChange: function onChange(item, collapsed) {
+                //                     const data = item.get('model').data;
+                //                     data.collapsed = collapsed;
+                //                     return true;
+                //                 },
+                //             },
+                //             'drag-canvas',
+                //             'zoom-canvas',
+                //         ],
+                //     },
+                //     defaultNode: {
+                //         size: 26,
+                //         anchorPoints: [
+                //             [0, 0.5],
+                //             [1, 0.5],
+                //         ],
+                //         style: {
+                //             fill: '#C6E5FF',
+                //             stroke: '#5B8FF9',
+                //         },
+                //     },
+                //     defaultEdge: {
+                //         type: 'cubic-horizontal',
+                //         style: {
+                //             stroke: '#A3B1BF',
+                //         },
+                //     },
+                //     layout: {
+                //         type: 'mindmap',
+                //         direction: 'H',
+                //         getHeight: () => {
+                //             return 36;
+                //         },
+                //         getWidth: () => {
+                //             return 16;
+                //         },
+                //         getVGap: () => {
+                //             return 10;
+                //         },
+                //         getHGap: () => {
+                //             return 200;
+                //         },
+                //         getSide: () => {
+                //             return 'right';
+                //         }
+                //     },
+                // });
+                // let centerX = 0;
+                // graph.node(function (node) {
+                //     if (node.id === '[[${metadataTable.id}]]') {
+                //         centerX = node.x;
+                //     }
+                //     return {
+                //         label: node.label,
+                //         labelCfg: {
+                //             offset: 5,
+                //             position: 'bottom'
+                //         },
+                //
+                //     };
+                // });
+                // graph.data(data[0]);
+                // graph.render();
+                // graph.fitView();
+            },
+            error: function (e) {
+                SavingFunction.errorMsg(e);
+            }
+        });
+    });
+</script>
+</body>
+</html>

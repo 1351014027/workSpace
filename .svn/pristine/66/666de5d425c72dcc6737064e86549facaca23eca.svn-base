@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">更新进度详情</div>
+
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <div class="layui-col-xs2 " style="margin: 50px auto;text-align: center;">
+                    <i class="layui-icon layui-icon-loading-1  layui-anim layui-anim-rotate layui-anim-loop" id="load"
+                       style="color: #00b7ee;font-size: 100px;margin: 50px 50px 50px 50px"></i>
+                </div>
+                <div class="layui-col-xs10" style="font-size: 16px;">
+                    <p id="planFont" style="font-size: 20px;margin-bottom: 15px;">正在检测更新中......</p>
+                    <div class="layui-progress layui-progress-big" lay-filter="demo" lay-showpercent="true"
+                         style="margin-bottom: 15px;">
+                        <div class="layui-progress-bar " lay-percent="0%"></div>
+                    </div>
+                    <p>预计需要时间：5分钟</p>
+                    <p>本次更新内容有：<span id="updateList"></span></p>
+                    <p>更新时间： <span id="planTime"></span></p>
+                    <p th:text="${'标准云端版本：'+maxVersion+';校端版本'+loaclVersion}"></p>
+                    <blockquote class="layui-elem-quote" style="margin-top: 20px;">注意：请勿关闭浏览器或者页面，关闭会导致更新中断并且丢失数据！！！
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'element'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , element = layui.element
+            , util = layui.util
+            , SavingFunction = layui.SavingFunction
+            , keyStr = new Date().getTime();
+        $('#planTime').text(util.toDateString(new Date()));
+        SavingFunction.req({
+            url: '[[@{/metadata/metaDataTables/updateSync.json}]]', data: {str: keyStr}, done: function (res) {
+                clearInterval(timer);
+                element.progress('demo', '100%');
+                $('#load').removeClass(' layui-icon-loading-1  layui-anim layui-anim-rotate layui-anim-loop');
+                $('#load').addClass('layui-icon-ok');
+                $('#load').css('color', '#39EE4E');
+                $('#planFont').text('更新完毕！,关闭该页面即可');
+                $('#updateList').html(res);
+            }, error: function (res) {
+                clearInterval(timer);
+                element.progress('demo', '0%');
+                $('#load').removeClass('layui-icon-loading-1  layui-anim layui-anim-rotate layui-anim-loop');
+                $('#load').addClass('layui-icon-close');
+                $('#load').css('color', '#ee272f');
+                $('#planFont').text('更新失败！错误原因：' + res);
+            }
+        });
+        let timer = setInterval(function () {
+            SavingFunction.req({
+                url: '[[@{/metadata/metaDataTables/updateSyncSingleton.json}]]',
+                data: {str: keyStr},
+                done: function (res) {
+                    switch (res) {
+                        case 0:
+                            $('#planFont').text('正在获取云端数据与版本号.....');
+                            break;
+                        case 25:
+                            $('#planFont').text('正在与云端数据进行表数据对比中.....');
+                        case 30:
+                            $('#planFont').text('正在与云端数据进行字段数据对比中.....');
+                        case 35:
+                            $('#planFont').text('正在与云端数据进行下拉选项数据对比中.....');
+                        case 40:
+                            $('#planFont').text('正在与云端数据进行下拉类型数据对比中.....');
+                            break;
+                        case 45:
+                            $('#planFont').text('正在更新存储中得数据结构.....');
+                            break;
+                        case 100:
+                            clearInterval(timer);
+                            $('#planFont').text('更新完毕！');
+                            break;
+                    }
+                    element.progress('demo', res + '%');
+                }
+            });
+        }, 1000);
+
+    });
+</script>
+</body>
+</html>

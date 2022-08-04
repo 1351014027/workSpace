@@ -1,0 +1,118 @@
+package com.saving.metadata.pojo;
+
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.ContentRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 文件上传对象
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2019-12-18
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@TableName("METADATA_B_FILESTORE")
+@ApiModel(value = "FileStore对象", description = "文件上传对象")
+@Builder
+@ContentRowHeight(15)
+@HeadRowHeight(20)
+@ColumnWidth(25)
+public class FileStore extends Model<FileStore> {
+
+    private static final long serialVersionUID = 1L;
+    @TableId("ID_")
+    @ExcelIgnore
+    private String id;
+    @TableField(value = "FileName_", insertStrategy = FieldStrategy.NOT_EMPTY, whereStrategy = FieldStrategy.NOT_EMPTY)
+    @ExcelProperty("文件名")
+    private String fileName;
+    @TableField(value = "Versions_", insertStrategy = FieldStrategy.NOT_NULL)
+    @ExcelProperty("版本号")
+    private String versions;
+    @ExcelProperty("文件路径")
+    @TableField(value = "FilePath_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private String filePath;
+    @ExcelProperty("文件大小(B)")
+    @TableField(value = "FileSize_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private String fileSize;
+    @ExcelProperty("文件类型")
+    @TableField(value = "FileType_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private String fileType;
+    @ExcelProperty("保存的文件名")
+    @TableField(value = "SaveFileName_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private String saveFileName;
+    @ExcelProperty("备注")
+    @TableField(value = "Remark_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private String remark;
+    @ExcelIgnore
+    @TableField(value = "IsDelete_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    @TableLogic
+    private Integer isDelete;
+    @ExcelIgnore
+    @TableField(value = "SchoolCode_", fill = FieldFill.INSERT)
+    private String schoolCode;
+    @ExcelProperty("上传人卡号")
+    @TableField(value = "Creator_", fill = FieldFill.INSERT)
+    private String creator;
+    @ExcelProperty("上传时间")
+    @TableField(value = "CreateTime_", insertStrategy = FieldStrategy.NOT_EMPTY, whereStrategy = FieldStrategy.NOT_EMPTY)
+    private Date createTime;
+    @ExcelIgnore
+    @TableField(value = "Updateor_", insertStrategy = FieldStrategy.NOT_EMPTY, fill = FieldFill.UPDATE)
+    private String updateor;
+    @ExcelIgnore
+    @TableField(value = "UpdateTime_", insertStrategy = FieldStrategy.NOT_EMPTY, fill = FieldFill.UPDATE)
+    private Date updateTime;
+    @ExcelIgnore
+    @TableField(value = "Sort_", fill = FieldFill.INSERT)
+    private String sort;
+    @ExcelIgnore
+    @TableField(value = "SortId_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private Integer sortId;
+    @ExcelIgnore
+    @TableField(value = "ParentId_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private String parentId;
+    @ExcelIgnore
+    @TableField(value = "ParentType_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private String parentType;
+    @ExcelIgnore
+    @TableField(value = "CanYouDown_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private Integer canYouDown;
+    @ExcelIgnore
+    @TableField(value = "CanYouDelete_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private Integer canYouDelete;
+    @ExcelProperty("下载次数")
+    @TableField(value = "DownNumber_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private Integer downNumber;
+    @ExcelProperty("最后下载人卡号")
+    @TableField(value = "LastDownCreator_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private String lastDownCreator;
+    @ExcelProperty("最后下载人时间")
+    @TableField(value = "LastDownTime_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private Date lastDownTime;
+
+    @Tolerate
+    public FileStore() {
+    }
+
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
+
+}

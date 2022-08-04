@@ -1,0 +1,153 @@
+package com.saving.metadata.pojo;
+
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ *
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2019-12-18
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@TableName("METADATA_B_METADATAFIELDS")
+@ApiModel(value = "Metadatafields对象", description = "标准字段")
+@Builder
+public class MetaDataFileds extends Model<MetaDataFileds> {
+
+
+    private static final long serialVersionUID = 1L;
+    @ExcelIgnore
+    @TableId("ID_")
+    private String id;
+    @ExcelProperty("表ID")
+    @TableField("TableID_")
+    private String tableId;
+    @ExcelProperty("表名")
+    @TableField("TableName_")
+    private String tableName;
+    @ExcelProperty("编号")
+    @TableField("FiledNumber_")
+    private String filedNumber;
+    @ExcelProperty("数据项名")
+    @TableField("FiledName_")
+    private String filedName;
+    @ExcelProperty("数据项中文名称")
+    @TableField("ChineseFiledName_")
+    private String chineseFiledName;
+    @ExcelProperty("存储类型")
+    @TableField("StorageType_")
+    private String storageType;
+    @ExcelProperty("长度")
+    @TableField("FiledLength_")
+    private Integer filedLength;
+    @ExcelProperty("约束")
+    @TableField("Constraints_")
+    private String constraints;
+    @ExcelProperty("值空间")
+    @TableField(value = "ValueSpace_", updateStrategy = FieldStrategy.IGNORED)
+    private String valueSpace;
+    @ExcelProperty("数据项说明")
+    @TableField(value = "DataItemDescription_", updateStrategy = FieldStrategy.IGNORED)
+    private String dataItemDescription;
+    @ExcelProperty("引用编号")
+    @TableField(value = "ReferenceNumber_", updateStrategy = FieldStrategy.IGNORED)
+    private String referenceNumber;
+    @ExcelProperty("标准来源")
+    @TableField(value = "TheStandardSource_", updateStrategy = FieldStrategy.IGNORED)
+    private String theStandardSource;
+    @ExcelProperty("字段格式")
+    @TableField(value = "FiledFormat_", updateStrategy = FieldStrategy.IGNORED)
+    private String filedFormat;
+    @ExcelProperty("小数位数")
+    @TableField(value = "DecimalLength_", updateStrategy = FieldStrategy.IGNORED)
+    private Integer decimalLength;
+    @ExcelProperty("是否不能为空")
+    @TableField("IsNotNull_")
+    private Integer isNotNull;
+    @ExcelProperty("是否小数")
+    @TableField("IsDecimals_")
+    private Integer isDecimals;
+    @ExcelProperty("是否主键")
+    @TableField("IsPrimary_")
+    private Integer isPrimary;
+    @ExcelProperty("字段注释")
+    @TableField(value = "Annotation_", updateStrategy = FieldStrategy.IGNORED)
+    private String annotation;
+    @ExcelProperty("默认值")
+    @TableField(value = "DefaultValue_", updateStrategy = FieldStrategy.IGNORED)
+    private String defaultValue;
+    @ExcelProperty("字段索引")
+    @TableField(value = "FieldIndex_", updateStrategy = FieldStrategy.IGNORED)
+    private String fieldIndex;
+    @ExcelIgnore
+    @TableField(value = "FieldStatus_", updateStrategy = FieldStrategy.IGNORED)
+    private Integer fieldStatus;
+    @ExcelIgnore
+    @TableField(value = "SchoolCode_", fill = FieldFill.INSERT)
+    private String schoolCode;
+    @ExcelProperty("备注")
+    @TableField(value = "Remark_", insertStrategy = FieldStrategy.NOT_EMPTY, whereStrategy = FieldStrategy.NOT_EMPTY)
+    private String remark;
+    @ExcelIgnore
+    @TableField(value = "Creator_", fill = FieldFill.INSERT)
+    private String creator;
+    @ExcelIgnore
+    @TableField("CreateTime_")
+    private Date createTime;
+    @ExcelIgnore
+    @TableField(value = "Updateor_", fill = FieldFill.UPDATE)
+    private String updateor;
+    @ExcelIgnore
+    @TableField(value = "UpdateTime_", fill = FieldFill.UPDATE)
+    private Date updateTime;
+    @TableField("IsDelete_")
+    @ExcelIgnore
+    @TableLogic
+    private Integer isDelete;
+    @TableField("CanYouEdit_")
+    @ExcelIgnore
+    private Integer canYouEdit;
+    @TableField("CanYouDelete_")
+    @ExcelIgnore
+    private Integer canYouDelete;
+    @TableField(value = "Sort_", fill = FieldFill.INSERT)
+    @ExcelIgnore
+    private String sort;
+    @TableField("SortId_")
+    @ExcelIgnore
+    private Integer sortId;
+    @TableField("IsStandard_")
+    @ExcelIgnore
+    private Integer isStandard;
+    @TableField("CdmpVersion_")
+    @ExcelIgnore
+    private String cdmpVersion;
+
+    @TableField("User_Operation_")
+    @ExcelIgnore
+    private Integer userOperation;
+
+    @Tolerate
+    public MetaDataFileds() {
+    }
+
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
+
+}

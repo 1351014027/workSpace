@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/style/template.css}">
+<body>
+<div class="layui-fluid layadmin-maillist-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <div class="layui-card-header" style="font-size: 23px" th:text="${tableName}"></div>
+            <div class="layui-card-body">
+                <table id="metadata-table-table" lay-filter="metadata-table-table" width="100%">
+                    <thead>
+                    <tr>
+                        <th>接口名称</th>
+                        <th colspan="4">获取指定表的数据</th>
+                    </tr>
+                    <tr>
+                        <th>请求路径</th>
+                        <th colspan="4" th:text="'http://'+${domainname}+'/metadata/mdw/listDataByTableName'"></th>
+                    </tr>
+                    <tr>
+                        <th>请求方式</th>
+                        <th colspan="4">post</th>
+                    </tr>
+                    <tr>
+                        <th>接口异常描述</th>
+                        <th colspan="4"></th>
+                    </tr>
+                    <tr>
+                        <th align="left" colspan="5">请求参数</th>
+                    </tr>
+                    <tr>
+                        <th>序号</th>
+                        <th>参数名</th>
+                        <th>类型（长度）</th>
+                        <th>是否必须</th>
+                        <th>说明</th>
+                    </tr>
+                    <tr th:each="filed,filedStat : ${AicDataFileds}">
+                        <th th:text="${filedStat.count}"></th>
+                        <th th:text="${filed.zdm}"></th>
+                        <th>
+                            <div th:if="${filed.zdlx} eq C ">字符型(<span th:text="${filed.zdkd}"></span>)</div>
+                            <div th:if="${filed.zdlx} eq N ">数值型(<span th:text="${filed.zdkd}"></span>)</div>
+                            <div th:if="${filed.zdlx} eq M ">币值型(<span th:text="${filed.zdkd}"></span>)</div>
+                            <div th:if="${filed.zdlx} eq B ">二进制类型(<span th:text="${filed.zdkd}"></span>)</div>
+                            <div th:if="${filed.zdlx} eq T ">文本型(<span th:text="${filed.zdkd}"></span>)</div>
+                        </th>
+                        <th></th>
+                        <th th:text="${filed.rqgs}"></th>
+                    </tr>
+                    <tr>
+                        <th align="left" colspan="5">请求参数示例</th>
+                    </tr>
+                    <tr rowspan="7">
+                        <th colspan="5">
+                            <div align="left">{</div>
+                            <div th:each="filed,filedStat : ${AicDataFileds}"
+                                 th:text="${filed.zdm}+':'+${filed.zdm}"></div>
+                            <div align="left">}</div>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th align="left" colspan="5">返回参数</th>
+                    </tr>
+                    <tr rowspan="7">
+                        <th colspan="5">
+                            <div align="left">{</div>
+                            <div align="left">"code": 200,</div>
+                            <div align="left">"data": [{</div>
+                            <div align="left">"atime": 90,</div>
+                            <div align="left">"weeks": 15,</div>
+                            <div align="left">"nature": "专业必修课",</div>
+                            <div align="left">"stsid": 540,</div>
+                            <div align="left">"t_modified": 1567526400000,</div>
+                            <div align="left">"dept_name": "机电工程系",</div>
+                            <div align="left">"check_type": "考试",</div>
+                            <div align="left">"major_name": "机械设计与制造",</div>
+                            <div align="left">"type": "理论+实践课(B类)",</div>
+                            <div align="left">"number": "41117",</div>
+                            <div align="left">"name": "机床夹具设计",</div>
+                            <div align="left"> "ttime": 90,</div>
+                            <div align="left">"term": "第四学期",</div>
+                            <div align="left">"t_create": 1567526400000,</div>
+                            <div align="left">"id": "020d3ba8-cedc-11e9-a016-989096b578a3",</div>
+                            <div align="left">"week_time": "6",</div>
+                            <div align="left">"credit": "5",</div>
+                            <div align="left">"delete_flag": 0,</div>
+                            <div align="left">"ptime": 0</div>
+                            <div align="left">},</div>
+                            <div align="left">{</div>
+                            <div align="left">"atime": 60,</div>
+                            <div align="left">"weeks": 2,</div>
+                            <div align="left">"nature": "专业必修课",</div>
+                            <div align="left">"stsid": 540,</div>
+                            <div align="left">"t_modified": 1567526400000,</div>
+                            <div align="left">"dept_name": "机电工程系",</div>
+                            <div align="left">"check_type": "考试",</div>
+                            <div align="left">"major_name": "机械设计与制造",</div>
+                            <div align="left">"type": "理论+实践课(B类)",</div>
+                            <div align="left">"number": "40146",</div>
+                            <div align="left">"name": "数控加工技术",</div>
+                            <div align="left">"ttime": 0,</div>
+                            <div align="left">"term": "第四学期",</div>
+                            <div align="left">"t_create": 1567526400000,</div>
+                            <div align="left">"id": "04eba1f9-cedc-11e9-a016-989096b578a3",</div>
+                            <div align="left">"week_time": "30",</div>
+                            <div align="left">"credit": "4",</div>
+                            <div align="left">"delete_flag": 0,</div>
+                            <div align="left">"ptime": 60</div>
+                            <div align="left">"result": [{</div>
+                            <div align="left">"success"</div>
+                            <div align="left">}],</div>
+                            <div align="left">"msg": "共<span th:text="${AicDataFileds.size()}"></span>条数据"</div>
+                            <div align="left">}</div>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th align="left" colspan="5">返回值状态</th>
+                    </tr>
+                    <tr>
+                        <th align="left" colspan="5">code为200:查询成功!</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-elem-field {
+        width: 300px;
+        text-align: center;
+        margin: 20px auto 20px;
+    }
+
+    #metadata-table-table {
+        text-align: left;
+        font-size: 16px;
+    }
+
+    #metadata-table-table td {
+        border: 1px solid #0C0C0C;
+        padding: 5px 15px 5px 15px;
+        min-width: 100px
+
+    }
+
+    #metadata-table-table th {
+        border: 1px solid #0C0C0C;
+        padding: 5px 15px 5px 15px;
+        background-color: #FFFFFF;
+        color: #0C0C0C;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'laydate'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , laydate = layui.laydate
+            , SavingFunction = layui.SavingFunction;
+        $(document).on('click', '#hup-file-retreat', function () {
+            history.back();
+        });
+    });
+</script>
+</body>
+</html>

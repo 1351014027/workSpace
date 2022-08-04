@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.FileStoreMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.FileStore">
+        <id column="ID_" property="id"/>
+        <result column="FileName_" property="fileName"/>
+        <result column="FilePath_" property="filePath"/>
+        <result column="FileSize_" property="fileSize"/>
+        <result column="FileType_" property="fileType"/>
+        <result column="SaveFileName_" property="saveFileName"/>
+        <result column="Remark_" property="remark"/>
+        <result column="IsDelete_" property="isDelete"/>
+        <result column="SchoolCode_" property="schoolCode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createTime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updateTime"/>
+        <result column="Sort_" property="sort"/>
+        <result column="SortId_" property="sortId"/>
+        <result column="ParentId_" property="parentId"/>
+        <result column="ParentType_" property="parentType"/>
+        <result column="CanYouDown_" property="canYouDown"/>
+        <result column="CanYouDelete_" property="canYouDelete"/>
+        <result column="DownNumber_" property="downNumber"/>
+        <result column="LastDownCreator_" property="lastDownCreator"/>
+        <result column="LastDownTime_" property="lastDownTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, FileName_, FilePath_, FileSize_, FileType_, SaveFileName_, Remark_, IsDelete_, SchoolCode_, Creator_, CreateTime_, Updateor_, UpdateTime_, Sort_, SortId_, ParentId_, ParentType_, CanYouDown_, CanYouDelete_, DownNumber_, LastDownCreator_, LastDownTime_
+    </sql>
+
+</mapper>

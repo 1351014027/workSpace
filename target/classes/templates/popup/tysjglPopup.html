@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-form layui-form-pane" lay-filter="formType" style="padding: 20px 30px;">
+    <div class="layui-form-item">
+        <div class="layui-col-md12">
+            <label class="layui-form-label" lay-tips="应用名称"><span style="color: red">*</span>应用名称：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="yymc"
+                       placeholder="请输入应用名称"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.yymc}" type="text">
+                <i class="layui-icon alone-tips" lay-tips="不能超过250个字符！"></i>
+            </div>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="源头数据库类型"><span style="color: red">*</span>源头库类型：</label>
+            <div class="layui-input-block" style="width: 60%">
+                <select lay-verType="tips" lay-verify="required" name="ytSjklx" th:value="${tysjgl?.ytSjklx}">
+                    <option th:selected="${tysjgl?.ytSjklx=='SqlServer'} " value="SqlServer">SqlServer</option>
+                    <option th:selected="${tysjgl?.ytSjklx=='MySql'} " value="MySql">MySql</option>
+                    <option th:selected="${tysjgl?.ytSjklx=='Oracel'} " value="Oracel">Oracel</option>
+                </select>
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="源头IP地址"><span style="color: red">*</span>源头IP：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="ytIpdz"
+                       placeholder="请输入源头IP地址"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.ytIpdz}" type="text">
+                <i class="layui-icon alone-tips" lay-tips="需要带端口号"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="源头库名称"><span style="color: red">*</span>源头库名称：</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="ytSjkm"
+                       placeholder="请输入源头库名称"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.ytSjkm}" type="text">
+                <i class="layui-icon alone-tips" lay-tips="源头数据库名称"></i>
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="源头用户名"><span style="color: red">*</span>源头用户名：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="ytYhm"
+                       placeholder="请输入源头用户名"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.ytYhm}" type="text">
+                <i class="layui-icon " lay-tips="填写源头用户名"></i>
+            </div>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="源头用户密码"><span style="color: red">*</span>源头用户密码：</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="ytMm"
+                       placeholder="请输入源头用户密码"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.ytMm}" type="password">
+                <i class="layui-icon alone-tips" lay-tips="注意区分大小写"></i>
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="目标数据库类型"><span style="color: red">*</span>目标库类型：</label>
+            <div class="layui-input-block" style="width: 60%">
+                <select lay-verType="tips" lay-verify="required" name="mbSjklx" th:value="${tysjgl?.mbSjklx}">
+                    <option th:selected="${tysjgl?.mbSjklx=='SqlServer'} " value="SqlServer">SqlServer</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="目标IP"><span style="color: red">*</span>目标IP：</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input"
+                       lay-verType="tips"
+                       lay-verify="required" name="mbIpdz" placeholder="请输入目标IP"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.mbIpdz}" type="text">
+                <i class="layui-icon alone-tips" lay-tips="需要带端口号"></i>
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="目标库名"><span style="color: red">*</span>目标库名：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="mbSjkm"
+                       placeholder="请输入目标库名"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.mbSjkm}" type="text">
+            </div>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="目标用户名"><span style="color: red">*</span>目标用户名:</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="mbYhm"
+                       placeholder="请输入目标用户名"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.mbYhm}" type="text">
+            </div>
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="目标用户密码"><span style="color: red">*</span>目标用户密码：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="mbMm"
+                       placeholder="请输入目标用户密码"
+                       style="width: 80%;display:inline" th:value="${tysjgl?.mbMm}" type="password">
+            </div>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label " lay-tips="备注" style="height: 150px">备注:</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" name="remark" placeholder="备注" style="height: 150px"
+                      th:text="${tysjgl?.remark}"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <input id="sav-dms-typeCreates" lay-filter="sav-dms-typeCreates" lay-submit type="button" value="新增保存">
+        <input id="sav-dms-typeUpdates" lay-filter="sav-dms-typeUpdates" lay-submit type="button" value="编辑保存">
+    </div>
+</div>
+</body>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'laydate'], function () {
+        var $ = layui.$
+            , form = layui.form;
+        let findType = '[[${findType}]]';
+        if (findType === 'true') {
+            $('input').addClass('layui-disabled');
+            $('input').attr('disabled', 'disabled');
+            $('select').addClass('layui-disabled');
+            $('select').attr('disabled', 'disabled');
+            $('textarea').addClass('layui-disabled');
+            $('textarea').attr('disabled', 'disabled');
+            form.render();
+        }
+    });
+</script>
+</html>

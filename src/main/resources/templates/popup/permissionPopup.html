@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>权限分配</title>
+    <meta content="webkit" name="renderer">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0"
+          name="viewport">
+    <link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/layui.css}">
+</head>
+<body>
+<div class="layui-form layui-form-pane" id="layuiadmin-app-form-tags" lay-filter="layuiadmin-app-form-tags"
+     style="padding-top: 10px; margin-left: 15px">
+    <div class="layui-form-item" th:if="${#lists.isEmpty(permissionsList)}">
+        <label class="layui-form-label">部门</label>
+        <div class="layui-inline" style="margin-left: 15px">
+            <select lay-filter="LAY-SAV-depid-type" lay-search name="depId">
+                <option value="">请选择部门</option>
+                <option th:each="d:${dep}" th:text="${d.value}" th:value="${d.key}"></option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item" th:if="${#lists.isEmpty(permissionsList)}">
+        <label class="layui-form-label">姓名</label>
+        <div class="layui-inline" style="margin-left: 15px">
+            <input autocomplete="off" class="layui-input" name="xm" placeholder="姓名/卡号" type="text" value="">
+        </div>
+        <div class="layui-inline">
+            <button class="layui-btn  layui-btn-normal layuiadmin-btn-role layui-btn-sm " id="LAY-SAV-contlist-search"
+                    lay-filter="LAY-SAV-contlist-search" lay-submit="">查询
+            </button>
+        </div>
+    </div>
+    <div class="layui-form-item" th:if="${#lists.isEmpty(permissionsList)}">
+        <label class="layui-form-label">教师</label>
+        <div class="layui-inline" style="margin-left: 15px">
+            <select lay-search name="kh">
+                <option value="">请选择部门或输入姓名</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">权限范围</label>
+        <div class="layui-input-block">
+            <input lay-skin="primary" th:checked="${permissionsList?.contains(qx.key)}" th:each="qx : ${roleList}"
+                   th:name="limits"
+                   th:title="${qx.value}"
+                   th:value="${qx.key}"
+                   type="checkbox">
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <button class="layui-btn" id="LAY-user-role-submit" lay-filter="LAY-user-role-submit" lay-submit>提交</button>
+    </div>
+</div>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index'
+    }).use(['index', 'form', 'SavingFunction'], function () {
+        let $ = layui.$
+            , form = layui.form, SavingFunction = layui.SavingFunction;
+
+        form.on('select(LAY-SAV-depid-type)', function (data) {
+            SavingFunction.req({
+                url: '[[@{/user/findUser.json}]]'
+                , data: {
+                    depId: data.value
+                    , str: $('input[name="xm"]').val().trim()
+                }
+                , done: function (res) {
+                    $("select[name='kh']").not(":first").remove();
+                    let resulet1 = '<option value="" >请选择部门或输入姓名</option>';
+                    for (let i = 0; i < res.length; i++) {
+                        resulet1 += '<option value="' + res[i].username + '">' + res[i].name + '</option>'
+                    }
+                    $("select[name='kh']").html(resulet1);
+                    form.render();
+                }
+            });
+        });
+        //监听搜索
+        form.on('submit(LAY-SAV-contlist-search)', function (data) {
+            SavingFunction.req({
+                url: '[[@{/user/findUser.json}]]'
+                , data: {
+                    depId: $('select[name="depId"]').val()
+                    , str: $('input[name="xm"]').val().trim()
+                }
+                , done: function (res) {
+                    $("select[name='kh']").not(":first").remove();
+                    let resulet1 = '<option value="" >请选择部门或输入姓名</option>';
+                    for (let i = 0; i < res.length; i++) {
+                        resulet1 += '<option value="' + res[i].username + '">' + res[i].name + '</option>'
+                    }
+                    $("select[name='kh']").html(resulet1);
+                    form.render();
+                }
+            });
+        });
+        form.render();
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.ApiTableMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.ApiTable">
+        <id column="ID_" property="id"/>
+        <result column="RJBH_" property="rjbh"/>
+        <result column="Sys_Name_" property="sysName"/>
+        <result column="BBH_" property="bbh"/>
+        <result column="LY_" property="ly"/>
+        <result column="JZDWDM_" property="jzdwdm"/>
+        <result column="JZZMC_" property="jzzmc"/>
+        <result column="SCGBM_" property="scgbm"/>
+        <result column="GZRQ_" property="gzrq"/>
+        <result column="SCCJXYM_" property="sccjxym"/>
+        <result column="SCCJMC_" property="sccjmc"/>
+        <result column="DJ_" property="dj"/>
+        <result column="GNJJ_" property="gnjj"/>
+        <result column="XZM_" property="xzm"/>
+        <result column="Sys_Url_" property="sysUrl"/>
+        <result column="Manufacturers_User_" property="manufacturersUser"/>
+        <result column="Manufacturers_Phone_" property="manufacturersPhone"/>
+        <result column="Key_" property="key"/>
+        <result column="Sort_" property="sort"/>
+        <result column="IsDelete_" property="isdelete"/>
+        <result column="School_Code_" property="schoolCode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="Create_Time_" property="createTime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="Update_Time_" property="updateTime"/>
+        <result column="Remark_" property="remark"/>
+        <result column="Sort_Id_" property="sortId"/>
+        <result column="Is_sjyxt_" property="issjyxt"/>
+        <result column="Is_sjmbxt_" property="issjmbxt"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+    ID_
+      ,RJBH_
+      ,Sys_Name_
+      ,BBH_
+      ,LY_
+      ,JZDWDM_
+      ,JZZMC_
+      ,SCGBM_
+      ,GZRQ_
+      ,SCCJXYM_
+      ,SCCJMC_
+      ,DJ_
+      ,GNJJ_
+      ,XZM_
+      ,Sys_Url_
+      ,Key_
+      ,Manufacturers_User_
+      ,Manufacturers_Phone_
+      ,Sort_
+      ,IsDelete_
+      ,School_Code_
+      ,Creator_
+      ,Create_Time_
+      ,Updateor_
+      ,Update_Time_
+      ,Remark_
+      ,Sort_Id_
+      ,Is_sjyxt_
+      ,Is_sjmbxt_
+      </sql>
+    <update id="syncRjzc">
+  UPDATE A  SET [SCGBM]= B.SCGBM_
+      ,[DJ]=B.DJ_
+      ,[RJBH]=B.RJBH_
+      ,[GNJJ]=B.GNJJ_
+      ,[JZZMC]=B.JZZMC_
+      ,[XZM]=B.XZM_
+      ,[BBH]=B.BBH_
+      ,[SCCJXYM]=B.SCCJXYM_
+      ,[GZRQ]=B.GZRQ_
+      ,[SCCJMC]=B.SCCJMC_
+      ,[JZDWDM]=B.JZDWDM_
+      ,[RJMC]=B.Sys_Name_
+      ,[LY]=B.LY_
+	  ,[METADATA_F_IS_UPDATE_API_UUID_]='CURRENTSYSTEM'
+	   ,[METADATA_F_IS_UPDATE_IP_]=#{ip}
+	   ,[METADATA_F_IS_UPDATE_]=getdate()
+	  FROM [XXSJ_RJZC] A JOIN METADATA_B_API_TABLE B  ON  A.RJBH = B.RJBH_    and B.IsDelete_!=1 and A.METADATA_F_IS_DELETE_ IS NULL
+          INSERT INTO [XXSJ_RJZC]
+	  ([SCGBM]
+           ,[DJ]
+           ,[RJBH]
+           ,[GNJJ]
+           ,[JZZMC]
+           ,[XZM]
+           ,[BBH]
+           ,[SCCJXYM]
+           ,[GZRQ]
+           ,[SCCJMC]
+           ,[JZDWDM]
+           ,[RJMC]
+           ,[LY]
+           ,[METADATA_F_IS_CREATE_]
+           ,[METADATA_F_IS_CREATE_IP_]
+           ,[METADATA_F_IS_CREATE_API_UUID_])
+	  SELECT [SCGBM_]
+      ,[DJ_]
+      ,[RJBH_]
+      ,[GNJJ_]
+      ,[JZZMC_]
+      ,[XZM_]
+      ,[BBH_]
+      ,[SCCJXYM_]
+      ,[GZRQ_]
+      ,[SCCJMC_]
+      ,[JZDWDM_]
+      ,[Sys_Name_] as RJMC
+      ,[LY_]
+	  ,GETDATE()
+	  ,#{ip}
+	  ,'CURRENTSYSTEM'  FROM METADATA_B_API_TABLE  where  RJBH_ NOT IN (SELECT RJBH_ from [XXSJ_RJZC]) and IsDelete_!=1
+    </update>
+    <update id="rjzcSync">
+
+	    UPDATE A  SET [SCGBM_]= B.SCGBM
+      ,[DJ_]=B.DJ
+      ,[RJBH_]=B.RJBH
+      ,[GNJJ_]=B.GNJJ
+      ,[JZZMC_]=B.JZZMC
+      ,[XZM_]=B.XZM
+      ,[BBH_]=B.BBH
+      ,[SCCJXYM_]=B.SCCJXYM
+      ,[GZRQ_]=B.GZRQ
+      ,[SCCJMC_]=B.SCCJMC
+      ,[JZDWDM_]=B.JZDWDM
+      ,[Sys_Name_]=B.RJMC
+      ,[LY_]=B.LY
+      ,Updateor_=#{userName}
+      ,Update_Time_ = getdate()
+	  FROM METADATA_B_API_TABLE A JOIN [XXSJ_RJZC] B   ON  A.RJBH_ = B.RJBH   and A.IsDelete_!=1 and B.METADATA_F_IS_DELETE_ IS NULL
+    </update>
+    <select id="getRjzcData" resultType="com.saving.metadata.pojo.ApiTable">
+        select
+        [SCGBM]
+           ,[DJ]
+           ,[RJBH]
+           ,[GNJJ]
+           ,[JZZMC]
+           ,[XZM]
+           ,[BBH]
+           ,[SCCJXYM]
+           ,[GZRQ]
+           ,[SCCJMC]
+           ,[JZDWDM]
+           ,[RJMC]
+           ,[LY]
+            from
+            [XXSJ_RJZC] where METADATA_F_IS_DELETE_  IS NULL
+            AND RJBH NOT IN (SELECT  RJBH_ FROM METADATA_B_API_TABLE WHERE IsDelete_!=1)
+    </select>
+    <select id="checkTableName" resultType="java.lang.Integer">
+        select count(NAME) from  SYSOBJECTS  where xtype ='U'   and NAME=#{tableName}
+    </select>
+    <select id="findByTableName" resultType="java.lang.String">
+        select A.name FROM ..SYSCOLUMNS A LEFT JOIN ..SYSOBJECTS B  ON A.ID = B.ID  where  B.xtype = 'U' and B.name = #{tableName}
+    </select>
+
+</mapper>

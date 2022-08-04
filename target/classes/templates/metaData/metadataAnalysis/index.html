@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>数据总览</title>
+    <meta content="webkit" name="renderer">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0"
+          name="viewport">
+    <link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/layui.css}">
+    <link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/style/admin.css}">
+    <link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/style/mt-admin.css}">
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md8">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">待办事项</div>
+                        <div class="layui-card-body">
+                            <div class="layui-carousel layadmin-carousel layadmin-backlog">
+                                <div carousel-item>
+                                    <ul class="layui-row layui-col-space10">
+                                        <li class="layui-col-xs6">
+                                            <!--<a th:lay-href="@{/iqa/tree/zltx.page}" class="layadmin-backlog-body">-->
+                                            <!--<h3>诊断点总数</h3>-->
+                                            <!--<p><cite th:text="${zkdcount[0]}">0</cite></p>-->
+                                            <!--</a>-->
+                                            <a class="layadmin-backlog-body">
+                                                <h3>表总数</h3>
+                                                <p><cite>0</cite></p>
+                                            </a>
+                                        </li>
+                                        <li class="layui-col-xs6">
+                                            <!--<a th:lay-href="@{/iqa/zkd/zkdsh.page}" class="layadmin-backlog-body">-->
+                                            <!--<h3>待审诊断点</h3>-->
+                                            <!--<p><cite th:text="${zkdcount[1]}">0</cite></p>-->
+                                            <!--</a> -->
+                                            <a class="layadmin-backlog-body">
+                                                <h3>待审诊断点</h3>
+                                                <p><cite>0</cite></p>
+                                            </a>
+                                        </li>
+                                        <li class="layui-col-xs6">
+                                            <!--<a th:lay-href="@{/iqa/zkd/yjbg.page}" class="layadmin-backlog-body">-->
+                                            <!--<h3>预警诊断点</h3>-->
+                                            <!--<p><cite style="color: #FF5722;" th:text="${zkdcount[2]}">0</cite></p>-->
+                                            <!--</a>-->
+                                            <a class="layadmin-backlog-body">
+                                                <h3>预警诊断点</h3>
+                                                <p><cite style="color: #FF5722;">0</cite></p>
+                                            </a>
+                                        </li>
+                                        <li class="layui-col-xs6">
+                                            <!--<a th:lay-href="@{/iqa/zkd/yjbg.page}" class="layadmin-backlog-body">-->
+                                            <!--<h3>达标诊断点</h3>-->
+                                            <!--<p><cite th:text="${zkdcount[3]}">0</cite></p>-->
+                                            <!--</a>-->
+                                            <a class="layadmin-backlog-body">
+                                                <h3>达标诊断点</h3>
+                                                <p><cite>0</cite></p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">数据概览</div>
+                        <div class="layui-card-body">
+                            <table id="sav-cmzl" lay-filter="sav-cmzl"></table>
+                        </div>
+                    </div>
+                    <div class="layui-card">
+                        <!--              <div class="layui-tab layui-tab-brief layadmin-latestData">-->
+                        <!--                <ul class="layui-tab-title">-->
+                        <!--                  <li class="layui-this">学校</li>-->
+                        <!--                  <li>预警诊断点</li>-->
+                        <!--                </ul>-->
+                        <!--                <div class="layui-tab-content">-->
+                        <!--                  <div class="layui-tab-item layui-show">-->
+                        <!--                    <table id="LAY-index-topSearch" lay-filter="LAY-index-topSearch"></table>-->
+                        <!--                  </div>-->
+                        <!--                  <div class="layui-tab-item">-->
+                        <!--                    <table id="LAY-index-topCard" lay-filter="LAY-index-topCard"></table>-->
+                        <!--                  </div>-->
+                        <!--                </div>-->
+                        <!--              </div>-->
+                        <div class="layui-tab layui-tab-brief layadmin-latestData">
+                            <ul class="layui-tab-title">
+                                <li class="layui-this">学校</li>
+                                <li>专业</li>
+                                <li>课程</li>
+                                <li>教师</li>
+                                <li>学生</li>
+                            </ul>
+                            <div class="layui-tab-content">
+                                <div class="layui-tab-item layui-show">
+                                    <table id="sav-school" lay-filter="sav-school"></table>
+                                </div>
+                                <div class="layui-tab-item ">
+                                    <table id="sav-profession" lay-filter="sav-profession"></table>
+                                </div>
+                                <div class="layui-tab-item">
+                                    <table id="sav-class" lay-filter="sav-class"></table>
+                                </div>
+                                <div class="layui-tab-item">
+                                    <table id="sav-teacher" lay-filter="sav-teacher"></table>
+                                </div>
+                                <div class="layui-tab-item">
+                                    <table id="sav-student" lay-filter="sav-student"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md4">
+            <div class="layui-card">
+                <div class="layui-card-header">目前效果报告</div>
+                <div class="layui-card-body layadmin-takerates">
+                    <div class="layui-progress" lay-showPercent="yes">
+                        <h3>达标率</h3>
+                        <div class="layui-progress-bar"></div>
+                    </div>
+                    <div class="layui-progress" lay-showPercent="yes">
+                        <h3>预警率</h3>
+                        <div class="layui-progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-header">优秀进展诊断点</div>
+                <div class="layui-card-body">
+                    <div class="layui-tab-content">
+                        <div class="layui-tab-item layui-show">
+                            <table id="LAY-index-prograss" lay-filter="LAY-index-prograss"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<style>
+    body {
+        overflow-y: scroll;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js?t=1}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'console']);
+</script>
+</body>
+</html>
+

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">多键值下拉选项</div>
+        <div class="layui-card-body">
+            <table id="metadata-manykeyValues" lay-filter="metadata-manykeyValues"></table>
+            <script id="TableToolbar" type="text/html">
+                <button class="layui-btn layui-btn-xs " lay-event="update">列名设置</button>
+                <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="findAll">数据浏览</button>
+            </script>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table'], function () {
+        let $ = layui.$
+            , table = layui.table
+            , admin = layui.admin
+            , SavingFunction = layui.SavingFunction;
+
+        let field = [
+            {type: 'numbers', title: '序号', align: 'center'}
+            , {field: 'typeKey', title: '类型键值', align: 'center'}
+            , {field: 'typeName', title: '类型名称', align: 'center'}
+            , {title: '操作', width: 200, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+        ];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-manykeyValues'
+            , url: '[[@{/metadata/hierarchy/manykeyValuesListPage.json}]]'
+            , cols: [field]
+        });
+
+        table.on('tool(metadata-manykeyValues)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'update') {
+                parent.layer.open({
+                    title: '列名设置'
+                    , type: 2
+                    , content: '[[@{/popup/dwdxxbzdmysPopup.page}]]?id=' + data.id
+                    , maxmin: true
+                    , area: ['95%', '95%']
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        parent.layer.close(index);
+                    }
+                });
+            } else if (obj.event === 'findAll') {
+                parent.layer.open({
+                    title: '数据浏览'
+                    , type: 2
+                    , content: '[[@{/popup/dwdxxbjzPopup.page}]]?id=' + data.id
+                    , maxmin: true
+                    , area: ['95%', '95%']
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        parent.layer.close(index);
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

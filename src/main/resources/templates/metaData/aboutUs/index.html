@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<!--引用百度地图API-->
+<style type="text/css">
+    html, body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .iw_poi_title {
+        color: #CC5522;
+        font-size: 14px;
+        font-weight: bold;
+        overflow: hidden;
+        padding-right: 13px;
+        white-space: nowrap
+    }
+
+    .iw_poi_content {
+        font: 12px arial, sans-serif;
+        overflow: visible;
+        padding-top: 4px;
+        white-space: -moz-pre-wrap;
+        word-wrap: break-word
+    }
+</style>
+<script src="http://api.map.baidu.com/api?key=&v=1.1&services=true" type="text/javascript"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction'], function () {
+        let $ = layui.$
+            , SavingFunction = layui.SavingFunction;
+        $('div.sav-body').css('height', window.innerHeight + 900)
+    });
+</script>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card sav-body">
+        <div class="layui-card-header" style="font-size: 23px">关于我们</div>
+        <div style="margin: 25px;">
+            <div class="layui-col-md6">
+                <div style="margin: 25px">
+                    <span style="font-size: 40px;color: cornflowerblue;">简介</span></div>
+                <div style="margin: 25px;font-size: 24px;text-indent:50px;line-height: 200%">
+                    AIC(Artificial Intelligence
+                    Campus中文简称人工智能校园）是按照智能化校园的理念，在借鉴了目前国内信息化建设先进院校智能校园建设经验的基础上，按照教育部对教育信息化以及全国职业院校教学与改进工作专家委员会对诊改信息化的内涵要求，由诊改委平台组主要
+                    成员共同研发，并与国家状态数据平台无缝对接、深度融合的全新的智能化校园解决方案。
+                </div>
+            </div>
+            <div class="layui-col-md6">
+                <div style="margin: 25px">
+                    <img style="height: 400px;width: auto" th:src="@{/images/about1.jpg}">
+                </div>
+                <div style="margin: 25px;font-size: 24px;text-indent:50px;line-height: 150%">
+                    AIC采用全国诊改专委会制定的《高等职业院校内部质量管理与运行元数据规范》作为数据中心的建设标准， 通过数据中心支撑学校智能管理、智能服务、智能教学、平安校园、生态校园、校情分析等，同时可将校本
+                    业务数据自动对接状态数据、双高等平台。
+                </div>
+            </div>
+        </div>
+        <div style="margin: 25px;">
+
+            <div class="layui-col-md12" style="text-align: center">
+                <span style="font-size: 42px;color: cornflowerblue;">始终坚持以数据为核心的理念，通过大数据分析和应用不断提升学校人才培养质量</span></div>
+            <div class="layui-col-md12" style="margin-top: 40px;line-height: 150%">
+                <div class="layui-col-md3"><span class="layui-input-block"></span></div>
+                <div class="layui-col-md6">
+                    <ul class="layui-timeline">
+                        <li class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                            <div class="layui-timeline-content layui-text">
+                                <h3 class="layui-timeline-title">01</h3>
+                                <p style="font-size: 20px">
+                                    将国内外先进院校教育教学管理理念和经验融入日常教育教学管理应用中， 应用领域全覆盖、过程全监控、人员全参与。
+                                </p>
+                            </div>
+                        </li>
+                        <li class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                            <div class="layui-timeline-content layui-text">
+                                <h3 class="layui-timeline-title">02</h3>
+                                <p style="font-size: 20px">把校园作为一个整体来看待，全面实现数据的源头唯一、源头采集，使 不同应用模块间的资源能够共建共享以及互通互连。</p>
+                            </div>
+                        </li>
+                        <li class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                            <div class="layui-timeline-content layui-text">
+                                <h3 class="layui-timeline-title">03</h3>
+                                <p style="font-size: 20px">诊断与改进机制嵌入信息化日常管理中，实现常态化的 内部质量保证体系。</p>
+                            </div>
+                        </li>
+                        <li class="layui-timeline-item">
+                            <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                            <div class="layui-timeline-content layui-text">
+                                <h3 class="layui-timeline-title">04</h3>
+                                <p style="font-size: 20px">高度移动化、云架构、易用和安全的系统。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="layui-col-md3"><span class="layui-input-block"></span></div>
+            </div>
+            <div class="layui-col-md12"><span style="font-size: 32px;color: cornflowerblue;">联系我们</span></div>
+            <div class="layui-col-md6" style="margin-top: 25px;font-size: 30px">
+                <div class="layui-col-md10" style=" margin-top: 120px;margin-left: 40px"><span
+                        style="color: cornflowerblue;margin-right: 20px;text-align: right">&nbsp;&nbsp;&nbsp;联系人:</span>谷经理
+                </div>
+                <div class="layui-col-md10" style=" margin-top: 40px;margin-left: 40px"><span
+                        style="color: cornflowerblue;margin-right: 20px;text-align: right">联系电话:</span>020-87006603/13920173977
+                </div>
+                <div class="layui-col-md10" style=" margin-top: 40px;margin-left: 40px"><span
+                        style="color: cornflowerblue;margin-right: 20px;text-align: right;line-height: 150%">联系地址:</span>广东省广州市环市东路405号1310室（广东华信中心）
+                    邮编：510075
+                </div>
+            </div>
+            <div class="layui-col-md6" style="margin-top: 25px">
+                <section class=" m-tb-80">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div>
+                                    <div id="dituContent" style="width:100%;height:500px;border:#ccc solid 1px;"></div>
+                                </div><!-- end map -->
+                            </div><!-- end col-lg-12 -->
+                        </div><!-- end row -->
+                    </div><!-- end container -->
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+
+<script type="text/javascript">
+    //创建和初始化地图函数：
+    function initMap() {
+        createMap();//创建地图
+        setMapEvent();//设置地图事件
+        addMapControl();//向地图添加控件
+        addRemark();//向地图中添加文字标注
+    }
+
+    //创建地图函数：
+    function createMap() {
+        var map = new BMap.Map("dituContent");//在百度地图容器中创建一个地图
+        var point = new BMap.Point(113.305917, 23.140383);//定义一个中心点坐标
+        map.centerAndZoom(point, 18);//设定地图的中心点和坐标并将地图显示在地图容器中
+        window.map = map;//将map变量存储在全局
+    }
+
+    //地图事件设置函数：
+    function setMapEvent() {
+        map.enableDragging();//启用地图拖拽事件，默认启用(可不写)
+        map.enableScrollWheelZoom();//启用地图滚轮放大缩小
+        map.enableDoubleClickZoom();//启用鼠标双击放大，默认启用(可不写)
+        map.enableKeyboard();//启用键盘上下左右键移动地图
+    }
+
+    //地图控件添加函数：
+    function addMapControl() {
+        //向地图中添加缩放控件
+        var ctrl_nav = new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_LEFT, type: BMAP_NAVIGATION_CONTROL_LARGE});
+        map.addControl(ctrl_nav);
+        //向地图中添加缩略图控件
+        var ctrl_ove = new BMap.OverviewMapControl({anchor: BMAP_ANCHOR_BOTTOM_RIGHT, isOpen: 1});
+        map.addControl(ctrl_ove);
+        //向地图中添加比例尺控件
+        var ctrl_sca = new BMap.ScaleControl({anchor: BMAP_ANCHOR_BOTTOM_LEFT});
+        map.addControl(ctrl_sca);
+    }
+
+    //文字标注数组
+    var lbPoints = [{point: "113.305338|23.140765", content: "广东华信中心"}
+    ];
+
+    //向地图中添加文字标注函数
+    function addRemark() {
+        for (var i = 0; i < lbPoints.length; i++) {
+            var json = lbPoints[i];
+            var p1 = json.point.split("|")[0];
+            var p2 = json.point.split("|")[1];
+            var label = new BMap.Label("<div style='padding:2px;'>" + json.content + "</div>", {
+                point: new BMap.Point(p1, p2),
+                offset: new BMap.Size(3, -6)
+            });
+            map.addOverlay(label);
+            label.setStyle({borderColor: "#999"});
+        }
+    }
+
+    initMap();//创建和初始化地图
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">数据交换分析</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <select lay-filter="dateString" name="dateString">
+                        <option value="0">年</option>
+                        <option value="1">月</option>
+                        <option value="2">每周</option>
+                        <option value="3">每天</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-card-body">
+            <table id="metadata-dataExchangAnalysis" lay-filter="metadata-dataExchangAnalysis"></table>
+            <script id="TableTopToolbar" type="text/html">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Export">导出选中</button>
+                </div>
+            </script>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'util'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , SavingFunction = layui.SavingFunction, tableData = [], Table4 = {};
+        initData();
+
+        function initData() {
+            SavingFunction.req({
+                url: '[[@{/metadata/conversionRecord/listPageAnalysis.json}]]',
+                data: {str: $('select[name="dateString"]').val()},
+                done: function (res) {
+                    tableData = res.records;
+                    if (tableData.length === 0) {
+                        layer.msg('暂无数据!', {icon: 3}, function () {
+                            history.back();
+                        });
+                    }
+                    let filed4 = [];
+                    for (let key in tableData[0]) {
+                        if (key !== '__row_number__') {
+                            filed4.push({
+                                field: key,
+                                title: key,
+                                minWidth: 200
+                            });
+                        }
+                    }
+                    Table4 = SavingFunction.intoTable({
+                        id: 'metadata-dataExchangAnalysis'
+                        , cols: [filed4]
+                        , height: 'full-180'
+                        , url: '[[@{/metadata/conversionRecord/listPageAnalysis.json}]]'
+                        , where: {
+                            str: $('select[name="dateString"]').val()
+                        }
+                    });
+                    form.render();
+                }
+            });
+        }
+
+        form.on('select(dateString)', function (data) {
+            initData()
+        });
+
+
+    });
+</script>
+</body>
+</html>

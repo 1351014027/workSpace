@@ -1,0 +1,16 @@
+package com.saving.metadata.dao;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.saving.metadata.pojo.OperationTableLog;
+
+/**
+ * <p>
+ * Mapper 接口
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2020-01-08
+ */
+public interface OperationTableLogMapper extends BaseMapper<OperationTableLog> {
+
+}

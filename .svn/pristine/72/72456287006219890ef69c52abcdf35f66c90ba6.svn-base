@@ -1,0 +1,24 @@
+package com.saving.metadata.vo;
+
+import java.util.Hashtable;
+
+/**
+ * @author: 陈志强
+ * @date: 2020/3/30 11:04
+ * @Description:
+ */
+public class ProgressSingleton {
+    private static final Hashtable<Object, Object> TABLE = new Hashtable<>();
+
+    public static void put(Object key, Object value) {
+        TABLE.put(key, value);
+    }
+
+    public static Object get(Object key) {
+        return TABLE.get(key);
+    }
+
+    public static Object remove(Object key) {
+        return TABLE.remove(key);
+    }
+}

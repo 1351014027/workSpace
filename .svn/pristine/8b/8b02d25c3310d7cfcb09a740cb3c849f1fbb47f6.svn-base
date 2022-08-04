@@ -1,0 +1,140 @@
+package com.saving.metadata.controller;
+
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.dto.FileStoreDto;
+import com.saving.metadata.pojo.FileStore;
+import com.saving.metadata.service.FileStoreService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * <p>
+ * 文件上传前端控制器
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2019-12-18
+ */
+@RestController
+@Slf4j
+@RequestMapping("/metadata/fileStore")
+@Api(tags = "文件上传内容相关接口")
+@CrossOrigin
+public class FileStoreController {
+
+    private final FileStoreService fileStoreService;
+
+    @Autowired
+    public FileStoreController(FileStoreService fileStoreService) {
+        this.fileStoreService = fileStoreService;
+    }
+
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("listPage.json")
+    @ApiOperation(value = "分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "startDate", value = "过滤上传日期开始时间"),
+            @ApiImplicitParam(name = "endDate", value = "过滤上传日期结束时间"),
+            @ApiImplicitParam(name = "fileStore", value = "文件上传对象，用于过滤")
+    })
+    public ServerResponse<Page<FileStore>> listPage(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize
+            , FileStore fileStore
+            , String startDate
+            , String endDate) {
+        LambdaQueryWrapper<FileStore> wrapper = new QueryWrapper<FileStore>().lambda().like(StringUtils.isNoneBlank(fileStore.getFileName()), FileStore::getFileName, fileStore.getFileName())
+                .between(StringUtils.isNoneBlank(startDate) && StringUtils.isNoneBlank(endDate), FileStore::getCreateTime, startDate, endDate)
+                .orderByAsc(FileStore::getSort)
+                .orderByAsc(FileStore::getSortId)
+                .orderByAsc(FileStore::getCreateTime);
+        Page<FileStore> page = fileStoreService.page(new Page<>(pageNum, pageSize), wrapper);
+        return ServerResponse.createBySuccess(page);
+    }
+
+    @PostMapping("list.json")
+    @ApiOperation(value = "查询接口", notes = "无分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "fileStore", value = "文件上传对象，用于过滤", required = true, paramType = "query")
+    })
+    public ServerResponse<List<FileStore>> list(FileStore fileStore) {
+        fileStore.setSchoolCode(RequestHolder.getCurrenSysUser().getSchoolCode());
+        List<FileStore> list = fileStoreService.list(new QueryWrapper<>(fileStore));
+        return ServerResponse.createBySuccess(list);
+    }
+
+    @PostMapping("update.json")
+    @ApiOperation(value = "更新接口", notes = "ID必须传")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "fileStore", value = "文件上传对象", required = true, paramType = "query")
+    })
+    public ServerResponse update(FileStoreDto fileStoreDto) {
+        if (fileStoreDto == null) {
+            return ServerResponse.createByErrorMessage(ResponseCode.ERRORPARAM);
+        }
+        if (StringUtils.isBlank(fileStoreDto.getId())) {
+            return ServerResponse.createByErrorMessage("参数中缺少主键！");
+        }
+        if ((fileStoreDto.getRemark() != null && fileStoreDto.getRemark().length() > 500) || (fileStoreDto.getVersions() != null && fileStoreDto.getVersions().length() > 255)) {
+            return ServerResponse.createByErrorMessage("备注或版本号字符长度必须小于125字或255长度!");
+        }
+        FileStore fileStore = FileStore.builder().build();
+        BeanUtils.copyProperties(fileStoreDto, fileStore);
+        fileStoreService.updateById(fileStore);
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping("updateSort.json")
+    @ApiOperation(value = "更新排序接口", notes = "两个排序对象ID必须传")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "oneId", value = "第一个交换sort值的对象", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "twoId", value = "第二个交换sort值的对象", required = true, paramType = "query")
+    })
+    public ServerResponse updateSort(String oneId, String twoId) {
+        if (StringUtils.isBlank(oneId) || StringUtils.isBlank(twoId)) {
+            return ServerResponse.createByErrorMessage(ResponseCode.ERRORPARAM);
+        }
+        FileStore fileStore1 = fileStoreService.getById(oneId), fileStore2 = fileStoreService.getById(twoId);
+        String store1Sort = fileStore1.getSort(), store2Sort = fileStore2.getSort();
+        FileStore fileStoreOne = FileStore.builder().id(fileStore1.getId()).sort(store2Sort).build(),
+                fileStoreTwo = FileStore.builder().id(fileStore2.getId()).sort(store1Sort).build();
+        fileStoreService.updateById(fileStoreOne);
+        fileStoreService.updateById(fileStoreTwo);
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping("findById.json")
+    @ApiOperation(value = "单个文件对象根据主键查询接口", notes = "ID必须传")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "id", value = "文件上传对象主键", required = true, paramType = "query")
+    })
+    public ServerResponse<FileStore> findById(String id) {
+        if (StringUtils.isBlank(id)) {
+            return ServerResponse.createByErrorMessage(ResponseCode.ERRORPARAM);
+        }
+        return ServerResponse.createBySuccess(fileStoreService.getById(id));
+    }
+
+
+}
+

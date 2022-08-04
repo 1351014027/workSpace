@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.TysjglMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.Tysjgl">
+        <result column="ID_" property="id"/>
+        <result column="YYMC_" property="yymc"/>
+        <result column="YT_SJKLX_" property="ytSjklx"/>
+        <result column="YT_IPDZ_" property="ytIpdz"/>
+        <result column="YT_SJKM_" property="ytSjkm"/>
+        <result column="YT_YHM_" property="ytYhm"/>
+        <result column="YT_MM_" property="ytMm"/>
+        <result column="MB_SJKLX_" property="mbSjklx"/>
+        <result column="MB_IPDZ_" property="mbIpdz"/>
+        <result column="MB_SJKM_" property="mbSjkm"/>
+        <result column="MB_YHM_" property="mbYhm"/>
+        <result column="MB_MM_" property="mbMm"/>
+        <result column="Sort_" property="sort"/>
+        <result column="IsDelete_" property="isdelete"/>
+        <result column="School_Code_" property="schoolCode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="Create_Time_" property="createTime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="Update_Time_" property="updateTime"/>
+        <result column="Remark_" property="remark"/>
+        <result column="Sort_Id_" property="sortId"/>
+        <result column="Is_Create_Data_Base_" property="isCreateDataBase"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, YYMC_, YT_SJKLX_, YT_IPDZ_, YT_SJKM_, YT_YHM_, YT_MM_, MB_SJKLX_, MB_IPDZ_, MB_SJKM_, MB_YHM_, MB_MM_, Sort_, IsDelete_, School_Code_, Creator_, Create_Time_, Updateor_, Update_Time_, Remark_, Sort_Id_
+    </sql>
+    <insert id="createDataBase">
+   EXEC   [METADATA_P_CreateDatabase]   #{path},#{dataBaseName}
+   EXEC    [METADATA_P_CreateUser] #{userName},#{userPassWord},'rw',#{dataBaseName}
+    </insert>
+    <delete id="delDataBase">
+        <foreach collection="list" item="list">
+            IF EXISTS (SELECT * FROM master..sysdatabases WHERE name =#{list.mbSjkm})
+            DROP DATABASE [${list.mbSjkm}];
+        </foreach>
+    </delete>
+    <select id="checkDataBaseUser" resultType="string">
+         SELECT top 1  name
+FROM sys.syslogins  where name  = #{userName}
+    </select>
+
+</mapper>

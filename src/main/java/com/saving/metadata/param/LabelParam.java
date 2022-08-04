@@ -1,0 +1,50 @@
+package com.saving.metadata.param;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+import org.hibernate.validator.constraints.Length;
+
+import javax.validation.constraints.NotEmpty;
+
+/**
+ * @author: 陈志强
+ * @date: 2020/6/8 14:37
+ * @Description: 效验对象
+ */
+@Data
+@Builder
+@EqualsAndHashCode(callSuper = false)
+public class LabelParam {
+
+    @Tolerate
+    public LabelParam() {
+    }
+
+    private String id;
+
+    @Length(max = 64, message = "类型ID必须在64字符以下！")
+    private String hierarchyId;
+
+    @Length(max = 64, message = "类型KEY必须在64字符以下！")
+    private String hierarchyKey;
+
+    @Length(max = 64, message = "类型名称必须在32字以下！")
+    private String hierarchyName;
+
+    @NotEmpty(message = "标签英文名称不能为空!")
+    @Length(max = 64, message = "标签英文名称必须在32字以下！")
+    private String labelName;
+
+    @NotEmpty(message = "标签中文名称不能为空!")
+    @Length(max = 64, message = "标签中文名称必须在32字以下！")
+    private String labelZnName;
+
+    @Length(max = 255, message = "标签描述必须在125字以下！")
+    private String labelNameDescribe;
+
+    @Length(max = 64, message = "标签数据来源必须在64字以下！")
+    private String databaseName;
+
+}

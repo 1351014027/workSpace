@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">校本数据中台(API接口)</div>
+        <div class="layui-card-body">
+            <table id="metadata-operation-tableLog" lay-filter="metadata-operation-tableLog"></table>
+            <script id="TableTopToolbar" type="text/html">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Export">获取密钥文档</button>
+                </div>
+            </script>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script id="TableToolbar" type="text/html">
+    <button class="layui-btn layui-btn-xs " lay-event="save">新增</button>
+    <button class="layui-btn layui-btn-xs layui-btn layui-btn-warm" lay-event="look">查看</button>
+    <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="update">编辑</button>
+    <button class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</button>
+    <button class="layui-btn layui-btn-xs  layui-btn-primary" lay-event="permiss">权限</button>
+</script>
+
+<script id="tablePopup" type="text/html">
+    <div class="layui-card layui-form">
+        <div class="layui-card-header" style="font-size: 23px">{{d}} API权限</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input type="text" name="sysName" placeholder="业务系统名称" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" lay-submit
+                            lay-filter="popupSearch">查找
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <table id="table1" lay-filter="table1"></table>
+        </div>
+    </div>
+</script>
+<style>
+
+    /*设置 width宽 height高 line-height行高*/
+    .layui-form-switch {
+        width: 34px;
+        height: 18px;
+        line-height: 18px;
+        color: #FFFFFF;
+
+    }
+
+    /*设置 width宽 height高 两者尺寸保持一样 圆形 top:控制定位上方距离 left:控制左侧距离*/
+    .layui-form-switch i {
+        width: 9px;
+        height: 9px;
+        margin-top: 2px;
+        align-items: center;
+    }
+
+    /*操作开关里面的字体*/
+    .layui-form-switch em {
+        margin-left: 10px;
+    }
+
+    .layui-form-onswitch em {
+        margin-left: -4px;
+        margin-right: 9px;
+    }
+
+    .layui-form-onswitch i {
+        margin-left: -14px;
+    }
+
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'laydate', 'laytpl'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , table = layui.table
+            , laydate = layui.laydate
+            , admin = layui.admin
+            , laytpl = layui.laytpl
+            , SavingFunction = layui.SavingFunction;
+
+        laydate.render({
+            elem: '#metadata-date'
+            , range: true
+        });
+
+        let field = [
+            {type: 'checkbox'},
+            {type: 'numbers', title: '序号', align: 'center'}
+            , {field: 'tableName', title: '表名'}
+            , {field: 'chineseTableName', title: '中文表名'}
+            , {field: 'typeName', title: '分类'}
+            , {field: 'fieldSize', title: '字段数量', width: 90, align: 'center'}
+            , {title: '操作', width: 250, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+        ];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-operation-tableLog'
+            , url: '[[@{/metadata/metaDataTables/listPage.json}]]'
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+            , height: 'full-100'
+        });
+
+        table.on('toolbar(metadata-operation-tableLog)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-operation-tableLog');
+            let datas = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < datas.length; i++) {
+                ids[i] = datas[i].id;
+            }
+            switch (obj.event) {
+                case 'Export':
+                    top.layer.open({
+                        title: 'api接口详情'
+                        , area: ['95%', '95%']
+                        , id: 'meta-formTheFiled'
+                        , type: 2
+                        , content: '[[@{formTheApi.page?method=geiApi}]]'
+                        , btn: ['关闭']
+                        , yes: function (index, layero) {
+                            top.layer.close(index);
+                        }
+                    });
+                    break;
+            }
+        });
+        table.on('tool(metadata-operation-tableLog)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'save') {
+                top.layer.open({
+                    title: 'api接口详情'
+                    , area: ['95%', '95%']
+                    , id: 'meta-formTheFiled'
+                    , type: 2
+                    , content: '[[@{formTheApi.page?id=}]]' + data.id + '&method=save'
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        top.layer.close(index);
+                    }
+                });
+            } else if (obj.event === 'update') {
+                top.layer.open({
+                    title: 'api接口详情'
+                    , area: ['95%', '95%']
+                    , id: 'meta-formTheFiled'
+                    , type: 2
+                    , content: '[[@{formTheApi.page?id=}]]' + data.id + '&method=update'
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        top.layer.close(index);
+                    }
+                });
+            } else if (obj.event === 'del') {
+                top.layer.open({
+                    title: 'api接口详情'
+                    , area: ['95%', '95%']
+                    , id: 'meta-formTheFiled'
+                    , type: 2
+                    , content: '[[@{formTheApi.page?id=}]]' + data.id + '&method=del'
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        top.layer.close(index);
+                    }
+                });
+            } else if (obj.event === 'look') {
+                top.layer.open({
+                    title: 'api接口详情'
+                    , area: ['95%', '95%']
+                    , id: 'meta-formTheFiled'
+                    , type: 2
+                    , content: '[[@{formTheApi.page?id=}]]' + data.id + '&method=list'
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        top.layer.close(index);
+                    }
+                });
+            } else if (obj.event === 'permiss') {
+                laytpl(tablePopup.innerHTML).render(data.tableName, function (html) {
+                    admin.popup({
+                        title: 'api权限详情'
+                        , area: ['95%', '95%']
+                        , type: 1
+                        , id: 'LAY-import-add'
+                        , content: html
+                        , btn: ['关闭']
+                        , success: function (layero, index) {
+                            form.render();
+                            let field1 = [
+                                {type: 'numbers', title: '序号', align: 'center'}
+                                , {field: 'sysName', title: '业务系统名称'}
+                                , {
+                                    field: 'isSave', title: '新增', align: 'center', templet: function (d) {
+                                        return ' <input type="checkbox" name="isSave" lay-skin="switch" lay-text="启用|停用" lay-filter="isSave"' +
+                                            '                       value="0" data-json="' + encodeURIComponent(JSON.stringify(d)) + '"' +
+                                            (d.isSave === 1 ? 'checked' : '') + '/>'
+                                    }
+                                }
+                                , {
+                                    field: 'isUpdate', title: '更新', align: 'center', templet: function (d) {
+                                        return ' <input type="checkbox" name="isUpdate" lay-skin="switch" lay-text="启用|停用" lay-filter="isUpdate"' +
+                                            '                       value="0" data-json="' + encodeURIComponent(JSON.stringify(d)) + '"' +
+                                            (d.isUpdate === 1 ? 'checked' : '') + '/>'
+                                    }
+                                }
+                                , {
+                                    field: 'isDeleteCur', title: '删除', align: 'center', templet: function (d) {
+                                        return ' <input type="checkbox" name="isSave" lay-skin="switch" lay-text="启用|停用" lay-filter="isDeleteCur"' +
+                                            '                       value="0" data-json="' + encodeURIComponent(JSON.stringify(d)) + '"' +
+                                            (d.isDeleteCur === 1 ? 'checked' : '') + '/>'
+                                    }
+                                }
+                                , {
+                                    field: 'isGet', title: '查看', align: 'center', templet: function (d) {
+                                        return ' <input type="checkbox" name="isGet" lay-skin="switch" lay-text="启用|停用" lay-filter="isGet"' +
+                                            '                       value="0" data-json="' + encodeURIComponent(JSON.stringify(d)) + '"' +
+                                            (d.isGet === 1 ? 'checked' : '') + '/>'
+                                    }
+                                }
+                            ];
+
+                            let userTable1 = SavingFunction.intoTable({
+                                id: 'table1'
+                                , url: '[[@{/metadata/apiPermission/listPage.json}]]'
+                                , filter: true
+                                , cols: [field1]
+                                , height: 'full-200'
+                                , where: {
+                                    tableId: data.id
+                                }
+                                , done: function () {
+                                    form.render();
+                                }
+                            });
+                            form.on('submit(popupSearch)', function () {
+                                userTable1.reload({
+                                    where: {
+                                        sysName: $(layero).find('input[name="sysName"]').val()
+                                    }, page: {curr: 1}
+                                });
+                            });
+                            form.render();
+                            form.on('switch(isSave)', function (obj) {
+                                let json = JSON.parse(decodeURIComponent($(this).data('json')));
+                                let field = {
+                                    tableId: data.id
+                                };
+                                field.apiTableId = table.clearCacheKey(json).apiTableId;
+                                field.isSave = obj.elem.checked ? 1 : 0;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/apiPermission/save.json}]]',
+                                    data: field,
+                                    done: function () {
+                                    }
+                                });
+                            });
+                            form.on('switch(isUpdate)', function (obj) {
+                                let json = JSON.parse(decodeURIComponent($(this).data('json')));
+                                let field = {
+                                    tableId: data.id
+                                };
+                                field.apiTableId = table.clearCacheKey(json).apiTableId;
+                                field.isUpdate = obj.elem.checked ? 1 : 0;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/apiPermission/save.json}]]',
+                                    data: field,
+                                    done: function () {
+                                    }
+                                });
+                            });
+                            form.on('switch(isDeleteCur)', function (obj) {
+                                let json = JSON.parse(decodeURIComponent($(this).data('json')));
+                                let field = {
+                                    tableId: data.id
+                                };
+                                field.apiTableId = table.clearCacheKey(json).apiTableId;
+                                field.isDeleteCur = obj.elem.checked ? 1 : 0;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/apiPermission/save.json}]]',
+                                    data: field,
+                                    done: function () {
+                                    }
+                                });
+                            });
+                            form.on('switch(isGet)', function (obj) {
+                                let json = JSON.parse(decodeURIComponent($(this).data('json')));
+                                let field = {
+                                    tableId: data.id
+                                };
+                                field.apiTableId = table.clearCacheKey(json).apiTableId;
+                                field.isGet = obj.elem.checked ? 1 : 0;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/apiPermission/save.json}]]',
+                                    data: field,
+                                    done: function () {
+                                    }
+                                });
+                            });
+                        }
+                        , yes: function (index, layero) {
+                            layer.close(index);
+                        }
+                    });
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

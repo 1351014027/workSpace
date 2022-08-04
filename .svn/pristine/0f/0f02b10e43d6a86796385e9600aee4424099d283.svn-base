@@ -1,0 +1,49 @@
+package com.saving.metadata.service.impl;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.dao.BackupMessageMapper;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.pojo.BackupMessage;
+import com.saving.metadata.service.BackupMessageService;
+import com.saving.metadata.utils.IpUtils;
+import com.saving.metadata.utils.UUID64Utils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 服务实现类
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-02-11
+ */
+@Service
+public class BackupMessageServiceImpl extends ServiceImpl<BackupMessageMapper, BackupMessage> implements BackupMessageService {
+
+    private final BackupMessageMapper backupMessageMapper;
+
+    @Autowired
+    public BackupMessageServiceImpl(BackupMessageMapper backupMessageMapper) {
+        this.backupMessageMapper = backupMessageMapper;
+    }
+
+
+    @Override
+    public void backupData() {
+        String backupDataPath = backupMessageMapper.backupData();
+        if (StringUtils.isEmpty(backupDataPath)) {
+            throw new ParamException("备份失败！请检查路径以及数据库！");
+        }
+        BackupMessage backupMessage = BackupMessage.builder()
+                .id(UUID64Utils.get64UUIDString())
+                .operationIp(IpUtils.getLocalIP())
+                .operationUser(RequestHolder.getCurrenSysUser().getUsername())
+                .operationUserName(RequestHolder.getCurrenSysUser().getName())
+                .storagePath(backupDataPath)
+                .build();
+        backupMessageMapper.insert(backupMessage);
+    }
+}

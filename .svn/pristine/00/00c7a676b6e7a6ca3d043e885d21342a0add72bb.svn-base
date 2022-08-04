@@ -1,0 +1,68 @@
+package com.saving.metadata.pojo;
+
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ *
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2020-01-08
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@TableName("METADATA_B_OPERATION_TABLE_LOG")
+@ApiModel(value = "OperationTableLog对象", description = "")
+@Builder
+public class OperationTableLog extends Model<OperationTableLog> {
+
+    private static final long serialVersionUID = 1L;
+    @ExcelIgnore
+    @TableId("ID_")
+    private String id;
+    @ExcelProperty("表名")
+    @TableField("Table_Name_")
+    private String tableName;
+    @ExcelProperty("操作类型")
+    @TableField("Operation_Type_")
+    private String operationType;
+    @ExcelProperty("操作详情")
+    @TableField("Operation_Explain_")
+    private String operationExplain;
+    @ExcelProperty("操作账号")
+    @TableField("Operation_User_")
+    private String operationUser;
+    @ExcelProperty("操作人姓名")
+    @TableField("Operation_User_Name_")
+    private String operationUserName;
+    @ExcelProperty("操作人IP")
+    @TableField("Operation_Ip_")
+    private String operationIp;
+    @ExcelProperty("操作时间")
+    @TableField("Operation_Time_")
+    private Date operationTime;
+
+    @Tolerate
+    public OperationTableLog() {
+    }
+
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
+
+}

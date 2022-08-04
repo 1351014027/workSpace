@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">业务系统管理</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="sysName" placeholder="业务系统/厂家(模糊查询)"
+                           type="text">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                            lay-filter="hup-file-search" lay-submit="">查找
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <table id="metadata-apiTable" lay-filter="metadata-apiTable"></table>
+            <script id="TableTopToolbar" type="text/html">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm " lay-event="Create">新增</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="Del">删除</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Export">导出选中</button>
+                    <button class="layui-btn layui-btn-sm " lay-event="Import">批量导入</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="syncRjzc">从软件资产标准表中同步</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="RjzcSync">同步到软件资产标准表中</button>
+                </div>
+            </script>
+            <script id="TableToolbar" type="text/html">
+                <button class="layui-btn layui-btn-xs " lay-event="open">打开</button>
+                <button class="layui-btn layui-btn-xs layui-btn-primary" lay-event="find">查看</button>
+                <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="update">编辑</button>
+            </script>
+        </div>
+    </div>
+</div>
+<script id="importPopup" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <div class="layui-elem-quote layui-text">
+                支持文件格式为xlsx,xls;</br>
+                跟导出格式一致</br>
+                请设置整个Excel为文本格式;
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Excel文件:</label>
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="typeExcel"><i class="layui-icon layui-icon-file-b"></i>上传文件
+                </button>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-dms-typeCreates" id="sav-dms-typeCreates" value="新增保存">
+            <input type="button" lay-submit lay-filter="sav-dms-typeUpdates" id="sav-dms-typeUpdates" value="编辑保存">
+        </div>
+    </div>
+</script>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'laytpl', 'upload'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , table = layui.table
+            , admin = layui.admin
+            , upload = layui.upload
+            , laytpl = layui.laytpl
+            , SavingFunction = layui.SavingFunction;
+        let field = [
+            {type: 'checkbox'},
+            {type: 'numbers', title: '序号', align: 'center'}
+            , {field: 'sysName', title: '系统名称', align: 'center'}
+            , {field: 'sysUrl', title: '系统URL', align: 'center'}
+            , {
+                field: 'issjyxt', title: '是否数据源系统', align: 'center', templet: function (d) {
+                    return ' <input type="checkbox" name="issjyxt" lay-skin="switch" lay-text="是|否" lay-filter="issjyxt"' +
+                        '                       value="0" data-json="' + encodeURIComponent(JSON.stringify(d)) + '"' +
+                        (d.issjyxt === 1 ? 'checked' : '') + '/>'
+                }
+            }
+            , {
+                field: 'issjmbxt', title: '是否数据目标系统', align: 'center', templet: function (d) {
+                    return ' <input type="checkbox" name="issjmbxt" lay-skin="switch" lay-text="是|否" lay-filter="issjmbxt"' +
+                        '                       value="0" data-json="' + encodeURIComponent(JSON.stringify(d)) + '"' +
+                        (d.issjmbxt === 1 ? 'checked' : '') + '/>'
+                }
+            }
+            , {title: '操作', width: 180, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+        ];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-apiTable'
+            , url: '[[@{/metadata/apiTable/listPage.json}]]'
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+        });
+
+        form.on('switch(issjyxt)', function (obj) {
+            let json = JSON.parse(decodeURIComponent($(this).data('json')));
+            json.issjyxt = obj.elem.checked ? 1 : 0;
+            SavingFunction.req({
+                url: '[[@{/metadata/apiTable/update.json}]]',
+                data: json,
+                done: function () {
+                }
+            });
+        });
+        form.on('switch(issjmbxt)', function (obj) {
+            let json = JSON.parse(decodeURIComponent($(this).data('json')));
+            json.issjmbxt = obj.elem.checked ? 1 : 0;
+            SavingFunction.req({
+                url: '[[@{/metadata/apiTable/update.json}]]',
+                data: json,
+                done: function () {
+                }
+            });
+        });
+        table.on('toolbar(metadata-apiTable)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-apiTable');
+            let datas = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < datas.length; i++) {
+                ids[i] = datas[i].id;
+            }
+            switch (obj.event) {
+                case 'Export':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认导出勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.exportExcel('[[@{/metadata/upload/export.json}]]', {
+                            ids: ids,
+                            pojoName: 'ApiTable',
+                            pojoChineseName: "业务系统列表"
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case  'Create':
+                    parent.layer.open({
+                        title: '添加'
+                        , type: 2
+                        , content: '[[@{/popup/apiTablePopup.page}]]'
+                        , maxmin: true
+                        , area: admin.screen() === 3 ? ['65%', '95%'] : ['85%', '95%']
+                        , btn: ['保存', '关闭']
+                        , yes: function (index, layero) {
+                            var iframeWindow = parent.window['layui-layer-iframe' + index];
+                            iframeWindow.layui.form.on('submit(sav-dms-typeCreates)', function (datas) {
+                                let field = datas.field;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/apiTable/save.json}]]',
+                                    data: field,
+                                    done: function () {
+                                        SavingFunction.successMsg('添加成功！');
+                                        userTable.reload();
+                                        parent.layer.close(index);
+                                    }
+                                });
+                            });
+                            iframeWindow.layui.$('#sav-dms-typeCreates').click();
+                        }
+                    });
+                    break;
+                case 'Del':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/apiTable/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'Import':
+                    let loadIndex;
+                    laytpl(importPopup.innerHTML).render({}, function (html) {
+                        admin.popup({
+                            title: '批量导入'
+                            , type: 1
+                            , area: admin.screen() === 3 ? ['500px', '65%'] : ['500px', '85%']
+                            , id: 'LAY-import-add'
+                            , content: html
+                            , btn: ['提交', '关闭']
+                            , success: function (layero, index) {
+                                upload.render({
+                                    elem: '#typeExcel'
+                                    , url: '[[@{/metadata/apiTable/import.json}]]'
+                                    , accept: 'file'
+                                    , exts: 'xlsx|xls'
+                                    , auto: false
+                                    , bindAction: '#sav-dms-typeCreates'
+                                    , size: 1024 * 50
+                                    , done: function (res) {
+                                        top.layer.close(loadIndex);
+                                        if (res.status === 0) {
+                                            userTable.reload({page: {curr: 1}});
+                                            SavingFunction.successMsg("导入成功！");
+                                        } else {
+                                            layer.open({
+                                                title: '错误提示'
+                                                , type: 1
+                                                , shadeClose: true
+                                                , area: ['80%', '50%']
+                                                , content: '<div style="padding: 20px;">' + res.msg + '</div>'
+                                            });
+                                        }
+                                    }
+                                });
+                                form.render();
+                            }
+                            , yes: function (index, layero) {
+                                $('#sav-dms-typeCreates').click();
+                                layer.close(index);
+                                loadIndex = SavingFunction.loading();
+                            }
+                        });
+                    });
+                    break;
+                case  'syncRjzc':
+                    layer.confirm('是否从软件资产中同步，以软件资产的数据为准;同步到本模块的数据，同步后无法恢复请确认操作是否无误?', {
+                        icon: 3,
+                        title: '提示'
+                    }, function (index) {
+                        let loadingIndex = SavingFunction.loading();
+                        SavingFunction.req({
+                            url: '[[@{/metadata/apiTable/syncRjzc.json}]]',
+                            done: function () {
+                                SavingFunction.successMsg('同步成功！');
+                                top.layer.close(loadingIndex);
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case  'RjzcSync':
+                    layer.confirm('是否将当前模块的数据同步到软件资产中，以当前模块的数据为准;同步到软件资产的数据，同步后无法恢复请确认操作是否无误?', {
+                        icon: 3,
+                        title: '提示'
+                    }, function (index) {
+                        let loadingIndex = SavingFunction.loading();
+                        SavingFunction.req({
+                            url: '[[@{/metadata/apiTable/rjzcSync.json}]]',
+                            done: function () {
+                                SavingFunction.successMsg('同步成功！');
+                                top.layer.close(loadingIndex);
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+        $('input[name="sysName"]').keyup(function () {
+            userTable.reload({
+                where: {
+                    sysName: $('input[name="sysName"]').val()
+                }, page: {curr: 1}
+            });
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            userTable.reload({
+                where: {
+                    sysName: $('input[name="sysName"]').val()
+                }, page: {curr: 1}
+            });
+        });
+
+        table.on('tool(metadata-apiTable)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'update') {
+                parent.layer.open({
+                    title: '修改'
+                    , type: 2
+                    , content: '[[@{/popup/apiTablePopup.page}]]?id=' + data.id
+                    , maxmin: true
+                    , area: admin.screen() === 3 ? ['65%', '95%'] : ['85%', '95%']
+                    , btn: ['保存', '关闭']
+                    , yes: function (index, layero) {
+                        var iframeWindow = parent.window['layui-layer-iframe' + index];
+                        iframeWindow.layui.form.on('submit(sav-dms-typeCreates)', function (datas) {
+                            let field = datas.field;
+                            field.id = data.id;
+                            SavingFunction.req({
+                                url: '[[@{/metadata/apiTable/update.json}]]',
+                                data: field,
+                                done: function () {
+                                    SavingFunction.successMsg('修改成功！');
+                                    userTable.reload();
+                                    parent.layer.close(index);
+                                }
+                            });
+                        });
+                        iframeWindow.layui.$('#sav-dms-typeCreates').click();
+                    }
+                });
+            } else if (obj.event === 'open') {
+                window.open(data.sysUrl, "_blank");
+            } else if (obj.event === 'find') {
+                parent.layer.open({
+                    title: '查看'
+                    , type: 2
+                    , content: '[[@{/popup/apiTablePopup.page}]]?id=' + data.id + '&findType=true'
+                    , maxmin: true
+                    , area: admin.screen() === 3 ? ['65%', '95%'] : ['85%', '95%']
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        parent.layer.close(index);
+                    }
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

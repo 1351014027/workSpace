@@ -1,0 +1,167 @@
+package com.saving.metadata.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.collect.Maps;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.pojo.ApiTable;
+import com.saving.metadata.service.*;
+import com.saving.metadata.utils.StringUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author: 朱柯辉
+ * @date: 2020/6/1 10:20
+ * @Description: 处理参数效验，用于解决通用API接口中的参数效验问题
+ */
+@Slf4j
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class ApiParamServiceImpl implements ApiParamService {
+
+    private MetaDataTablesService metaDataTablesService;
+
+    private MetaDataFiledsService metaDataFiledsService;
+
+    private ApiPermissionService apiPermissionService;
+
+    private ApiTableService apiTableService;
+
+    private final List<String> INTERFACE_TYPE = Arrays.asList("SAVE", "DELETE", "UPDATE", "SELECT");
+
+
+    private final String SELECT_FILED = "selectFiled";
+
+    private final String JUDGE_FILED = "judgeFiled";
+
+    /**
+     * 网关处理接口并转发
+     * <p>
+     * 模拟数据格式     ｛
+     * tableName:'TEXT_TE',
+     * schoolCode:'12722',
+     * interfaceType:'SELECT',
+     * apiKey:'XXXXXXX',
+     * sysNumber:'131251241',
+     * paramMaps:{
+     * selectFiled:[{
+     * value:'ID'
+     * }],
+     * judgeFiled:[{
+     * filed:'ID',
+     * value:'123',
+     * judge:'='
+     * },{
+     * filed:'NAME',
+     * value:'123',
+     * judge:'like'
+     * }]
+     * }
+     * ｝
+     *
+     * @param tableName     表名
+     * @param schoolCode    学校代码
+     * @param interfaceType 接口类型
+     * @param apiKey        加密密钥
+     * @param sysNumber     软件编号
+     * @param paramMaps     参数列表
+     * @return 返回成功状态或者结果集
+     */
+    @Override
+    public <T> ServerResponse<T> apiMetaDataInterface(String tableName, String schoolCode, String interfaceType, String apiKey, String sysNumber, Map<String, List<Map<String, String>>> paramMaps) {
+        checkParam(tableName, schoolCode, interfaceType, apiKey, sysNumber, paramMaps);
+        //获取到软件资产对象
+        List<ApiTable> apiTables = checkApiTablePermission(schoolCode, apiKey, sysNumber);
+        return skipInterface(tableName, schoolCode, interfaceType, apiTables.get(0), paramMaps);
+    }
+
+    private <T> ServerResponse<T> skipInterface(String tableName, String schoolCode, String interfaceType, ApiTable apiTable, Map<String, List<Map<String, String>>> paramMaps) {
+        if (INTERFACE_TYPE.get(0).equals(interfaceType)) {
+            return saveTableData(tableName, schoolCode, apiTable, paramMaps);
+        } else if (INTERFACE_TYPE.get(1).equals(interfaceType)) {
+            return deleteTableData(tableName, schoolCode, apiTable, paramMaps);
+        } else if (INTERFACE_TYPE.get(2).equals(interfaceType)) {
+            return updateTableData(tableName, schoolCode, apiTable, paramMaps);
+        } else if (INTERFACE_TYPE.get(3).equals(interfaceType)) {
+            return selectTableData(tableName, schoolCode, apiTable, paramMaps);
+        }
+        throw new ParamException("warn！！！~~错误的接口操作类型!");
+    }
+
+    @Override
+    public <T> ServerResponse<T> saveTableData(String tableName, String schoolCode, ApiTable apiTable, Map<String, List<Map<String, String>>> paramMaps) {
+        checkParamMaps(paramMaps, 1);
+        return null;
+    }
+
+    @Override
+    public <T> ServerResponse<T> deleteTableData(String tableName, String schoolCode, ApiTable apiTable, Map<String, List<Map<String, String>>> paramMaps) {
+        checkParamMaps(paramMaps, 1);
+        return null;
+    }
+
+    @Override
+    public <T> ServerResponse<T> updateTableData(String tableName, String schoolCode, ApiTable apiTable, Map<String, List<Map<String, String>>> paramMaps) {
+        checkParamMaps(paramMaps, 1);
+        return null;
+    }
+
+    @Override
+    public <T> ServerResponse<T> selectTableData(String tableName, String schoolCode, ApiTable apiTable, Map<String, List<Map<String, String>>> paramMaps) {
+        checkParamMaps(paramMaps, 0);
+        return null;
+    }
+
+
+    private void checkParam(String tableName, String schoolCode, String interfaceType, String apiKey, String sysNumber, Map<String, List<Map<String, String>>> paramMaps) {
+        Map<String, String> stringMaps = Maps.newLinkedHashMap();
+        stringMaps.put(tableName, "[tableName]表名不能为空!");
+        stringMaps.put(schoolCode, "[schoolCode]学校代码不能为空!");
+        stringMaps.put(interfaceType, "[interfaceType]接口类型不能为空!");
+        stringMaps.put(apiKey, "[apiKey]加密密钥不能为空!");
+        stringMaps.put(sysNumber, "[sysNumber]软件编号不能为空!");
+        StringUtils.checkStringIsBlankThrowError(stringMaps);
+        if (paramMaps.size() <= 0) {
+            throw new ParamException("[paramMaps]参数不能为空!请检查后尝试!");
+        }
+    }
+
+    private List<ApiTable> checkApiTablePermission(String schoolCode, String apiKey, String sysNumber) {
+        List<ApiTable> list = apiTableService.list(new QueryWrapper<ApiTable>().lambda().eq(ApiTable::getSchoolCode, schoolCode)
+                .eq(ApiTable::getKey, apiKey).eq(ApiTable::getRjbh, sysNumber));
+        if (CollectionUtils.isEmpty(list)) {
+            throw new ParamException("warn！！！~~找不到对应的软件资产授权信息!");
+        }
+        if (list.size() > 1) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        return list;
+    }
+
+
+    private void checkParamMaps(Map<String, List<Map<String, String>>> paramMaps, int checkNum) {
+        switch (checkNum) {
+            case 0:
+                if (paramMaps.get(SELECT_FILED) == ObjectUtils.NULL) {
+                    throw new ParamException("warn！！！~~查询字段条件不能为空!");
+                }
+                break;
+            case 1:
+                if (paramMaps.get(JUDGE_FILED) == ObjectUtils.NULL) {
+                    throw new ParamException("warn！！！~~判断字段条件不能为空!");
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}

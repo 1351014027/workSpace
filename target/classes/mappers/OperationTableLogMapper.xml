@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.OperationTableLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.OperationTableLog">
+        <id column="ID_" property="id"/>
+        <result column="Table_Name_" property="tableName"/>
+        <result column="Operation_Type_" property="operationType"/>
+        <result column="Operation_Explain_" property="operationExplain"/>
+        <result column="Operation_User_" property="operationUser"/>
+        <result column="Operation_User_Name_" property="operationUserName"/>
+        <result column="Operation_Ip_" property="operationIp"/>
+        <result column="Operation_Time_" property="operationTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, Table_Name_, Operation_Type_, Operation_Explain_, Operation_User_, Operation_User_Name_, Operation_Ip_, Operation_Time_
+    </sql>
+
+</mapper>

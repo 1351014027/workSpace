@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">选项代码:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="key"
+                   placeholder="请输入选项代码"
+                   th:value="${option?.key}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">选项名称:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="name"
+                   placeholder="请输入选项名称"
+                   th:value="${option?.name}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">是否标准：</label>
+        <div class="layui-input-block">
+            <input lay-skin="switch" lay-text="是|否" name="isStandard" th:checked="${option?.isStandard eq 1 }"
+                   type="checkbox"
+                   value="1">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">备注:</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" name="remark" placeholder="备注" th:text="${option?.remark}"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <input id="sav-dms-typeCreates" lay-filter="sav-dms-typeCreates" lay-submit type="button" value="新增保存">
+        <input id="sav-dms-typeUpdates" lay-filter="sav-dms-typeUpdates" lay-submit type="button" value="编辑保存">
+    </div>
+</div>
+</body>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , SavingFunction = layui.SavingFunction;
+    });
+</script>
+</html>

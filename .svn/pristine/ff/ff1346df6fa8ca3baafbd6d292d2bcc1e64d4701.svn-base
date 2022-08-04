@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/style/template.css}">
+<body>
+<style>
+    .layui-elem-field {
+        width: 300px;
+        text-align: center;
+        margin: 20px auto 20px;
+    }
+
+    div.DisplayPage-supernatant-fixed {
+        margin-top: 0;
+        position: fixed;
+        z-index: 2;
+        top: 0;
+    }
+
+    .sav-p {
+        text-indent: 2em;
+        font-size: 1rem;
+        padding-top: 60px;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card DisplayPage-supernatant-fixed" style="margin: 0 auto;width: 98%; ">
+        <div class="layui-card-body" style="margin: 0 auto;">
+            <div class="layui-form">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="fileName" placeholder="表[中英文]名称(模糊查询)"
+                           type="text">
+                </div>
+                <button class="layui-btn    layui-btn-sm" lay-filter="hup-file-search" lay-submit>查找
+                </button>
+                <button class="layui-btn layui-btn-normal   layui-btn-sm" lay-filter="up" lay-submit>上一个
+                </button>
+                <button class="layui-btn layui-btn-normal   layui-btn-sm" lay-filter="dw" lay-submit>下一个
+                </button>
+                <button class="layui-btn layui-btn-danger  layui-btn-sm" lay-filter="clear" lay-submit>清空
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="layui-card">
+        <div class="layui-card-body sav-p"><p>
+            本规范旨在建立统一的全国高等职业院校内部质量管理与运行的基础元数据模型，提供一种静态的信息描述规则，用于规范化定义高等职业院校“学校、教师、专业、课程、学生”五个维度中的最基本的信息体系结构、数据元素的元数据结构规范化描述等重要内容。它是对数据库设计与接口定义的全面描述，是支撑内部质量保证体系与信息化建设的基本元素，能有效提升内部质量管理与运行及信息化建设的水平。</p>
+            <p>
+                内部质量保证体系建设实践中，提出“五纵五横一平台”的基本架构，其中的“一平台”即构建支撑内部质量保证体系的现代信息技术平台。通过系统完整建立高等职业院校办学的基础元数据结构，各高职院校可构建统一元数据结构的数据中心，有利于统一、规范我国高等职业教育数据采集、应用与管理；依托规范建立校级数据中心，可以实现“学校、专业、课程、教师、学生”五个层面业务信息系统的共享与互联互通，实现共享与互联互通，消除信息孤岛；高职院校基于规范的数据中心，模型一致、规范相同、格式统一，便于校、省、部三级数据中心互联互通以及数据实时传输与交换，从而消除因数据标准的不统一导致的信息孤岛的问题，为高等职业教育建立“校—省—部”三级互联互通的数据中心奠定基础，助力信息化建设水平的提升及对职业院校办学质量监测评估；依托规范建立起院校全方位、多维度的实体元数据，指引学校各类应用系统、云基础平台和大数据平台建设，实现从信息的源头感知、即时采集、统一管理和智能分析，为智能化校园建设提供基础支撑。</p>
+            <p>本规范依据GB/T 1.1－2009 给出的规则制定。</p>
+            <p>本规范的某些内容可能涉及专利。本规范的发布机构不承担识别这些专利的责任。</p></div>
+    </div>
+    <div class="layui-card">
+        <div class="layui-card-body seachList">
+            <div class="layui-row layui-col-space15" th:each="code:${metadataType}">
+                <div class="layui-card-header" style="font-size: 23px" th:text="${'2.'+code.sort+' '+code.typeName}">
+                    尚未加载数据
+                </div>
+                <div class="layui-col-md6 layui-col-sm6" style="padding-left: 3rem"
+                     th:each="codes:${metadataTable}" th:if="${code.typeName eq codes.typeName}">
+                    <a class="formTheFiled" href="javascript:" th:sav-id="${codes.id}">
+
+                        <div class="layui-col-md12">
+                            <!--                            <span th:text="${code.sort+'.'}" class="sav-title"></span>-->
+                            <span th:text="${codes.catalog}"></span>
+                            <span th:text="${codes.chineseTableName}"></span>
+                            <span class="layui-badge layui-bg-blue" th:text="|表名:${codes.tableName}|">尚未加载数据</span>
+                            <span class="layui-badge layui-bg-badge" th:text="|字段:${codes.filedSize}个|">尚未加载数据</span>
+                            <a th:href="@{formTheQuery.page(id=${codes.id})}"> <span class="layui-badge layui-bg-badge"
+                                                                                     th:text="|记录数:${codes.counts}|">尚未加载数据</span></a>
+                            <a th:href="@{/metaData/AntV.page(id=${codes.id})}">
+                                <span class="layui-badge layui-bg-green">关系</span></a>
+                            <a th:href="@{/metaData/dataRelated.page(id=${codes.id})}">
+                                <span class="layui-badge layui-bg-orange">血缘</span></a>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'form'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , seachIndex = 0
+            , currntIndex = {}
+            , maxIndex = 0
+            , topIndex = 1;
+        let fieldset = $('.layui-card-header');
+        fieldset.each(function (index, element) {
+            if ($(element).next().length === 0) {
+                $(element).remove();
+            }
+        });
+        form.on('submit(hup-file-search)', function () {
+            let str = $('input[name="fileName"]').val();
+            clearMarkHtml();
+            if (str) {
+                $('.seachList').each(function (index, element) {
+                    $(element).find('span').each(function (index, element) {
+                        let title = $(element).html();
+                        if (title.indexOf(str) !== -1) {
+                            maxIndex = seachIndex;
+                            $(element).html(title.replace(new RegExp(str, 'g'), '<mark class="marked_' + seachIndex + '">' + str + '</mark>'));
+                            seachIndex++;
+
+                        }
+                    })
+                });
+                let marked = $('mark.marked_0');
+                currntIndex = 0;
+                fouscDom(marked);
+            }
+        });
+
+        $(document).on('click', '.formTheFiled', function () {
+            let id = $(this).attr('sav-id');
+            top.layer.open({
+                title: '字段列表'
+                , area: ['95%', '95%']
+                , id: 'meta-formTheFiled'
+                , type: 2
+                , content: '[[@{formTheFiled.page?id=}]]' + id
+                , btn: ['关闭']
+                , yes: function (index, layero) {
+                    top.layer.close(index);
+                }
+            });
+        });
+
+        function clearMarkHtml() {
+            seachIndex = 0;
+            let target = $('.seachList').html();
+
+            $('.seachList').html(target.replace(/(<\/?mark.*?>)/g, ''));
+        }
+
+        form.on('submit(up)', function () {
+            ControlTheJump(1, true);
+        });
+        form.on('submit(dw)', function () {
+            ControlTheJump(1, false);
+        });
+        form.on('submit(clear)', function () {
+            currntIndex = 0;
+            $('input[name="fileName"]').val('');
+            clearMarkHtml()
+        });
+
+        function ControlTheJump(b, c) {
+            let booter = c ? currntIndex - b : currntIndex + b;
+            $('mark.marked_' + currntIndex).css('background-color', 'yellow');
+            if (booter > -1 && booter <= maxIndex) {
+                c ? currntIndex-- : currntIndex++;
+            }
+            let marked = $('mark.marked_' + currntIndex);
+            fouscDom(marked);
+        }
+
+        function fouscDom(e) {
+            if (e.length !== 0) {
+                e.css('background-color', '#FF9966');
+                $('html, body').animate({
+                    scrollTop: e.offset().top * topIndex - 200
+                }, 0);
+            }
+        }
+    });
+</script>
+</body>
+</html>

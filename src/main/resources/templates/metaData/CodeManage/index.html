@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtree.css}">
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtreefont.css}">
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">代码标准集</div>
+
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md2">
+                    <div class="layui-form-item">
+                        <button class="layui-btn layui-btn-sm layui-btn-normal">新增</button>
+                        <button class="layui-btn layui-btn-sm layui-btn-warm">修改</button>
+                        <button class="layui-btn layui-btn-sm layui-btn-danger">删除</button>
+                    </div>
+                    <ul class="dtree" data-id="0" id="tableTree" style="width: 100%"></ul>
+                </div>
+                <div class="layui-col-md10">
+                    <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                        <div class="layui-form-item" style="font-size: 18px">当前选中节点:<span sav-checkId=""></span></div>
+                        <div class="layui-form-item">
+                            <div class="layui-inline">过滤查询：</div>
+                            <div class="layui-inline">
+                                <input autocomplete="off" class="layui-input" name="tableName"
+                                       placeholder="字段名称(中英文模糊查询)"
+                                       type="text">
+                            </div>
+                            <div class="layui-inline">
+                                <div class="layui-input-inline">
+                                    <input autocomplete="off" class="layui-input" id="metadata-date"
+                                           placeholder="(创建)开始时间-结束时间"
+                                           type="text">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                                        lay-filter="hup-file-search"
+                                        lay-submit="">查找
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <table id="metadata-table-table" lay-filter="metadata-table-table"></table>
+                    <script id="TableToolbar" type="text/html">
+                        <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="findByField">编辑</button>
+                        <a class="layui-btn  layui-btn-xs layui-btn-primary" lay-event="lift"><i
+                                class="layui-icon" style="margin-right: 0px">&#xe619;</i></a>
+                        <a class="layui-btn  layui-btn-xs layui-btn-primary" lay-event="decline"><i
+                                class="layui-icon" style="margin-right: 0px">&#xe61a;</i></a>
+                    </script>
+                    <script id="TableTopToolbar" type="text/html">
+                        <div class="layui-btn-container">
+                            <button class="layui-btn layui-btn-sm layui-btn-normal">新增</button>
+                            <button class="layui-btn layui-btn-sm" lay-event="metadataVerified">校验</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Create">生成</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="metadataUpdate">更新
+                            </button>
+                            <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="metadataDel">删除</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Export">导出选中</button>
+                        </div>
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'layUploader', 'util', 'laydate', 'laytpl', 'dtree'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , table = layui.table
+            , laytpl = layui.laytpl
+            , util = layui.util
+            , laydate = layui.laydate
+            , SavingFunction = layui.SavingFunction
+            , dtree = layui.dtree;
+        laydate.render({
+            elem: '#metadata-date'
+            , range: true
+        });
+        let dTreeCofing = {
+                elem: "#tableTree",
+                data: [{
+                    "id": "001",
+                    "title": "通用元数据子集",
+                    "parentId": "0",
+                    "children": [{
+                        "id": "001001",
+                        "title": "通用学校数据子类",
+                        "parentId": "001"
+                    }]
+                }, {
+                    "id": "002",
+                    "title": "学校概况数据子集",
+                    "parentId": "0",
+                    "children": [{
+                        "id": "002001",
+                        "title": "通用学校数据子类"
+                    }]
+                }, {
+                    "id": "003",
+                    "title": "专业发展数据子集",
+                    "parentId": "0",
+                    "children": [{
+                        "id": "003002",
+                        "title": "通用学校数据子类",
+                        "parentId": "003"
+                    }]
+                }, {
+                    "id": "004",
+                    "title": "课程元数据子集",
+                    "parentId": "0",
+                    "children": [{
+                        "id": "004001",
+                        "title": "通用学校数据子类",
+                        "parentId": "004"
+                    }]
+                }, {
+                    "id": "005",
+                    "title": "教职工发展数据子集",
+                    "parentId": "0",
+                    "children": [{
+                        "id": "005001",
+                        "title": "通用学校数据子类",
+                        "parentId": "005"
+                    }]
+                }, {
+                    "id": "006",
+                    "title": "学生发展数据子集",
+                    "parentId": "0",
+                    "children": [{
+                        "id": "005001",
+                        "title": "通用学校数据子类",
+                        "parentId": "005"
+                    }]
+                }]
+                ,
+                // method: "post",
+                initLevel: 1,
+                dot: false,
+                nodeIconArray: {"1": {"open": "dtree-icon-move-down", "close": "dtree-icon-fenzhijigou"}},
+                leafIconArray: {"8": "layui-icon layui-icon-table"},
+                icon: ["1", "8"],
+                dataStyle: "layui",
+                skin: "layui",
+                accordion: true,
+                checkbar: true
+                // response: {message: "msg", statusCode: 0},
+            }, Tree = dtree.render(dTreeCofing),
+            field = [
+                {type: 'checkbox', title: '序号', align: 'center'}
+                , {field: 'tableId', title: '表名(表ID)'}
+                , {field: 'tableName', title: '字段名(中文字段名)'}
+                , {field: 'storageType', title: '字段类型(长度)'}
+                , {field: 'constraints', title: '约束'}
+                , {field: 'referenceNumber', title: '引用编号'}
+                , {field: 'theStandardSource', title: '标准来源'}
+                , {field: 'dataItemDescription', title: '描述', width: 100, align: 'center'}
+                , {
+                    field: 'isDelete', title: '删除', width: 60, align: 'center', templet: function (d) {
+                        return d.isDelete === 1 ? '<i class="layui-icon layui-icon-ok" style="color: #00FF00"></i>' : '<i class="layui-icon layui-icon-circle" style="color:#9F9F9F"></i>';
+                    }
+                }
+
+                , {title: '操作', width: 200, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+            ];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-table-table'
+            // , url: '[[@{/metadata/metaDataTables/listPage.json}]]'
+            , data: [
+                {
+                    tableName: 'student',
+                    fieldSize: 0,
+                    chineseTableName: '学生信息表',
+                    createTime: 1576749964630,
+                    isStandard: 1,
+                    isDelete: 0,
+                    remark: '测试专属'
+                },
+                {
+                    tableName: 'teacher',
+                    fieldSize: 0,
+                    chineseTableName: '教师信息表',
+                    createTime: 1576749964730,
+                    isStandard: 0,
+                    isDelete: 0,
+                    remark: '测试专属'
+                },
+                {
+                    tableName: 'class',
+                    fieldSize: 0,
+                    chineseTableName: '课程信息表',
+                    createTime: 1576749964830,
+                    isStandard: 1,
+                    isDelete: 1,
+                    remark: '测试专属'
+                }
+            ]
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+            , height: 'full-230'
+        });
+
+        table.on('toolbar(metadata-table-table)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-table-table');
+            let dabs = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < dabs.length; i++) {
+                ids[i] = dabs[i].id;
+            }
+            switch (obj.event) {
+                case 'metadataVerified':
+
+                    break;
+                case 'Create':
+
+                    break;
+                case 'metadataDel':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/metaDataTables/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'Export':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认导出勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.exportExcel('[[@{/metadata/upload/export.json}]]', {
+                            ids: ids,
+                            pojoName: 'MetaDataTables',
+                            pojoChineseName: "表管理"
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+
+        });
+
+        $('input[name="tableName"]').keyup(function () {
+            userTable.reload({
+                where: {
+                    tableName: $('input[name="tableName"]').val()
+                }, page: {curr: 1}
+            });
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            userTable.reload({
+                where: {
+                    tableName: $('input[name="tableName"]').val(),
+                    startDate: $('#metadata-date').val().split(' - ')[0],
+                    endDate: $('#metadata-date').val().split(' - ')[1]
+                }, page: {curr: 1}
+            });
+        });
+
+        table.on('edit(metadata-table-table)', function (obj) {
+            let field = obj.field, value = obj.value;
+            if (field === 'remark') {
+                if (value.trim() === '') {
+                    userTable.reload();
+                    return SavingFunction.warnMsg("备注不能为空！");
+                }
+                let data = {id: obj.data.id, remark: obj.data.remark};
+                SavingFunction.req({
+                    url: '[[@{/metadata/metaDataTables/update.json}]]'
+                    , data: data,
+                    done: function () {
+                        SavingFunction.successMsg('修改成功！');
+                        userTable.reload();
+                    }
+                });
+            }
+        });
+        table.on('tool(metadata-table-table)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'lift') {
+                if (!table.cache['metadata-table-table'][obj.tr[0].rowIndex - 1]) {
+                    return SavingFunction.warnMsg("已经是当前页置顶的记录了！")
+                }
+                SavingFunction.req({
+                    url: '[[@{/metadata/metaDataTables/updateSort.json}]]'
+                    , data: {
+                        oneId: table.cache['metadata-table-table'][obj.tr[0].rowIndex - 1].id,
+                        twoId: data.id
+                    },
+                    done: function () {
+                        userTable.reload();
+                    }
+                });
+            } else if (obj.event === 'decline') {
+                if (!table.cache['metadata-table-table'][obj.tr[0].rowIndex + 1]) {
+                    return SavingFunction.warnMsg("已经是当前页最下的记录了！")
+                }
+                SavingFunction.req({
+                    url: '[[@{/metadata/metaDataTables/updateSort.json}]]'
+                    , data: {
+                        oneId: data.id,
+                        twoId: table.cache['metadata-table-table'][obj.tr[0].rowIndex + 1].id
+                    },
+                    done: function () {
+                        userTable.reload();
+                    }
+                });
+            } else if (obj.event === 'findByField') {
+                // laytpl(findByData.innerHTML).render(data, function (html) {
+                //     admin.popup({
+                //         title: '查看'
+                //         , area: '80%'
+                //         , id: 'meta-file-find'
+                //         , type: 1
+                //         , content: html
+                //         , btn: ['关闭']
+                //         , success: function (layero, index) {form.render();}
+                //         , yes: function (index, layero) {layer.close(index);}
+                //     });
+                // });
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+package com.saving.metadata.pojo;
+
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.ContentRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ *
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2019-12-18
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@TableName("METADATA_B_OPTION")
+@ApiModel(value = "Option对象", description = "")
+@Builder
+@ContentRowHeight(15)
+@HeadRowHeight(20)
+@ColumnWidth(25)
+public class Option extends Model<Option> {
+
+
+    private static final long serialVersionUID = 1L;
+    @TableId("ID_")
+    @ExcelIgnore
+    private String id;
+    @ExcelProperty("选项代码")
+    @TableField(value = "Key_", insertStrategy = FieldStrategy.NOT_EMPTY, whereStrategy = FieldStrategy.NOT_EMPTY)
+    private String key;
+    @ExcelProperty("选项名称")
+    @TableField(value = "Name_", insertStrategy = FieldStrategy.NOT_EMPTY, whereStrategy = FieldStrategy.NOT_EMPTY)
+    private String name;
+    @ExcelIgnore
+    @TableField("Hierarchy_ID_")
+    private String hierarchyId;
+    @ExcelIgnore
+    @TableField("Hierarchy_Key_")
+    private String hierarchyKey;
+    @ExcelIgnore
+    @TableField("Parent_")
+    private Integer parent;
+    @ExcelIgnore
+    @TableField("Depth_")
+    private Integer depth;
+    @ExcelIgnore
+    @TableField("Level_")
+    private String level;
+    @ExcelIgnore
+    @TableField(value = "Sort_", fill = FieldFill.INSERT)
+    private String sort;
+    @ExcelIgnore
+    @TableField("Status_")
+    private Integer status;
+    @ExcelIgnore
+    @TableField("IsDelete_")
+    @TableLogic
+    private Integer isDelete;
+    @ExcelIgnore
+    @TableField(value = "SchoolCode_", fill = FieldFill.INSERT)
+    private String schoolCode;
+    @ExcelIgnore
+    @TableField(value = "Creator_", fill = FieldFill.INSERT)
+    private String creator;
+    @ExcelIgnore
+    @TableField(value = "CreateTime_")
+    private Date createTime;
+    @ExcelIgnore
+    @TableField(value = "Updateor_", fill = FieldFill.UPDATE)
+    private String updateor;
+    @ExcelIgnore
+    @TableField(value = "UpdateTime_", fill = FieldFill.UPDATE)
+    private Date updateTime;
+    @ExcelProperty("备注")
+    @TableField(value = "Remark_", insertStrategy = FieldStrategy.NOT_EMPTY, whereStrategy = FieldStrategy.NOT_EMPTY)
+    private String remark;
+    @ExcelIgnore
+    @TableField("CanYouEdit_")
+    private Integer canYouEdit;
+    @ExcelIgnore
+    @TableField("CanYouDelete_")
+    private Integer canYouDelete;
+    @ExcelIgnore
+    @TableField("SortId_")
+    private Integer sortId;
+    @ExcelIgnore
+    @TableField(value = "IsStandard_", insertStrategy = FieldStrategy.NOT_EMPTY)
+    private Integer isStandard;
+    @TableField("CdmpVersion_")
+    @ExcelIgnore
+    private String cdmpVersion;
+
+    @Tolerate
+    public Option() {
+    }
+
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
+
+}

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.ChartDisplayMapper">
+
+
+    <select id="tableLists" resultType="org.apache.commons.collections4.map.LinkedMap">
+        SELECT
+        <foreach collection="list" item="list" separator=",">
+            isnull([${list.filedName}],'') as [${list.chineseFiledName}]
+        </foreach>
+        from ${tableName}
+
+        <if test="likeStr!=null  and likeStr!=''">where (
+            <foreach collection="list" item="list" separator=" or ">
+                [${list.filedName}] like '%'+#{likeStr}+'%'S
+            </foreach>)
+        </if>
+    </select>
+    <select id="getMetaTableList" resultType="com.saving.metadata.vo.MetaDataTableListVo">
+        IF
+        not EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[METADATA_P_viewTableSpace]') AND type in (N'P', N'PC'))
+        BEGIN
+        exec ('CREATE PROCEDURE [dbo].[METADATA_P_viewTableSpace]
+AS
+BEGIN
+SET NOCOUNT ON;
+CREATE TABLE [dbo].#tableinfo(
+tableName [varchar](500) COLLATE Chinese_PRC_CI_AS NULL,
+counts [int] NULL,
+headSpace [varchar](500) COLLATE Chinese_PRC_CI_AS NULL,
+usedSpace [varchar](500) COLLATE Chinese_PRC_CI_AS NULL,
+indexSpace [varchar](500) COLLATE Chinese_PRC_CI_AS NULL,
+unusedSpace [varchar](500) COLLATE Chinese_PRC_CI_AS NULL
+)
+insert into #tableinfo(tableName, counts, headSpace, usedSpace, indexSpace, unusedSpace)
+exec sp_MSforeachtable "exec sp_spaceused ''?''"
+select B.ID_ as id, B.ChineseTableName_ as chineseTableName,B.TableName_ as tableName,B.FieldSize_ as filedSize ,A.counts,A.usedSpace,A.indexSpace,C.TypeName_  as typeName
+from #tableinfo  A join METADATA_B_METADATATABLES B ON A.tableName=B.TableName_ JOIN dbo.METADATA_B_HIERARCHY C ON C.ID_ = B.MetadataTypeID_ AND C.Parent_=7
+ WHERE B.IsDelete_=0 AND B.TableStatus_=1 order by cast(B.Sort_ as int ) ,B.SortId_
+drop table #tableinfo
+END
+')
+        end
+ exec dbo.METADATA_P_viewTableSpace
+    </select>
+</mapper>

@@ -1,0 +1,122 @@
+package com.saving.metadata.dao;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.saving.metadata.dto.ApiParamDto;
+import com.saving.metadata.pojo.*;
+import com.saving.metadata.vo.DataLabelVo;
+import com.saving.metadata.vo.MetaDataTablesVo;
+import com.saving.metadata.vo.WelcomeVo;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * Mapper 接口
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2019-12-18
+ */
+@Mapper
+@Repository
+public interface MetaDataTablesMapper extends BaseMapper<MetaDataTables> {
+
+
+    /**
+     * @param page 翻页对象，可以作为 xml 参数直接使用，传递参数 Page 即自动分页
+     * @return
+     */
+    List<MetaDataTablesVo> getMetaDataTablesVo(@Param("page") Page page, @Param("name") String name, @Param("startTime") String startTime, @Param("endTime") String endTime, @Param("schoolCode") String schoolCode, @Param("isStandard") Integer isStandard, @Param("metadataTypeId") String metadataTypeId, @Param("tableStatus") Integer tableStatus, @Param("nature") Integer nature);
+
+    void createDataTable(@Param("id") String id, @Param("list") List<MetaDataFileds> list);
+
+    void delDataTable(@Param("tableName") String tableName);
+
+    void syncDataBase();
+
+    String syncMaxVersion();
+
+    void createTempTable();
+
+    void deleteTempTable();
+
+    void insertTempMetaDataTables(@Param("metaDataTablesList") List<MetaDataTables> metaDataTablesList);
+
+    void insertTempMetaDataFileds(@Param("metaDataFiledsList") List<MetaDataFileds> metaDataFiledsList);
+
+    void insertTempOption(@Param("optionList") List<Option> optionList);
+
+    void insertTempHierarchy(@Param("hierarchyList") List<Hierarchy> hierarchyList);
+
+
+    void insertTempDwdxxbjz(@Param("dwdxxbjzs") List<Dwdxxbjz> dwdxxbjzs);
+
+    void insertTempDwdxxbzdmys(@Param("dwdxxbzdmys") List<Dwdxxbzdmys> dwdxxbzdmys);
+
+    int insertSyncDataMetaTable(@Param("userName") String userName);
+
+    int insertSyncDataMetaFiled(@Param("userName") String userName);
+
+    int insertSyncDataOption(@Param("userName") String userName);
+
+    int insertSyncDataHierarchyList(@Param("userName") String userName);
+
+    int insertSyncDwdxxbjz(@Param("userName") String userName);
+
+    int insertSyncDwdxxbzdmys(@Param("userName") String userName);
+
+    int updateSyncDataMetaTable(@Param("userName") String userName);
+
+    int updateSyncDataMetaFiled(@Param("userName") String userName);
+
+    int updateSyncDataOption(@Param("userName") String userName);
+
+    int updateSyncDataHierarchyList(@Param("userName") String userName);
+
+    int updateSyncDwdxxbjz(@Param("userName") String userName);
+
+    int updateSyncDwdxxbzdmys(@Param("userName") String userName);
+
+    int delSyncDataMetaTable(@Param("userName") String userName);
+
+    int delSyncDataMetaFiled(@Param("userName") String userName);
+
+    int delSyncDataOption(@Param("userName") String userName);
+
+    int delSyncDataHierarchyList(@Param("userName") String userName);
+
+    int delSyncDwdxxbjz(@Param("userName") String userName);
+
+    int delSyncDwdxxbzdmys(@Param("userName") String userName);
+
+    List<DataLabelVo> getDataLabelVo(@Param("page") Page<DataLabelVo> page, @Param("bqm") String bqm);
+
+    int getCheckTableCount(@Param("tableName") String tableName);
+
+    WelcomeVo findCountList();
+
+    List<Map<String, String>> findChartsData();
+
+    List<Map<String, String>> findChartsLinks();
+
+    List<Map<String, String>> findChartsCategories();
+
+    List<MetaDataTablesVo> mapperListPage(@Param("schoolCode") String schoolCode, @Param("list") List<String> list);
+
+    List<Map<String, String>> findApiParamDto(@Param("page") Page page, @Param("tableName") String tableName, @Param("selectField") List<String> selectField, @Param("filterField") List<ApiParamDto.FilterField> filterField);
+
+    List<Map<String, String>> findApiParamDtoNoPage(@Param("tableName") String tableName, @Param("selectField") List<String> selectField, @Param("filterField") List<ApiParamDto.FilterField> filterField);
+
+    int apiUpdateData(@Param("updateField") List<ApiParamDto.FilterField> updateField, @Param("filterField") List<ApiParamDto.FilterField> filterField, @Param("tableName") String tableName);
+
+    int apiDeleteData(@Param("tableName") String tableName, @Param("filterField") List<ApiParamDto.FilterField> filterField);
+
+    int apiInsertData(@Param("tableName") String tableName, @Param("updateField") List<ApiParamDto.FilterField> updateField);
+
+    int insertListMaps(@Param("list") List<Map<String, Object>> list, @Param("fields") Map<Integer, MetaDataFileds> fields, @Param("tableName") String tableName);
+}

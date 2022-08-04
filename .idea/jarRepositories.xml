@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteRepositoriesConfiguration">
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="oschina" />
+      <option name="name" value="oschina" />
+      <option name="url" value="http://maven.oschina.net/content/groups/public" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="sonatype" />
+      <option name="name" value="sonatype" />
+      <option name="url" value="https://oss.sonatype.org/content/groups/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="redxun-remote" />
+      <option name="name" value="remote redxun maven release" />
+      <option name="url" value="http://redxun.cn:8081/nexus/content/groups/rdgroup/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="ibiblio" />
+      <option name="name" value="ibiblio" />
+      <option name="url" value="http://mirrors.ibiblio.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Maven Central repository" />
+      <option name="url" value="https://repo1.maven.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jboss.community" />
+      <option name="name" value="JBoss Community repository" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="http://maven.aliyun.com/nexus/content/groups/public" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="hotent-remote" />
+      <option name="name" value="remote hotent maven release" />
+      <option name="url" value="http://office.jee-soft.cn:8081/nexus/content/groups/hotent/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="alfresco" />
+      <option name="name" value="alfresco" />
+      <option name="url" value="https://maven.alfresco.com/nexus/content/groups/public/org/activiti/" />
+    </remote-repository>
+  </component>
+</project>

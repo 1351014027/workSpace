@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.AntVMapper">
+
+
+    <select id="finddata" resultType="com.saving.metadata.pojo.AntV">
+		SELECT TOP 1 TableID_ as id,TableName_ AS label, TableName_ AS parentId FROM [dbo].[METADATA_B_METADATAFIELDS]
+		WHERE  [TableID_] = #{tableId}
+       union all
+        SELECT
+            ChineseFiledName_ AS id,
+            ChineseFiledName_ AS label
+            ,TableID_ AS parentId
+        FROM [dbo].[METADATA_B_METADATAFIELDS]
+        where ReferenceNumber_ is not null
+        AND IsDelete_=0
+        AND  [TableID_] = #{tableId}
+        union all
+       SELECT distinct
+            '关联表:'+t2.TableName_ +'-->关联字段:'+ t2.ChineseFiledName_ AS id,
+            '关联表:'+t2.TableName_ +'-->关联字段:'+ t2.ChineseFiledName_ AS label,
+            t1.ChineseFiledName_ AS parentId
+        FROM  [dbo].[METADATA_B_METADATAFIELDS] t2 right  join (SELECT
+           ChineseFiledName_,ReferenceNumber_
+        FROM [dbo].[METADATA_B_METADATAFIELDS]
+        where ReferenceNumber_ is not null AND IsDelete_=0 AND  [TableID_] =#{tableId} ) t1 on t1.ReferenceNumber_=t2.FiledNumber_
+		WHERE t2.FiledNumber_ IN ( SELECT
+           ReferenceNumber_
+        FROM [dbo].[METADATA_B_METADATAFIELDS]
+        where ReferenceNumber_ is not null AND IsDelete_=0 AND  [TableID_] = #{tableId} GROUP BY ReferenceNumber_)
+    </select>
+    <select id="findChartsData" resultType="org.apache.commons.collections4.map.LinkedMap">
+SELECT  name,showName,value,symbolSize,category FROM ( select ID_ name, TableName_+'('+ChineseTableName_+')' showName,
+    (select count(1) from METADATA_B_METADATAFIELDS where TableID_ =#{tableId} and IsDelete_ = 0  ) value,
+    80 symbolSize,ID_ category
+    from  METADATA_B_METADATATABLES  where   ID_ = #{tableId} AND IsDelete_ = 0
+    UNION ALL
+    select  A.FiledNumber_,A.ChineseFiledName_+'('+A.FiledName_+')',(SELECT COUNT(1) FROM METADATA_B_METADATAFIELDS WHERE  IsDelete_ = 0 AND ReferenceNumber_=A.FiledNumber_) ,40,A.FiledNumber_
+    from  METADATA_B_METADATAFIELDS A
+    WHERE A.TableID_ = #{tableId}  AND A.IsDelete_ = 0  AND A.ReferenceNumber_ IS NOT NULL AND REPLACE(A.ReferenceNumber_,' ' ,'') !=''
+    UNION ALL
+    select  A.ReferenceNumber_,B.ChineseFiledName_+'('+B.FiledName_+')',(SELECT COUNT(1) FROM METADATA_B_METADATAFIELDS WHERE  IsDelete_ = 0 AND FiledNumber_=A.ReferenceNumber_) ,40,A.ReferenceNumber_
+    from  METADATA_B_METADATAFIELDS A
+    JOIN
+    METADATA_B_METADATAFIELDS B ON B.FiledNumber_ = A.ReferenceNumber_
+    WHERE A.TableID_ = #{tableId}  AND A.IsDelete_ = 0  GROUP BY
+    A.ReferenceNumber_,B.ChineseFiledName_+'('+B.FiledName_+')'
+    UNION ALL
+    select  B.TableID_,B.TableName_,(SELECT COUNT(1) FROM METADATA_B_METADATAFIELDS WHERE  IsDelete_ = 0 AND TableID_=B.TableID_) ,80,B.TableID_
+    from  METADATA_B_METADATAFIELDS A
+    JOIN
+    METADATA_B_METADATAFIELDS B ON B.FiledNumber_ = A.ReferenceNumber_
+    WHERE A.TableID_ = #{tableId}  AND A.IsDelete_ = 0  GROUP BY
+    B.TableID_,B.TableName_
+    	   UNION ALL
+    select  B.TableID_,B.TableName_,(SELECT COUNT(1) FROM METADATA_B_METADATAFIELDS WHERE  IsDelete_ = 0 AND TableID_=b.TableID_) ,80,B.TableID_
+    from  METADATA_B_METADATAFIELDS A
+    JOIN
+    METADATA_B_METADATAFIELDS B ON a.FiledNumber_ = b.ReferenceNumber_
+    WHERE A.TableID_ =  #{tableId} AND A.IsDelete_ = 0  GROUP BY
+    B.TableID_,B.TableName_
+    UNION ALL
+
+	select  A.FiledNumber_,A.ChineseFiledName_+'('+A.FiledName_+')',(SELECT COUNT(1) FROM METADATA_B_METADATAFIELDS WHERE  IsDelete_ = 0 AND ReferenceNumber_=A.FiledNumber_) ,40,A.FiledNumber_
+	from METADATA_B_METADATAFIELDS A where  ReferenceNumber_ IN (SELECT FiledNumber_ FROM METADATA_B_METADATAFIELDS WHERE TableID_ = #{tableId} )  AND  TableID_ != #{tableId}
+	UNION ALL
+	select  A.FiledNumber_,A.ChineseFiledName_+'('+A.FiledName_+')',(SELECT COUNT(1) FROM METADATA_B_METADATAFIELDS WHERE  IsDelete_ = 0 AND ReferenceNumber_=A.FiledNumber_) ,40,A.FiledNumber_
+	from METADATA_B_METADATAFIELDS A where  ReferenceNumber_ IN (SELECT FiledNumber_ FROM METADATA_B_METADATAFIELDS WHERE TableID_ = #{tableId} )  AND  TableID_ = #{tableId}
+) a  GROUP BY name,showName,value,symbolSize,category
+    </select>
+    <select id="findChartsLinks" resultType="org.apache.commons.collections4.map.LinkedMap">
+select source,target,showName FROM (
+select    A.TableID_ source,B.TableID_ target,'引用' showName from METADATA_B_METADATAFIELDS  A
+JOIN
+METADATA_B_METADATAFIELDS B ON A.ReferenceNumber_=B.FiledNumber_
+WHERE
+A.TableID_ = #{tableId}
+GROUP BY A.TableID_,B.TableID_
+UNION ALL
+select    A.TableID_,B.TableID_,'被引用' from METADATA_B_METADATAFIELDS  A
+JOIN
+METADATA_B_METADATAFIELDS B ON A.ReferenceNumber_=B.FiledNumber_
+WHERE
+B.TableID_ = #{tableId}
+GROUP BY A.TableID_,B.TableID_
+UNION ALL
+SELECT  FiledNumber_ , ReferenceNumber_,'字段引用'  FROM  METADATA_B_METADATAFIELDS A
+WHERE TableID_ = #{tableId}
+AND A.IsDelete_ = 0  AND A.ReferenceNumber_ IS NOT NULL AND REPLACE(A.ReferenceNumber_,' ' ,'') !=''
+UNION ALL
+SELECT  FiledNumber_ , ReferenceNumber_,'字段引用'  FROM  METADATA_B_METADATAFIELDS A
+WHERE TableID_ = #{tableId}
+AND A.IsDelete_ = 0  AND A.ReferenceNumber_ IS NOT NULL AND REPLACE(A.ReferenceNumber_,' ' ,'') !=''
+UNION ALL
+SELECT  A.FiledNumber_ , A.ReferenceNumber_,'字段被引用'  FROM  METADATA_B_METADATAFIELDS A
+join   METADATA_B_METADATAFIELDS B ON A.ReferenceNumber_ = B.FiledNumber_
+WHERE B.TableID_ = #{tableId}
+AND A.IsDelete_ = 0  AND A.ReferenceNumber_ IS NOT NULL AND REPLACE(A.ReferenceNumber_,' ' ,'') !=''
+UNION ALL
+SELECT  TableID_ , FiledNumber_,'字段所属'  FROM  METADATA_B_METADATAFIELDS A
+WHERE TableID_ = #{tableId}
+AND A.IsDelete_ = 0  AND A.ReferenceNumber_ IS NOT NULL AND REPLACE(A.ReferenceNumber_,' ' ,'') !=''
+UNION ALL
+SELECT  A.TableID_ , A.FiledNumber_,'字段所属'  FROM  METADATA_B_METADATAFIELDS A
+join   METADATA_B_METADATAFIELDS B ON A.FiledNumber_ = B.ReferenceNumber_
+WHERE B.TableID_ = #{tableId}
+AND B.IsDelete_ = 0  AND B.ReferenceNumber_ IS NOT NULL AND REPLACE(B.ReferenceNumber_,' ' ,'') !='' group by A.TableID_ , A.FiledNumber_
+UNION ALL
+SELECT   A.TableID_ , A.FiledNumber_,'字段所属'  FROM  METADATA_B_METADATAFIELDS A
+WHERE  A.IsDelete_ = 0  AND A.ReferenceNumber_  IN (SELECT FiledNumber_ FROM METADATA_B_METADATAFIELDS
+WHERE TableID_ = #{tableId} )  AND  A.TableID_ !=  #{tableId}
+group by A.TableID_ , A.FiledNumber_
+UNION ALL
+SELECT   A.TableID_ , A.FiledNumber_,'字段所属'  FROM  METADATA_B_METADATAFIELDS A
+WHERE  A.IsDelete_ = 0  AND A.ReferenceNumber_  IN (SELECT FiledNumber_ FROM METADATA_B_METADATAFIELDS
+WHERE TableID_ = #{tableId} )  AND  A.TableID_ =  #{tableId}
+group by A.TableID_ , A.FiledNumber_) A  GROUP BY source,target,showName
+    </select>
+    <select id="findChartsCategories" resultType="org.apache.commons.collections4.map.LinkedMap">
+select name from  (SELECT TableID_ name  FROM METADATA_B_METADATAFIELDS  WHERE TableID_ =#{tableId} AND IsDelete_ = 0  GROUP BY TableID_
+UNION ALL
+SELECT TableID_   FROM METADATA_B_METADATAFIELDS  WHERE
+ReferenceNumber_ IN (SELECT FiledNumber_ FROM  METADATA_B_METADATAFIELDS WHERE TableID_ =#{tableId} AND IsDelete_ = 0 )
+AND IsDelete_ = 0  GROUP BY TableID_
+UNION ALL
+SELECT TableID_   FROM METADATA_B_METADATAFIELDS  WHERE
+FiledNumber_ IN (SELECT ReferenceNumber_ FROM  METADATA_B_METADATAFIELDS WHERE TableID_ =#{tableId} AND IsDelete_ = 0 )
+AND IsDelete_ = 0  GROUP BY TableID_
+UNION ALL
+SELECT FiledNumber_   FROM METADATA_B_METADATAFIELDS  WHERE TableID_ =#{tableId} AND IsDelete_ = 0
+AND   ReferenceNumber_ IS NOT NULL AND REPLACE(ReferenceNumber_,' ' ,'') !=''  GROUP BY FiledNumber_
+UNION ALL
+SELECT ReferenceNumber_   FROM METADATA_B_METADATAFIELDS  WHERE TableID_ =#{tableId}
+AND IsDelete_ = 0 AND   ReferenceNumber_ IS NOT NULL AND REPLACE(ReferenceNumber_,' ' ,'') !='' GROUP BY ReferenceNumber_
+union all
+select  A.FiledNumber_
+from METADATA_B_METADATAFIELDS A where  ReferenceNumber_ IN (SELECT FiledNumber_ FROM METADATA_B_METADATAFIELDS WHERE TableID_ = #{tableId} )  AND  TableID_ != #{tableId}
+UNION ALL
+select  A.FiledNumber_
+from METADATA_B_METADATAFIELDS A where  ReferenceNumber_ IN (SELECT FiledNumber_ FROM METADATA_B_METADATAFIELDS WHERE TableID_ =#{tableId} )  AND  TableID_ = #{tableId}
+) a  group by name
+    </select>
+
+</mapper>

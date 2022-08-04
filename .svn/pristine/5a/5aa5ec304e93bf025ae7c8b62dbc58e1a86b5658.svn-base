@@ -1,0 +1,157 @@
+application:
+  # 项目开发作者
+  author: 朱柯辉
+  # 登录页以及项目中文名称
+  title: 数据中台
+  # 登录页以及项目英文名称
+  enTitle: Campus Data Middle Platform
+  # 云端登录页以及项目中文名称
+  titleCloud: 数据中台(云端)
+  # 云端登录页以及项目英文名称
+  enTitleCloud: Campus Data Middle  Cloud Platform
+  # 项目的版本号
+  version: 0.0.1-SNAPSHOT
+  # 写入文件地址
+  importFilePath: \\upload
+  # 读取P文件地址
+  readFilePath: \\upload
+  # 读取PDF文件地址
+  readPdfFilePath: \\upload
+  # 写入PDF文件地址
+  importPdfFilePath: \\upload
+  # 备份数据目录
+  barckDataFilePath: \\barckData
+  # 同步云端地址URL
+  #  syncUrl: http://localhost:8889/
+  syncUrl: http://134.175.123.81:8000/
+  # ssourl
+  ssoUrl: http://134.175.123.81:8000/
+  #  ssoUrl: http://localhost:8889/
+  # apikey
+  apiKey: test
+  # 设置是否云端版本
+  isCloud: false
+  #单点登录密钥
+  ticketKey: gzvtc.cn
+  #文件上传类型限制
+  fileType: xlsx,xls,doc,docx,ppt,pptx,pdf,rar,zip,jpg,png,jpeg
+
+# Logger Config
+logging:
+  level:
+    root: INFO
+    org.springframework.boot.autoconfigure: ERROR
+
+
+# Tomcat
+server:
+  error:
+    include-exception: true
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 100000
+    min-spare-threads: 30
+  servlet:
+    session:
+      timeout: PT120M
+  port: 8889
+#datasource
+spring:
+  # 配置缓存,初始缓存容量为10,最大容量为200,过期时间(这里配置写入后过期时间为3秒)
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  cache:
+    type: caffeine
+    cache-names: metaDataFiledCodeVoCache
+    caffeine:
+      spec: maximumSize=5000,expireAfterWrite=7200s
+  application:
+    name: metadata
+  mvc:
+    favicon:
+      enabled: false
+  datasource:
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    #    url: jdbc:sqlserver://111.230.103.36:1433;database=MDW
+    #    username: mdw
+    #    password: mdw#dw
+    url: jdbc:sqlserver://81.71.121.206:1433;database=EIC
+    username: sa
+    password: e832kfdfdi#884S3
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      # 初始化大小，最小，最大
+      initial-size: 5
+      min-idle: 5
+      max-active: 200
+      # 配置获取连接等待超时的时间
+      max-wait: 60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      time-between-eviction-runs-millis: 60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT  'x'
+      test-while-idle: false
+      test-on-borrow: false
+      test-on-return: false
+      # 打开PSCache，并且指定每个连接上PSCache的大小
+      pool-prepared-statements: true
+      #   配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      max-pool-prepared-statement-per-connection-size: 20
+      #stat,wall,slf4j
+      filters: stat,wall,slf4j
+      use-global-data-source-stat: true
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connect-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      # 配置监控服务器
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+      web-stat-filter:
+        # 添加过滤规则
+        url-pattern: /*
+        # 忽略过滤格式
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
+  # jackson时间格式化
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+  thymeleaf:
+    cache: false
+    mode: LEGACYHTML5
+    encoding: UTF-8
+    check-template: false
+  #servlet
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      max-request-size: 10240MB
+      enabled: true
+
+
+
+# Mybatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath:/mappers/*Mapper.xml
+  typeAliasesPackage: com.saving.metadata.pojo
+  global-config:
+    banner: false
+    dbConfig:
+      logic-delete-field: IsDelete_  #全局逻辑删除字段值 3.3.0开始支持，详情看下面。
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true #配置的缓存的全局开关
+    lazyLoadingEnabled: true #延时加载的开关
+    multipleResultSetsEnabled: true #开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
+
+swagger:
+  enable: true
+  version: 2.0
+
+

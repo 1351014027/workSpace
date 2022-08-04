@@ -1,0 +1,176 @@
+package com.saving.metadata.pojo;
+
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.ContentRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
+
+/**
+ * <p>
+ *
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-04-09
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@TableName("METADATA_B_API_TABLE")
+@ApiModel(value = "ApiTable对象", description = "软件资产信息表")
+@ContentRowHeight(15)
+@HeadRowHeight(20)
+@ColumnWidth(25)
+@Builder
+public class ApiTable extends Model<ApiTable> {
+
+    private static final long serialVersionUID = 1L;
+    @ExcelIgnore
+    @TableId("ID_")
+    private String id;
+    @ExcelProperty("软件编号")
+    @TableField("RJBH_")
+    private String rjbh;
+
+    @ExcelProperty("系统名称")
+    @TableField("Sys_Name_")
+    private String sysName;
+
+    @ExcelProperty("版本号")
+    @TableField("BBH_")
+    private String bbh;
+
+    @ExcelProperty("来源")
+    @TableField("LY_")
+    private String ly;
+
+    @ExcelProperty("(准)捐赠单位代码")
+    @TableField("JZDWDM_")
+    private String jzdwdm;
+
+
+    @ExcelProperty("(准)捐赠者名称")
+    @TableField("JZZMC_")
+    private String jzzmc;
+
+
+    @ExcelProperty("生产国别码")
+    @TableField("SCGBM_")
+    private String scgbm;
+
+    @ExcelProperty("购置日期")
+    @TableField("GZRQ_")
+    private String gzrq;
+
+    @ExcelProperty("生产厂家社会信用码")
+    @TableField("SCCJXYM_")
+    private String sccjxym;
+
+    @ExcelProperty("生产厂家名称")
+    @TableField("SCCJMC_")
+    private String sccjmc;
+
+    @ExcelProperty("单价")
+    @TableField("DJ_")
+    private BigDecimal dj;
+
+
+    @ExcelProperty("功能简介")
+    @TableField("GNJJ_")
+    private String gnjj;
+
+
+    @ExcelProperty("现状码")
+    @TableField("XZM_")
+    private String xzm;
+
+    @ExcelProperty("系统URL")
+    @TableField("Sys_Url_")
+    private String sysUrl;
+
+    @ExcelProperty("厂家负责人")
+    @TableField("Manufacturers_User_")
+    private String manufacturersUser;
+
+    @ExcelProperty("厂家电话")
+    @TableField("Manufacturers_Phone_")
+    private String manufacturersPhone;
+
+    @ExcelProperty("Key")
+    @TableField("Key_")
+    private String key;
+
+    @ExcelIgnore
+    @TableField("Sort_")
+    private String sort;
+
+    @ExcelIgnore
+    @TableField("IsDelete_")
+    private Integer isdelete;
+
+    @ExcelIgnore
+    @TableField(value = "School_Code_", fill = FieldFill.INSERT)
+    private String schoolCode;
+
+    @ExcelIgnore
+    @TableField(value = "Creator_", fill = FieldFill.INSERT)
+    private String creator;
+
+    @ExcelIgnore
+    @TableField("Create_Time_")
+    private Date createTime;
+
+    @ExcelIgnore
+    @TableField(value = "Updateor_", fill = FieldFill.UPDATE)
+    private String updateor;
+
+    @ExcelIgnore
+    @TableField(value = "Update_Time_", fill = FieldFill.UPDATE)
+    private Date updateTime;
+
+    @ExcelProperty("备注")
+    @TableField("Remark_")
+    private String remark;
+
+    @ExcelIgnore
+    @TableField("Sort_Id_")
+    private Integer sortId;
+
+
+    /**
+     * 是否数据源系统字段
+     */
+    @TableField("Is_sjyxt_")
+    private Integer issjyxt;
+
+
+    /**
+     * 是否数据目标系统字段
+     */
+    @TableField("Is_sjmbxt_")
+    private Integer issjmbxt;
+
+    @Tolerate
+    public ApiTable() {
+    }
+
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
+
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.SchooleCodeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.SchooleCode">
+        <id column="ID_" property="id"/>
+        <result column="SchoolCode_" property="schoolcode"/>
+        <result column="SchoolName_" property="schoolname"/>
+        <result column="Remark_" property="remark"/>
+        <result column="ProvinceCode_" property="provincecode"/>
+        <result column="ProvinceName_" property="provincename"/>
+        <result column="CityCode_" property="citycode"/>
+        <result column="CityName_" property="cityname"/>
+        <result column="Address_" property="address"/>
+        <result column="Nature_" property="nature"/>
+        <result column="SchoolUrl_" property="schoolurl"/>
+        <result column="Status_" property="status"/>
+        <result column="SchoolType_" property="schooltype"/>
+        <result column="ApiKey_" property="apikey"/>
+        <result column="StartTime_" property="starttime"/>
+        <result column="EndTime_" property="endtime"/>
+        <result column="IsDelete_" property="isdelete"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createtime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updatetime"/>
+        <result column="LastUpdateTime_" property="lastupdatetime"/>
+        <result column="LastUpdateSize_" property="lastupdatesize"/>
+        <result column="LastUpdateIp_" property="lastupdateip"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, SchoolCode_, SchoolName_, Remark_, ProvinceCode_, ProvinceName_, CityCode_, CityName_, Address_, Nature_, SchoolUrl_, Status_, SchoolType_, ApiKey_, StartTime_, EndTime_, IsDelete_, Creator_, CreateTime_, Updateor_, UpdateTime_, LastUpdateTime_, LastUpdateSize_, LastUpdateIp_
+    </sql>
+    <update id="updateByIdsIsDel">
+        update METADATA_CDMP_B_SCHOOLE_CODE set ApiKey_ = NULL, StartTime_ = NULL , EndTime_ =NULL where ID_ in
+        (<foreach collection="list" item="list" separator=",">
+        #{list}
+    </foreach> )
+    </update>
+
+
+</mapper>

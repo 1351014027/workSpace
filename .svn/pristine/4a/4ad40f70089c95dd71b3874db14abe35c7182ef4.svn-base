@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">表名:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="tableName"
+                   placeholder="请输入表名"
+                   th:value="${metaDataTables?.tableName}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">中文表名:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="chineseTableName"
+                   placeholder="请输入中文表名"
+                   th:value="${metaDataTables?.chineseTableName}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">目录:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="catalog"
+                   placeholder="请输入目录"
+                   th:value="${metaDataTables?.catalog}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">元数据类型：</label>
+        <div class="layui-input-block">
+            <select lay-filter="dms-user-role" lay-search lay-verify="required" name="metadataTypeId"
+                    th:value="${metaDataTables?.metadataTypeId}">
+                <option th:each="code:${metadataType}" th:selected="${metaDataTables?.metadataTypeId==code.id} "
+                        th:text="${code.typeName}" th:value="${code.id}"></option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item" th:if="${isStandard}">
+        <label class="layui-form-label">性质：</label>
+        <div class="layui-input-block">
+            <select lay-filter="dms-nature-role" lay-search lay-verify="required" name="nature"
+                    th:value="${metaDataTables?.nature}">
+                <option th:selected="${metaDataTables?.nature==1} " value="1">标准</option>
+                <option th:selected="${metaDataTables?.nature==2} " value="2">扩展</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">备注:</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" name="remark" placeholder="备注"
+                      th:text="${metaDataTables?.remark}"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <input id="sav-dms-typeCreates" lay-filter="sav-dms-typeCreates" lay-submit type="button" value="新增保存">
+        <input id="sav-dms-typeUpdates" lay-filter="sav-dms-typeUpdates" lay-submit type="button" value="编辑保存">
+    </div>
+</div>
+</body>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , SavingFunction = layui.SavingFunction;
+    });
+</script>
+</html>

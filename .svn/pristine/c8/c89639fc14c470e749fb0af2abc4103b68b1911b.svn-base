@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-col-md12" id="container"></div>
+</div>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script th:inline="javascript" type="text/javascript">
+    /*<![CDATA[*/
+    var nodes = [[${apiTables}]]
+    /*]]>*/
+</script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'echarts'], function () {
+        let $ = layui.$
+            , SavingFunction = layui.SavingFunction;
+        $('#container').height($(window).height() - 30);
+        let loadIndex = SavingFunction.loading();
+        SavingFunction.req({
+            url: '[[@{/metadata/metaDataTables/theDataMap.json}]]'
+            , done: function (res) {
+                top.layer.close(loadIndex);
+                let option = {
+                    tooltip: {
+                        formatter(x) {
+                            return x.data.showName;
+                        }
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            dataView: {show: true, readOnly: true},
+                            restore: {show: true},
+                            saveAsImage: {show: true}
+                        }
+                    },
+                    animationDuration: 3000,
+                    animationEasingUpdate: 'quinticInOut',
+
+                    series: [{
+                        name: '校本数据中台',
+                        type: 'graph',
+                        layout: 'force',
+                        force: {
+                            repulsion: 200
+                        },
+                        data: res[0],
+                        links: res[1],
+                        categories: res[2],
+                        focusNodeAdjacency: true,
+                        draggable: true,
+                        roam: true,
+                        edgeSymbol: ['', 'arrow'],
+                        symbolSize: 58,
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top',
+                                formatter: function (params) {
+                                    return params.data.showName;
+                                }
+                            }
+                            , formatter(x) {
+                                return x.data.showName;
+                            }
+                        },
+                        edgeLabel: {
+                            normal: {
+                                show: false,
+                                textStyle: {
+                                    fontSize: 9
+                                },
+                                formatter(x) {
+                                    return x.data.showName;
+                                }
+                            }
+                            , formatter(x) {
+                                return x.data.showName;
+                            }
+                        },
+                        lineStyle: {
+                            normal: {
+                                color: 'source',
+                                curveness: 0,
+                                type: "solid"
+                            }
+                        }
+                    }]
+                };
+                let dom = document.getElementById("container");
+                let myChartNM = echarts.init(dom);
+                myChartNM.setOption(option);
+                myChartNM.on('click', function (p) {
+                    if (p.data.name && p.data.symbolSize === 8) {
+                        location.href = '[[@{/metaData/AntV.page}]]?id=' + p.data.name;
+                    }
+                })
+                window.onresize = myChartNM.resize;
+            }
+        });
+    });
+</script>
+</body>
+</html>
+

@@ -1,0 +1,118 @@
+package com.saving.metadata.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.dao.TysjglMapper;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.pojo.Tysjgl;
+import com.saving.metadata.service.TysjglService;
+import com.saving.metadata.utils.BeanValidator;
+import com.saving.metadata.utils.PojectPathUtils;
+import com.saving.metadata.utils.UUID64Utils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * <p>
+ * 服务实现类
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-05-03
+ */
+@Service
+@Slf4j
+public class TysjglServiceImpl extends ServiceImpl<TysjglMapper, Tysjgl> implements TysjglService {
+
+    public final static List<String> DATABASETYPES = Lists.newArrayList();
+
+    static {
+        DATABASETYPES.add("MySql");
+        DATABASETYPES.add("SqlServer");
+        DATABASETYPES.add("Oracle");
+    }
+
+    private final TysjglMapper tysjglMapper;
+
+    @Autowired
+    public TysjglServiceImpl(TysjglMapper tysjglMapper) {
+        this.tysjglMapper = tysjglMapper;
+    }
+
+
+    @Override
+    public void saveCheck(Tysjgl param) {
+        BeanValidator.check(param);
+        List<Tysjgl> list = list(new QueryWrapper<Tysjgl>().lambda().eq(Tysjgl::getMbSjkm, param.getMbSjkm()));
+        if (StringUtils.isNotEmpty(param.getId())) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        checkListIsNotNull(param, list);
+        param.setId(UUID64Utils.get64UUIDString());
+        save(param);
+    }
+
+    @Override
+    public void createDataBase(String id) {
+        Tysjgl tysjgl = checkObj(id);
+        String path = PojectPathUtils.getRootPath();
+        String checkDataBaseUser = tysjglMapper.checkDataBaseUser(tysjgl.getMbYhm());
+        if (StringUtils.isNotEmpty(checkDataBaseUser)) {
+            throw new ParamException("当前目标数据库用户已存在，请设置新的，目前仅支持一库一户");
+        }
+        log.warn("-----------------------" + path);
+        tysjglMapper.createDataBase(tysjgl.getMbYhm(), tysjgl.getMbMm(), tysjgl.getMbSjkm(), path);
+        updateById(Tysjgl.builder().id(id).isCreateDataBase(1).build());
+    }
+
+    @Override
+    public void delDataBase(List<String> ids) {
+        ids.forEach(this::checkObj);
+        List<Tysjgl> taels = listByIds(ids);
+        List<String> dataBaseName = Lists.newArrayList();
+        taels.forEach(obj -> dataBaseName.add(obj.getMbSjkm()));
+        tysjglMapper.delDataBase(taels);
+    }
+
+    @Override
+    public void updateCheck(Tysjgl param) {
+        BeanValidator.check(param);
+        if (StringUtils.isEmpty(param.getId())) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        List<Tysjgl> list = list(new QueryWrapper<Tysjgl>().lambda().eq(Tysjgl::getMbSjkm, param.getMbSjkm())
+                .ne(Tysjgl::getId, param.getId()));
+        checkListIsNotNull(param, list);
+        updateById(param);
+    }
+
+    private void checkListIsNotNull(Tysjgl param, List<Tysjgl> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            throw new ParamException("创建的目标数据库名已经存在！");
+        }
+        if (!DATABASETYPES.contains(param.getYtSjklx())) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        if (!DATABASETYPES.contains(param.getMbSjklx())) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+
+    }
+
+    private Tysjgl checkObj(String id) {
+        Tysjgl byId = getById(id);
+        if (byId == null) {
+            throw new ParamException(ResponseCode.UPDATEERRORMSG);
+        }
+        return byId;
+    }
+
+
+}

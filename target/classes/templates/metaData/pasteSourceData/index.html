@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">贴源数据管理</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-inline">过滤查询：</div>
+            <div class="layui-inline">
+                <input autocomplete="off" class="layui-input" name="str" placeholder="目标数据库/目标账号"
+                       type="text">
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                        lay-filter="hup-file-search" lay-submit="">查找
+                </button>
+            </div>
+        </div>
+        <script id="TableToolbar" type="text/html">
+            <button class="layui-btn layui-btn-xs " lay-event="find">查看</button>
+            <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="update">编辑</button>
+            {{# if (d.isCreateDataBase!=1){}}
+            <button class="layui-btn layui-btn-xs layui-btn-warm" lay-event="createTempDateBase">生成临时库和用户</button>
+            {{#}}}
+        </script>
+        <script id="TableTopToolbar" type="text/html">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="Create">新增</button>
+                <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="Del">删除记录</button>
+                <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="deleteDatabase">删除贴源库</button>
+            </div>
+        </script>
+        <div class="layui-card-body">
+            <table id="metadata-pastSourceData" lay-filter="metadata-pastSourceData"></table>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'laydate'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , table = layui.table
+            , admin = layui.admin
+            , SavingFunction = layui.SavingFunction;
+
+
+        let field = [
+            {type: 'checkbox', rowspan: 2},
+            {type: 'numbers', title: '序号', align: 'center', rowspan: 2}
+            , {field: 'yymc', title: '应用名称', align: 'center', rowspan: 2}
+            , {field: 'storagePath', title: '源头数据', align: 'center', colspan: 5}
+            , {field: 'storagePath', title: '目标数据', align: 'center', colspan: 5}
+            , {
+                field: 'isCreateDataBase', title: '状态', align: 'center', rowspan: 2, templet: function (d) {
+                    return d.isCreateDataBase === 1 ? '<span class="layui-badge layui-bg-green">已创建</span>' : '<span class="layui-badge layui-bg-red">未创建</span>';
+                }
+            }
+            , {title: '操作', minWidth: 250, align: 'center', fixed: 'right', toolbar: '#TableToolbar', rowspan: 2}
+        ]
+        let field2 = [
+            {field: 'ytSjklx', title: '数据库类型', align: 'center'}
+            , {field: 'ytIpdz', title: 'IP地址', align: 'center'}
+            , {field: 'ytSjkm', title: '数据库名', align: 'center'}
+            , {
+                field: 'ytYhm', title: '用户/密码', align: 'center', templet: function (d) {
+                    return '<span class="sav-tr">' + d.ytYhm + '/<span class="sav-house-show">******</span><span class="sav-house-hide">' + d.ytMm + '</span></span>';
+
+                }
+            }
+            , {field: 'mbSjklx', title: '数据库类型', align: 'center'}
+            , {field: 'mbIpdz', title: 'IP地址', align: 'center'}
+            , {field: 'mbSjkm', title: '数据库名', align: 'center'}
+            , {
+                field: 'mbYhm', title: '用户/密码', align: 'center', templet: function (d) {
+                    return '<span class="sav-tr">' + d.mbYhm + '/<span class="sav-house-show">******</span><span class="sav-house-hide">' + d.mbMm + '</span></span>';
+                }
+            }];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-pastSourceData'
+            , url: '[[@{/metadata/tysjgl/listPage.json}]]'
+            , cols: [field, field2]
+            , colFilterRecord: false
+            , height: 'full-180'
+            , toolbar: '#TableTopToolbar'
+            , done: function () {
+                $('.sav-house-hide').hide();
+                $(document).on("mouseover mouseout", ".sav-tr", function (event) {
+                    let that = $(this).parent();
+                    if (event.type === "mouseover") {
+                        that.find('.sav-house-show').hide();
+                        that.find('.sav-house-hide').show();
+                    }
+                    if (event.type === "mouseout") {
+                        that.find('.sav-house-show').show();
+                        that.find('.sav-house-hide').hide();
+                    }
+                });
+            }
+        });
+        table.on('toolbar(metadata-pastSourceData)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-pastSourceData');
+            let datas = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < datas.length; i++) {
+                ids[i] = datas[i].id;
+            }
+            switch (obj.event) {
+                case  'Create':
+                    parent.layer.open({
+                        title: '新增'
+                        , type: 2
+                        , content: '[[@{/popup/tysjglPopup.page}]]'
+                        , maxmin: true
+                        , area: admin.screen() === 3 ? ['65%', '95%'] : ['85%', '95%']
+                        , btn: ['保存', '关闭']
+                        , yes: function (index, layero) {
+                            var iframeWindow = parent.window['layui-layer-iframe' + index];
+                            iframeWindow.layui.form.on('submit(sav-dms-typeCreates)', function (datas) {
+                                let field = datas.field;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/tysjgl/save.json}]]',
+                                    data: field,
+                                    done: function () {
+                                        SavingFunction.successMsg('添加成功！');
+                                        userTable.reload();
+                                        parent.layer.close(index);
+                                    }
+                                });
+                            });
+                            iframeWindow.layui.$('#sav-dms-typeCreates').click();
+                        }
+                    });
+                    break;
+                case 'Del':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/tysjgl/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'deleteDatabase':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的贴源库和记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/tysjgl/deleteDatabase.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+
+        $('input[name="str"]').keyup(function () {
+            userTable.reload({
+                where: {
+                    str: $('input[name="str"]').val()
+                }, page: {curr: 1}
+            });
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            userTable.reload({
+                where: {
+                    str: $('input[name="str"]').val()
+                }, page: {curr: 1}
+            });
+        });
+        table.on('tool(metadata-pastSourceData)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'update') {
+                parent.layer.open({
+                    title: '修改'
+                    , type: 2
+                    , content: '[[@{/popup/tysjglPopup.page}]]?id=' + data.id
+                    , maxmin: true
+                    , area: admin.screen() === 3 ? ['65%', '95%'] : ['85%', '95%']
+                    , btn: ['保存', '关闭']
+                    , yes: function (index, layero) {
+                        var iframeWindow = parent.window['layui-layer-iframe' + index];
+                        iframeWindow.layui.form.on('submit(sav-dms-typeCreates)', function (datas) {
+                            let field = datas.field;
+                            field.id = data.id;
+                            SavingFunction.req({
+                                url: '[[@{/metadata/tysjgl/update.json}]]',
+                                data: field,
+                                done: function () {
+                                    SavingFunction.successMsg('修改成功！');
+                                    userTable.reload();
+                                    parent.layer.close(index);
+                                }
+                            });
+                        });
+                        iframeWindow.layui.$('#sav-dms-typeCreates').click();
+                    }
+                });
+            } else if (obj.event === 'createTempDateBase') {
+                layer.confirm('是否生成临时库和用户，系统默认一库一用户?', {
+                    icon: 3,
+                    title: '提示'
+                }, function (index) {
+                    let loadingIndex = SavingFunction.loading();
+                    SavingFunction.req({
+                        url: '[[@{/metadata/tysjgl/createDataBase.json}]]',
+                        data: {
+                            id: data.id
+                        },
+                        done: function () {
+                            SavingFunction.successMsg('同步成功！');
+                            top.layer.close(loadingIndex);
+                            userTable.reload({page: {curr: 1}});
+                        }
+                    });
+                    layer.close(index);
+                });
+            } else if (obj.event === 'find') {
+                parent.layer.open({
+                    title: '查看'
+                    , type: 2
+                    , content: '[[@{/popup/tysjglPopup.page}]]?id=' + data.id + '&findType=true'
+                    , maxmin: true
+                    , area: admin.screen() === 3 ? ['65%', '95%'] : ['85%', '95%']
+                    , btn: ['关闭']
+                    , yes: function (index, layero) {
+                        parent.layer.close(index);
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

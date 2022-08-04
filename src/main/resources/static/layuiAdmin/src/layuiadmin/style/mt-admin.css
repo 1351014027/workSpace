@@ -1,0 +1,39 @@
+/*.layui-table-click-sav{*/
+/*background-color: #bdbdbd;*/
+/*}*/
+/*.layui-table-hover-sav{*/
+/*background-color: #bdbdbd;*/
+/*}*/
+
+/*设置 width宽 height高 line-height行高*/
+.layui-form-switch {
+    width: 25px;
+    min-width: 25px;
+    height: 18px;
+    line-height: 18px;
+}
+
+/*设置 width宽 height高 两者尺寸保持一样 圆形 top:控制定位上方距离 left:控制左侧距离*/
+.layui-form-switch i {
+    width: 9px;
+    height: 9px;
+    margin-top: 2px;
+
+}
+
+/*操作开关里面的字体*/
+.layui-form-switch em {
+    margin-left: 10px;
+}
+
+.layui-form-onswitch em {
+    margin-left: -1px;
+    margin-right: 9px;
+}
+
+.layui-form-onswitch i {
+    margin-left: -14px;
+}
+
+
+

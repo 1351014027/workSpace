@@ -1,0 +1,60 @@
+package com.saving.metadata.pojo;
+
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.ContentRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ *
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-02-11
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Builder
+@TableName("METADATA_B_BACKUP_MESSAGE")
+@ApiModel(value = "BackupMessage对象", description = "")
+@ContentRowHeight(15)
+@HeadRowHeight(20)
+@ColumnWidth(25)
+public class BackupMessage extends Model<BackupMessage> {
+
+    private static final long serialVersionUID = 1L;
+    @TableId("ID_")
+    private String id;
+    @TableField("Storage_Path_")
+    private String storagePath;
+    @TableField("Backup_Time_")
+    private Date backupTime;
+    @TableField("Operation_Ip_")
+    private String operationIp;
+    @TableField("Operation_User_")
+    private String operationUser;
+    @TableField("Operation_User_Name_")
+    private String operationUserName;
+
+    @Tolerate
+    public BackupMessage() {
+    }
+
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
+
+}

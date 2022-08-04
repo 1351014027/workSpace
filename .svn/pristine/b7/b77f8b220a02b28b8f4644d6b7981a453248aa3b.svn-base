@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/style/template.css}">
+<body>
+<div class="layui-fluid layadmin-maillist-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <sapn style="font-size: 23px" th:if="${method ne 'geiApi'}"
+                      th:text="${metadataTable?.tableName +'('+metadataTable?.chineseTableName+')'}"></sapn>
+                <sapn style="font-size: 23px" th:if="${method eq 'geiApi'}"
+                      th:text="获取临时密钥接口文档"></sapn>
+                <button class="layui-btn  layui-btn-sm" id="import"
+                        lay-submit style="margin-left: 10px;margin-bottom: 15px">导出Word
+                </button>
+            </div>
+            <div class="layui-card-body" id="importWord">
+                <style>
+                    #metadata-table-table {
+                        text-align: left;
+                        padding: 0;
+                        margin: 0;
+                        border-collapse: collapse;
+                    }
+
+                    #metadata-table-table td {
+                        border: 1px solid #0C0C0C;
+                        padding: 5px 15px;
+                        min-width: 100px;
+                        color: #0C0C0C;
+
+                    }
+
+                    #metadata-table-table th {
+                        border: 1px solid #0C0C0C;
+                        padding: 5px 15px;
+                        background-color: #FFFFFF;
+                        color: #0C0C0C;
+                    }
+                </style>
+                <table id="metadata-table-table" lay-filter="metadata-table-table" width="100%">
+                    <thead>
+                    <tr>
+                        <th>接口名称</th>
+                        <td colspan="4" th:text="${interfaceName}"></td>
+                    </tr>
+                    <tr>
+                        <th>请求路径</th>
+                        <td colspan="4" th:if="${method ne 'geiApi'}"
+                            th:text="'http://'+${domainname}+'/metadata/ApiImplements/apiGateway.json'"></td>
+                        <td colspan="4" th:if="${method eq 'geiApi'}"
+                            th:text="'http://'+${domainname}+'/metadata/ApiImplements/getApiKey.json'"></td>
+                    </tr>
+                    <tr>
+                        <th>请求方式</th>
+                        <td colspan="4">post</td>
+                    </tr>
+                    <tr th:if="${method ne 'geiApi'}">
+                        <th>操作表名</th>
+                        <td colspan="4" th:text="${metadataTable?.tableName}"></td>
+                    </tr>
+                    <tr th:if="${method ne 'geiApi'}">
+                        <th>Content-Type</th>
+                        <td colspan="4">application/json</td>
+                    </tr>
+                    <tr th:if="${method ne 'geiApi'}">
+                        <th align="center" colspan="5">请求表字段参数</th>
+                    </tr>
+                    <tr th:if="${method ne 'geiApi'}">
+                        <th>序号</th>
+                        <th>字段名</th>
+                        <th>类型（长度）</th>
+                        <th>是否必须</th>
+                        <th>说明</th>
+                    </tr>
+                    <tr th:each="filed,filedStat : ${metaDataFileds}" th:if="${method ne 'geiApi'}">
+                        <td th:text="${filedStat.count}"></td>
+                        <td th:text="${filed.filedName}"></td>
+                        <td>
+                            <div th:if="${filed.storageType} eq C ">字符型(<span th:text="${filed.filedLength}"></span>)
+                            </div>
+                            <div th:if="${filed.storageType} eq N ">数值型(<span th:text="${filed.filedLength}"></span>)
+                            </div>
+                            <div th:if="${filed.storageType} eq M ">币值型(<span th:text="${filed.filedLength}"></span>)
+                            </div>
+                            <div th:if="${filed.storageType} eq B ">二进制类型(<span th:text="${filed.filedLength}"></span>)
+                            </div>
+                            <div th:if="${filed.storageType} eq T ">文本型(<span th:text="${filed.filedLength}"></span>)
+                            </div>
+                        </td>
+                        <td th:if="${filed.constraints} eq M">必须</td>
+                        <td th:if="${filed.constraints} eq O">非必须</td>
+                        <td th:text="${filed.dataItemDescription}"></td>
+                    </tr>
+                    <tr>
+                        <th align="left" colspan="5">请求参数示例</th>
+                    </tr>
+                    <tr rowspan="7">
+                        <td colspan="5">
+                            <pre class="layui-code" th:if="${method eq 'save'}">{
+	"operationType":"insert",      //操作类型，有四种分别是 insert、find、delete、update
+	"tableName":"TYSJ_BM",         //操作表名
+	"updateField":[                //更新、或者插入数据,修改字段名数组 使用请求表字段参数中的字段名组合成{"fieldName":字段名,"filterType":"=","values":具体值}对象放到数组中
+            {
+            "fieldName":"BMDM",
+            "filterType":"=",
+            "values":"001"
+            },
+            {
+            "fieldName":"BMMC",
+            "filterType":"=",
+            "values":"测试"
+            },
+            {
+            "fieldName":"SJBMDM",
+            "filterType":"=",
+            "values":"000"
+            },
+            {
+            "fieldName":"BMSX",
+            "filterType":"=",
+            "values":"行政部门"
+            },
+            {
+            "fieldName":"BMCLRQ",
+            "filterType":"=",
+            "values":"20200701"
+            }
+            ],
+	"apiKey":"CBBA381E360C31107338B81B80121767", //获取的临时操作密钥 通过getApiKey.json接口获取 有效期为一小时
+	"schoolCode":"12722",          //学校代码 ----由学校提供
+	"softwareNumber":"AICTD130"    //软件编号 ----由学校提供
+}</pre>
+                            <pre class="layui-code" th:if="${method eq 'update'}">{
+	"operationType":"update",      //操作类型，有四种分别是 insert、find、delete、update
+	"tableName":"TYSJ_BM",         //操作表名
+	"filterField":[{"fieldName":"BMDM","filterType":"=","values":"001"}],              //判断字段名 使用请求表字段参数中的字段名组合成{"fieldName":字段名,"filterType":判断方式,"values":具体值}对象放到数组中
+	"updateField":[                //更新、或者插入数据,修改字段名数组 使用请求表字段参数中的字段名组合成{"fieldName":字段名,"filterType":"=","values":具体值}对象放到数组中
+            {
+            "fieldName":"BMDM",
+            "filterType":"=",
+            "values":"002"
+            },
+            {
+            "fieldName":"BMMC",
+            "filterType":"=",
+            "values":"测试"
+            },
+            {
+            "fieldName":"SJBMDM",
+            "filterType":"=",
+            "values":"000"
+            },
+            {
+            "fieldName":"BMSX",
+            "filterType":"=",
+            "values":"行政部门"
+            },
+            {
+            "fieldName":"BMCLRQ",
+            "filterType":"=",
+            "values":"20200701"
+            }
+            ],
+	"apiKey":"CBBA381E360C31107338B81B80121767", //获取的临时操作密钥 通过getApiKey.json接口获取 有效期为一小时
+	"schoolCode":"12722",          //学校代码 ----由学校提供
+	"softwareNumber":"AICTD130"    //软件编号 ----由学校提供
+}</pre>
+                            <pre class="layui-code" th:if="${method eq 'del'}">{
+	"operationType":"delete",      //操作类型，有四种分别是 insert、find、delete、update
+	"tableName":"TYSJ_BM",         //操作表名
+	"filterField":[{"fieldName":"BMDM","filterType":"=","values":"002"}],  //判断字段名 使用请求表字段参数中的字段名组合成{"fieldName":字段名,"filterType":判断方式,"values":具体值}对象放到数组中
+	"apiKey":"CBBA381E360C31107338B81B80121767", //获取的临时操作密钥 通过getApiKey.json接口获取 有效期为一小时
+	"schoolCode":"12722",          //学校代码 ----由学校提供
+	"softwareNumber":"AICTD130"    //软件编号 ----由学校提供
+}</pre>
+                            <pre class="layui-code" th:if="${method eq 'geiApi'}">{
+	schoolCode：学校代码,//学校代码
+    apiKey:学校提供的加密key密钥, //学校提供的加密key密钥
+    softwareNumber:学校提供的软件编号          //学校提供的软件编号
+}</pre>
+                            <pre class="layui-code" th:if="${method eq 'list'}">{
+	"operationType":"find",      //操作类型，有四种分别是 insert、find、delete、update
+	"tableName":"TYSJ_BM",         //操作表名
+	"selectField":[],              //查询字段名 [field1，field2，field3...] 使用请求表字段参数中的字段名, 传空代表查询全部
+	"filterField":[],              //判断字段名 使用请求表字段参数中的字段名组合成{"fieldName":字段名,"filterType":判断方式,"values":具体值}对象放到数组中;传空代表默认查询全部
+	"isPage":"false",              // 判断是否分页,只有查询类型中生效
+	"pageNum":"1",                 // 配合isPage使用,第几页
+	"pageSize":"100",              // 每页多少条数据
+	"apiKey":"CBBA381E360C31107338B81B80121767", //获取的临时操作密钥 通过getApiKey.json接口获取 有效期为一小时
+	"schoolCode":"12722",          //学校代码 ----由学校提供
+	"softwareNumber":"AICTD130"    //软件编号 ----由学校提供
+}</pre>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th align="left" colspan="5">返回结果(数据状态一切正常)</th>
+                    </tr>
+                    <tr rowspan="7">
+                        <td colspan="5">
+<pre class="layui-code" th:if="${method eq 'save'}">{
+    "status": 0,
+    "msg": null,
+    "data": "成功新增1条数据!"
+}</pre>
+                            <pre class="layui-code" th:if="${method eq 'update'}">{
+    "status": 0,
+    "msg": null,
+    "data": "成功更新1条数据!"
+}</pre>
+                            <pre class="layui-code" th:if="${method eq 'del'}">{
+    "status": 0,
+    "msg": null,
+    "data": "成功删除1条数据!"
+}</pre>
+                            <pre class="layui-code" th:if="${method eq 'geiApi'}">{
+    "status": 0,
+    "msg": null,
+    "data": "B65EA52DF79508D3656C7E6669A3A7C3" //临时密钥
+}</pre>
+                            <pre class="layui-code" th:if="${method eq 'list'}">//未分页格式：
+                                {
+    "status": 0,
+    "msg": "查询成功!数据以未分页格式返回",
+    "data": [
+        {
+            "BMCLRQ": "20200701",
+            "SJBMDM": "000",
+            "BMSX": "行政部门",
+            "BMMC": "测试",
+            "BMDM": "002"
+        },
+        {
+            "BMCLRQ": "20200701",
+            "SJBMDM": "000",
+            "BMSX": "行政部门",
+            "BMMC": "测试",
+            "BMDM": "002"
+        },
+        {
+            "BMCLRQ": "20200701",
+            "SJBMDM": "000",
+            "BMSX": "行政部门",
+            "BMMC": "测试",
+            "BMDM": "002"
+        }
+    ]
+}
+//分页格式
+{
+    "status": 0,
+    "msg": "查询成功!数据以分页格式返回",
+    "data": {
+        "records": [    //存放结果集的记录数组
+            {
+                "__row_number__": 1,
+                "BMCLRQ": "20200701",
+                "SJBMDM": "000",
+                "BMSX": "行政部门",
+                "BMMC": "测试",
+                "BMDM": "002"
+            },
+            {
+                "__row_number__": 2,
+                "BMCLRQ": "20200701",
+                "SJBMDM": "000",
+                "BMSX": "行政部门",
+                "BMMC": "测试",
+                "BMDM": "002"
+            },
+            {
+                "__row_number__": 3,
+                "BMCLRQ": "20200701",
+                "SJBMDM": "000",
+                "BMSX": "行政部门",
+                "BMMC": "测试",
+                "BMDM": "002"
+            }
+        ],
+        "total": 3,   //总记录数
+        "size": 100,  //每页多少条
+        "current": 1, //当前第几页
+        "orders": [],
+        "optimizeCountSql": true,
+        "hitCount": false,
+        "searchCount": true,
+        "pages": 1    //总共几页
+    }
+}</pre>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th align="left" colspan="5">返回值状态</th>
+                    </tr>
+                    <tr>
+                        <td align="left" colspan="5">
+<pre class="layui-code">
+status状态有3种，分别为：
+0  // 数据状态一切正常的状态码
+1  // 参数错误
+10 // 未取得授权进行访问</pre>
+                        </td>
+
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/jquery.min.js}"></script>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/FileSaver.js}"></script>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/jquery.wordexport.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'laydate'], function () {
+        let $ = layui.$;
+        $(document).on('click', '#hup-file-retreat', function () {
+            history.back();
+        });
+        $(document).on('click', '#import', function () {
+            $('#importWord').wordExport("[[${interfaceName}]]标准文档");
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.DwdxxbzdmysMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.Dwdxxbzdmys">
+        <id column="ID_" property="id"/>
+        <result column="DYL_" property="dyl"/>
+        <result column="DYLMC_" property="dylmc"/>
+        <result column="Hierarchy_ID_" property="hierarchyId"/>
+        <result column="Hierarchy_Key_" property="hierarchyKey"/>
+        <result column="Sort_" property="sort"/>
+        <result column="Status_" property="status"/>
+        <result column="IsDelete_" property="isDelete"/>
+        <result column="SchoolCode_" property="schoolCode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createTime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updateTime"/>
+        <result column="Remark_" property="remark"/>
+        <result column="CanYouEdit_" property="canYouEdit"/>
+        <result column="CanYouDelete_" property="canYouDelete"/>
+        <result column="SortId_" property="sortId"/>
+        <result column="IsStandard_" property="isStandard"/>
+        <result column="CdmpVersion_" property="cdmpVersion"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, DYL_, DYLMC_, Hierarchy_ID_, Hierarchy_Key_, Sort_, Status_, IsDelete_, SchoolCode_, Creator_, CreateTime_, Updateor_, UpdateTime_, Remark_, CanYouEdit_, CanYouDelete_, SortId_, CdmpVersion_,IsStandard_
+    </sql>
+
+</mapper>

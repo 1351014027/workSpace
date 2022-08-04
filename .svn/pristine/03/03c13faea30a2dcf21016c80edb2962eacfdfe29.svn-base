@@ -1,0 +1,121 @@
+package com.saving.metadata.controller;
+
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.param.SchooleCodeParam;
+import com.saving.metadata.pojo.SchooleCode;
+import com.saving.metadata.pojo.User;
+import com.saving.metadata.service.SchooleCodeService;
+import com.saving.metadata.utils.IpUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.util.List;
+
+/**
+ * <p>
+ * 前端控制器
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-02-24
+ */
+@Slf4j
+@RestController
+@RequestMapping("/cdmp/schooleCode")
+@Api(tags = "学校同步授权记录控制器")
+public class SchooleCodeController {
+
+
+    private final SchooleCodeService schooleCodeService;
+
+    @Autowired
+    public SchooleCodeController(SchooleCodeService schooleCodeService) {
+        this.schooleCodeService = schooleCodeService;
+    }
+
+    @PostMapping(value = "deletes.json")
+    @ApiOperation(value = "批量删除接口", notes = "字段删除")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "ids", value = "对象主键组", required = true, paramType = "query")
+    })
+    public ServerResponse del(@RequestBody List<String> ids) {
+        if (!ids.isEmpty()) {
+            schooleCodeService.updateByIdsIsDel(ids);
+            HttpServletRequest request = RequestHolder.getCurrenRequest();
+            User user = RequestHolder.getCurrenSysUser();
+            log.error("【数据中台系统】卡号为{}的用户删除了ID为{}的学校同步授权记录数据，删除记录数量为{},删除IP为{}", user.getUsername(), ids, ids.size(), IpUtils.getIpAddr(request));
+        }
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "update.json")
+    @ApiOperation(value = "更新接口", notes = "更新类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "param", value = "对象，用于更新", required = true, paramType = "query")
+    })
+    public ServerResponse update(SchooleCodeParam param) {
+        schooleCodeService.update(param);
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "save.json")
+    @ApiOperation(value = "新增接口", notes = "新增类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "param", value = "对象，用于新增", required = true, paramType = "query")
+    })
+    public ServerResponse save(SchooleCodeParam param) throws ParseException {
+        schooleCodeService.save(param);
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "option.json")
+    @ApiOperation(value = "学校列表接口", notes = "学校列表，不包含授权开始时间为非空的")
+    public ServerResponse<List<SchooleCode>> option() {
+
+        return ServerResponse.createBySuccess(schooleCodeService.opiton());
+    }
+
+    @PostMapping("listPage.json")
+    @ApiOperation(value = "API授权分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "startDate", value = "过滤上传日期开始时间"),
+            @ApiImplicitParam(name = "endDate", value = "过滤上传日期结束时间"),
+            @ApiImplicitParam(name = "schooleCode", value = "对象，用于过滤")
+    })
+    public ServerResponse<Page<SchooleCode>> listPage(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize
+            , SchooleCode schooleCode
+            , String startDate
+            , String endDate) {
+        Page<SchooleCode> page = schooleCodeService.page(new Page<>(pageNum, pageSize),
+                new QueryWrapper<SchooleCode>().lambda().and(
+                        schooleCode != null && StringUtils.isNotEmpty(schooleCode.getSchoolname()), obj -> obj
+                                .like(SchooleCode::getSchoolcode, schooleCode.getSchoolname())
+                                .or()
+                                .like(SchooleCode::getSchoolname, schooleCode.getSchoolname()))
+                        .between(StringUtils.isNoneBlank(startDate) && StringUtils.isNoneBlank(endDate),
+                                SchooleCode::getStarttime, startDate, endDate)
+                        .and(obj -> obj.isNotNull(SchooleCode::getStarttime).isNotNull(SchooleCode::getEndtime))
+                        .orderByDesc(SchooleCode::getStatus)
+                        .orderByAsc(SchooleCode::getSchoolcode));
+        return ServerResponse.createBySuccess(page);
+    }
+
+}
+

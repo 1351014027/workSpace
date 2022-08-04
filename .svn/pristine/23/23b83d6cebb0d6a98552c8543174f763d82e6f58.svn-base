@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.MetaDataFiledsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.MetaDataFileds">
+        <id column="ID_" property="id"/>
+        <result column="TableID_" property="tableId"/>
+        <result column="TableName_" property="tableName"/>
+        <result column="FiledNumber_" property="filedNumber"/>
+        <result column="FiledName_" property="filedName"/>
+        <result column="ChineseFiledName_" property="chineseFiledName"/>
+        <result column="StorageType_" property="storageType"/>
+        <result column="FiledLength_" property="filedLength"/>
+        <result column="Constraints_" property="constraints"/>
+        <result column="ValueSpace_" property="valueSpace"/>
+        <result column="DataItemDescription_" property="dataItemDescription"/>
+        <result column="ReferenceNumber_" property="referenceNumber"/>
+        <result column="TheStandardSource_" property="theStandardSource"/>
+        <result column="FiledFormat_" property="filedFormat"/>
+        <result column="DecimalLength_" property="decimalLength"/>
+        <result column="IsNotNull_" property="isNotNull"/>
+        <result column="IsDecimals_" property="isDecimals"/>
+        <result column="IsPrimary_" property="isPrimary"/>
+        <result column="Annotation_" property="annotation"/>
+        <result column="DefaultValue_" property="defaultValue"/>
+        <result column="FieldIndex_" property="fieldIndex"/>
+        <result column="FieldStatus_" property="fieldStatus"/>
+        <result column="SchoolCode_" property="schoolCode"/>
+        <result column="Remark_" property="remark"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createTime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updateTime"/>
+        <result column="CanYouEdit_" property="canYouEdit"/>
+        <result column="CanYouDelete_" property="canYouDelete"/>
+        <result column="Sort_" property="sort"/>
+        <result column="SortId_" property="sortId"/>
+        <result column="User_Operation_" property="userOperation"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, TableID_, TableName_, FiledNumber_, FiledName_, ChineseFiledName_, StorageType_, FiledLength_, Constraints_, ValueSpace_, DataItemDescription_, ReferenceNumber_, TheStandardSource_, FiledFormat_, DecimalLength_, IsNotNull_, IsDecimals_, IsPrimary_, Annotation_, DefaultValue_, FieldIndex_, FieldStatus_, SchoolCode_, Remark_, Creator_, CreateTime_, Updateor_, UpdateTime_, CanYouEdit_, CanYouDelete_,Sort_,SortId_,User_Operation_
+    </sql>
+    <insert id="createView">
+
+        CREATE VIEW ${labelName}
+        AS
+        SELECT
+        <foreach collection="list" item="list" separator=",">
+            ${list.filedName} AS ${list.chineseFiledName}
+        </foreach>
+        ${sqlStr}
+
+    </insert>
+    <update id="executeUpdatedFiledCode">
+        ${str}
+    </update>
+    <select id="getUpdatedFiledCode" resultType="com.saving.metadata.vo.MetaDataFiledCodeVo">
+        <!--        select dataBaseTableName,-->
+        <!--        dataBaseFileName,-->
+        <!--        metadataFiledType,-->
+        <!--        dataBaseFiledType,-->
+        <!--        metadataIsPrimary,-->
+        <!--        dataBaseIsPrimary,-->
+        <!--        dataBaseAllowNull,-->
+        <!--        metaDataAllowNull,-->
+        <!--        metadataFiledLength,-->
+        <!--        dataBaseFiledLength,-->
+        <!--        metadataFiledLensec,-->
+        <!--        dataBaseFiledLensec,-->
+        <!--        pendingStatement-->
+        <!--        from (-->
+        <!--        SELECT-->
+        <!--        dataBaseTableName = CASE WHEN ISNULL(A.TABLENAME, '') != '' THEN A.TABLENAME ELSE B.TABLENAME END,-->
+        <!--        dataBaseFileName = B.FIELDNAME,-->
+        <!--        metadataFiledType = A.FIELDTYPE,-->
+        <!--        dataBaseFiledType = B.FIELDTYPE,-->
+        <!--        metadataIsPrimary = CASE A.IsPrimary_ WHEN 1 THEN '是' else '否' end ,-->
+        <!--        dataBaseIsPrimary = CASE  WHEN b.ISPK is not null THEN '是' else '否' end ,-->
+        <!--        metadataFiledLength = A.LENGTH,-->
+        <!--        dataBaseFiledLength = B.LENGTH,-->
+        <!--        metadataFiledLensec = isnull(A.LENSEC,0),-->
+        <!--        dataBaseFiledLensec = isnull(B.LENSEC,0),-->
+        <!--        dataBaseAllowNull= B.ALLOWNULL,-->
+        <!--        metaDataAllowNull= A.ALLOWNULL,-->
+        <!--        pendingStatement=-->
+        <!--        (CASE WHEN A.IsPrimary_=1 and ISPK is null THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN ['+B.FIELDNAME+']-->
+        <!--        ['+B.FIELDTYPE+']('+cast(B.LENGTH AS varchar(255))+-->
+        <!--        (CASE WHEN B.FIELDTYPE='decimal' then ','+cast(isnull(B.LENSEC,0) AS varchar(255)) else '' end)+') NOT NULL;-->
+        <!--        ALTER TABLE ['+A.TABLENAME+'] ADD CONSTRAINT [PK_'+B.FIELDNAME+'] PRIMARY KEY (['+B.FIELDNAME+']);' else '' END+-->
+        <!--        CASE WHEN A.FIELDTYPE != B.FIELDTYPE and A.FIELDTYPE='varchar' THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN-->
+        <!--        ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(B.LENGTH AS varchar(255))+-->
+        <!--        (CASE WHEN B.FIELDTYPE='decimal' then ','+cast(isnull(B.LENSEC,0) AS varchar(255)) else '' end)+') '+case-->
+        <!--        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+-->
+        <!--        CASE WHEN A.LENGTH != B.LENGTH and A.LENGTH>B.LENGTH AND A.StorageType NOT IN('text','binary') THEN 'ALTER TABLE-->
+        <!--        ['+A.TABLENAME+'] ALTER COLUMN ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(A.LENGTH AS varchar(255))+-->
+        <!--        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') '+case-->
+        <!--        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+-->
+        <!--        CASE WHEN A.LENSEC != B.LENSEC and A.LENSEC>B.LENSEC THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN-->
+        <!--        ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(A.LENGTH AS varchar(255))+-->
+        <!--        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') '+case-->
+        <!--        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+-->
+        <!--        CASE WHEN A.ALLOWNULL != B.ALLOWNULL THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN ['+A.FIELDNAME+']-->
+        <!--        ['+A.FIELDTYPE+']('+cast(A.LENGTH AS varchar(255))+-->
+        <!--        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') '+case-->
+        <!--        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END)-->
+
+        <!--        FROM (SELECT-->
+        <!--        A.StorageType_ as StorageType,-->
+        <!--        A.Constraints_ as Constraints,-->
+        <!--        TABLENAME = B.TableName_,-->
+        <!--        FIELDNAME = A.FiledName_,-->
+        <!--        FIELDSNO = A.SortId_,-->
+        <!--        FIELDTYPE = case  A.StorageType_ when  'N' then  'decimal'-->
+        <!--        when 'C'  then 'varchar'-->
+        <!--        when 'M'  then 'decimal'-->
+        <!--        when 'B'  then 'binary'-->
+        <!--        when 'T'  then 'text' end,-->
+        <!--        LENGTH = A.FiledLength_,-->
+        <!--        LENSEC = A.DecimalLength_,-->
+        <!--        ALLOWNULL= case IsNotNull_ when 1 then  0 else 1  end,-->
+        <!--        A.IsPrimary_-->
+        <!--        FROM  METADATA_B_METADATAFIELDS A JOIN METADATA_B_METADATATABLES B ON A.TableID_=B.ID_ where B.TableStatus_=1-->
+        <!--        <if test="list != null and list.size()>0" >-->
+        <!--            and    A.TableID_ in (-->
+        <!--            <foreach collection="list" separator="," item="list">-->
+        <!--                #{list}-->
+        <!--            </foreach>-->
+        <!--            )-->
+        <!--        </if>-->
+        <!--        and    A.IsDelete_!=1-->
+        <!--        ) A-->
+        <!--        FULL JOIN (SELECT-->
+        <!--        TABLENAME = B.NAME,-->
+        <!--        FIELDNAME = A.NAME,-->
+        <!--        FIELDSNO = A.COLID,-->
+        <!--        FIELDTYPE = C.NAME,-->
+        <!--        LENGTH = A.PREC,-->
+        <!--        LENSEC = A.XSCALE,-->
+        <!--        ALLOWNULL = A.ISNULLABLE,-->
+        <!--        D.ISPK-->
+        <!--        FROM ..SYSCOLUMNS A-->
+        <!--        LEFT JOIN ..SYSOBJECTS B-->
+        <!--        ON A.ID = B.ID-->
+        <!--        LEFT JOIN ..SYSTYPES C-->
+        <!--        ON A.XUSERTYPE = C.XUSERTYPE-->
+        <!--        LEFT JOIN  (SELECT TABLE_NAME,-->
+        <!--        COLUMN_NAME,1 AS ISPK-->
+        <!--        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE) D  ON  D.TABLE_NAME =B.name AND D.COLUMN_NAME =A.NAME-->
+        <!--        WHERE B.XTYPE = 'U') B-->
+        <!--        ON A.TABLENAME = B.TABLENAME-->
+        <!--        AND A.FIELDNAME = B.FIELDNAME-->
+        <!--        WHERE ISNULL(A.TABLENAME, '') = ''-->
+        <!--        OR ISNULL(B.TABLENAME, '') = ''-->
+        <!--        OR A.FIELDTYPE != B.FIELDTYPE-->
+        <!--        OR A.FIELDSNO != B.FIELDSNO-->
+        <!--        OR A.LENGTH != B.LENGTH-->
+        <!--        OR A.LENSEC != B.LENSEC-->
+        <!--        OR A.ALLOWNULL != B.ALLOWNULL) a where A.dataBaseTableName IN (select   TableName_ from METADATA_B_METADATATABLES where IsDelete_= 0)    AND pendingStatement !=''-->
+        <!--        ORDER by 1, 4-->
+
+        select dataBaseTableName,
+        dataBaseFileName,
+        metadataFiledType,
+        dataBaseFiledType,
+        metadataIsPrimary,
+        dataBaseIsPrimary,
+        dataBaseAllowNull,
+        metaDataAllowNull,
+        metadataFiledLength,
+        dataBaseFiledLength,
+        metadataFiledLensec,
+        dataBaseFiledLensec,
+        pendingStatement
+        from (
+        SELECT
+        dataBaseTableName = CASE WHEN ISNULL(A.TABLENAME, '') != '' THEN A.TABLENAME ELSE B.TABLENAME END,
+        dataBaseFileName = B.FIELDNAME,
+        metadataFiledType = A.FIELDTYPE,
+        dataBaseFiledType = B.FIELDTYPE,
+        metadataIsPrimary = CASE A.IsPrimary_ WHEN 1 THEN '是' else '否' end ,
+        dataBaseIsPrimary = CASE WHEN b.ISPK is not null THEN '是' else '否' end ,
+        metadataFiledLength = A.LENGTH,
+        dataBaseFiledLength = B.LENGTH,
+        metadataFiledLensec = isnull(A.LENSEC,0),
+        dataBaseFiledLensec = isnull(B.LENSEC,0),
+        dataBaseAllowNull= B.ALLOWNULL,
+        metaDataAllowNull= A.ALLOWNULL,
+        pendingStatement=
+        (CASE WHEN A.IsPrimary_=1 and ISPK is null THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN ['+B.FIELDNAME+']
+        ['+B.FIELDTYPE+']('+cast(B.LENGTH AS varchar(255))+
+        (CASE WHEN B.FIELDTYPE='decimal' then ','+cast(isnull(B.LENSEC,0) AS varchar(255)) else '' end)+') NOT NULL;
+        ALTER TABLE ['+A.TABLENAME+'] ADD CONSTRAINT [PK_'+B.FIELDNAME+'] PRIMARY KEY (['+B.FIELDNAME+']);' else '' END+
+        CASE WHEN A.FIELDTYPE != B.FIELDTYPE and A.FIELDTYPE='varchar' THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN
+        ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(B.LENGTH AS varchar(255))+
+        (CASE WHEN B.FIELDTYPE='decimal' then ','+cast(isnull(B.LENSEC,0) AS varchar(255)) else '' end)+') '+case
+        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+
+        CASE WHEN A.LENGTH != B.LENGTH and A.LENGTH>B.LENGTH AND A.StorageType NOT IN('T','B') THEN 'ALTER TABLE
+        ['+A.TABLENAME+'] ALTER COLUMN ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(A.LENGTH AS varchar(255))+
+        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') '+case
+        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+
+        CASE WHEN A.LENSEC != B.LENSEC and A.LENSEC>B.LENSEC THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN
+        ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(A.LENGTH AS varchar(255))+
+        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') '+case
+        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+
+        CASE WHEN A.ALLOWNULL != B.ALLOWNULL THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN ['+A.FIELDNAME+']
+        ['+A.FIELDTYPE+']'+ case when A.StorageType IN('T','B') then '' else'('+cast(A.LENGTH AS varchar(255)) +
+        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') 'end +'
+        '+case
+        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END)
+
+        FROM (SELECT
+        A.StorageType_ as StorageType,
+        A.Constraints_ as Constraints,
+        TABLENAME = B.TableName_,
+        FIELDNAME = A.FiledName_,
+        FIELDSNO = A.SortId_,
+        FIELDTYPE = case A.StorageType_ when 'N' then 'decimal'
+        when 'C' then 'varchar'
+        when 'M' then 'decimal'
+        when 'B' then 'binary'
+        when 'T' then 'text' end,
+        LENGTH = A.FiledLength_,
+        LENSEC = A.DecimalLength_,
+        ALLOWNULL= case IsNotNull_ when 1 then 0 else 1 end,
+        A.IsPrimary_
+        FROM METADATA_B_METADATAFIELDS A JOIN METADATA_B_METADATATABLES B ON A.TableID_=B.ID_ where B.TableStatus_=1
+        <if test="list != null and list.size()>0">
+            and A.TableID_ in (
+            <foreach collection="list" separator="," item="list">
+                #{list}
+            </foreach>
+            )
+        </if>
+        and A.IsDelete_!=1
+        ) A
+        FULL JOIN (SELECT
+        TABLENAME = B.NAME,
+        FIELDNAME = A.NAME,
+        FIELDSNO = A.COLID,
+        FIELDTYPE = C.NAME,
+        LENGTH = A.PREC,
+        LENSEC = A.XSCALE,
+        ALLOWNULL = A.ISNULLABLE,
+        D.ISPK
+        FROM ..SYSCOLUMNS A
+        LEFT JOIN ..SYSOBJECTS B
+        ON A.ID = B.ID
+        LEFT JOIN ..SYSTYPES C
+        ON A.XUSERTYPE = C.XUSERTYPE
+        LEFT JOIN (SELECT TABLE_NAME,
+        COLUMN_NAME,1 AS ISPK
+        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE) D ON D.TABLE_NAME =B.name AND D.COLUMN_NAME =A.NAME
+        WHERE B.XTYPE = 'U') B
+        ON A.TABLENAME = B.TABLENAME
+        AND A.FIELDNAME = B.FIELDNAME
+        WHERE ISNULL(A.TABLENAME, '') = ''
+        OR ISNULL(B.TABLENAME, '') = ''
+        OR A.FIELDTYPE != B.FIELDTYPE
+        OR A.FIELDSNO != B.FIELDSNO
+        OR A.LENGTH != B.LENGTH
+        OR A.LENSEC != B.LENSEC
+        OR A.ALLOWNULL != B.ALLOWNULL) a where A.dataBaseTableName IN (select TableName_ from METADATA_B_METADATATABLES
+        where IsDelete_= 0) AND pendingStatement !=''
+        ORDER by 1, 4
+    </select>
+
+    <select id="getUpdatedFiledCodeByid" resultType="com.saving.metadata.vo.MetaDataFiledCodeVo">
+        select dataBaseTableName,
+        dataBaseFileName,
+        metadataFiledType,
+        dataBaseFiledType,
+        metadataIsPrimary,
+        dataBaseIsPrimary,
+        dataBaseAllowNull,
+        metaDataAllowNull,
+        metadataFiledLength,
+        dataBaseFiledLength,
+        metadataFiledLensec,
+        dataBaseFiledLensec,
+        pendingStatement
+        from (
+        SELECT
+        dataBaseTableName = CASE WHEN ISNULL(A.TABLENAME, '') != '' THEN A.TABLENAME ELSE B.TABLENAME END,
+        dataBaseFileName = B.FIELDNAME,
+        metadataFiledType = A.FIELDTYPE,
+        dataBaseFiledType = B.FIELDTYPE,
+        metadataIsPrimary = CASE A.IsPrimary_ WHEN 1 THEN '是' else '否' end ,
+        dataBaseIsPrimary = CASE WHEN b.ISPK is not null THEN '是' else '否' end ,
+        metadataFiledLength = A.LENGTH,
+        dataBaseFiledLength = B.LENGTH,
+        metadataFiledLensec = isnull(A.LENSEC,0),
+        dataBaseFiledLensec = isnull(B.LENSEC,0),
+        dataBaseAllowNull= B.ALLOWNULL,
+        metaDataAllowNull= A.ALLOWNULL,
+        pendingStatement=
+        (CASE WHEN A.IsPrimary_=1 and ISPK is null THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN ['+B.FIELDNAME+']
+        ['+B.FIELDTYPE+']('+cast(B.LENGTH AS varchar(255))+
+        (CASE WHEN B.FIELDTYPE='decimal' then ','+cast(isnull(B.LENSEC,0) AS varchar(255)) else '' end)+') NOT NULL;
+        ALTER TABLE ['+A.TABLENAME+'] ADD CONSTRAINT [PK_'+B.FIELDNAME+'] PRIMARY KEY (['+B.FIELDNAME+']);' else '' END+
+        CASE WHEN A.FIELDTYPE != B.FIELDTYPE and A.FIELDTYPE='varchar' THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN
+        ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(B.LENGTH AS varchar(255))+
+        (CASE WHEN B.FIELDTYPE='decimal' then ','+cast(isnull(B.LENSEC,0) AS varchar(255)) else '' end)+') '+case
+        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+
+        CASE WHEN A.LENGTH != B.LENGTH and A.LENGTH>B.LENGTH AND A.StorageType NOT IN('T','B') THEN 'ALTER TABLE
+        ['+A.TABLENAME+'] ALTER COLUMN ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(A.LENGTH AS varchar(255))+
+        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') '+case
+        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+
+        CASE WHEN A.LENSEC != B.LENSEC and A.LENSEC>B.LENSEC THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN
+        ['+A.FIELDNAME+'] ['+A.FIELDTYPE+']('+cast(A.LENGTH AS varchar(255))+
+        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') '+case
+        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END+
+        CASE WHEN A.ALLOWNULL != B.ALLOWNULL THEN 'ALTER TABLE ['+A.TABLENAME+'] ALTER COLUMN ['+A.FIELDNAME+']
+        ['+A.FIELDTYPE+']('+cast(A.LENGTH AS varchar(255))+
+        (CASE WHEN A.FIELDTYPE='decimal' then ','+cast(isnull(A.LENSEC,0) AS varchar(255)) else '' end)+') '+case
+        B.ALLOWNULL when 1 then 'NOT NULL' else 'NULL' end +';' else '' END)
+
+        FROM (SELECT
+        A.StorageType_ as StorageType,
+        A.Constraints_ as Constraints,
+        TABLENAME = B.TableName_,
+        FIELDNAME = A.FiledName_,
+        FIELDSNO = A.SortId_,
+        FIELDTYPE = case A.StorageType_ when 'N' then 'decimal'
+        when 'C' then 'varchar'
+        when 'M' then 'decimal'
+        when 'B' then 'binary'
+        when 'T' then 'text' end,
+        LENGTH = A.FiledLength_,
+        LENSEC = A.DecimalLength_,
+        ALLOWNULL= case IsNotNull_ when 1 then 0 else 1 end,
+        A.IsPrimary_
+        FROM METADATA_B_METADATAFIELDS A JOIN METADATA_B_METADATATABLES B ON A.TableID_=B.ID_ where B.TableStatus_=1
+        <if test="id != null ">
+            and A.TableID_ = #{id}
+        </if>
+        and A.IsDelete_!=1
+        ) A
+        FULL JOIN (SELECT
+        TABLENAME = B.NAME,
+        FIELDNAME = A.NAME,
+        FIELDSNO = A.COLID,
+        FIELDTYPE = C.NAME,
+        LENGTH = A.PREC,
+        LENSEC = A.XSCALE,
+        ALLOWNULL = A.ISNULLABLE,
+        D.ISPK
+        FROM ..SYSCOLUMNS A
+        LEFT JOIN ..SYSOBJECTS B
+        ON A.ID = B.ID
+        LEFT JOIN ..SYSTYPES C
+        ON A.XUSERTYPE = C.XUSERTYPE
+        LEFT JOIN (SELECT TABLE_NAME,
+        COLUMN_NAME,1 AS ISPK
+        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE) D ON D.TABLE_NAME =B.name AND D.COLUMN_NAME =A.NAME
+        WHERE B.XTYPE = 'U') B
+        ON A.TABLENAME = B.TABLENAME
+        AND A.FIELDNAME = B.FIELDNAME
+        WHERE ISNULL(A.TABLENAME, '') = ''
+        OR ISNULL(B.TABLENAME, '') = ''
+        OR A.FIELDTYPE != B.FIELDTYPE
+        OR A.FIELDSNO != B.FIELDSNO
+        OR A.LENGTH != B.LENGTH
+        OR A.LENSEC != B.LENSEC
+        OR A.ALLOWNULL != B.ALLOWNULL) a where A.dataBaseTableName IN (select TableName_ from METADATA_B_METADATATABLES
+        where IsDelete_= 0) AND pendingStatement !=''
+        ORDER by 1, 4
+    </select>
+    <select id="getViewFiled" resultType="com.saving.metadata.pojo.MetaDataFileds">
+        select name as FiledName_ ,name as ChineseFiledName_  from EIC.DBO.syscolumns where id=(select max(id) from EIC.DBO.sysobjects where xtype='v' and name=#{tableId}) and  name not like '%密码%'
+    </select>
+    <select id="showLabelDataTable" resultType="com.saving.metadata.vo.MapperFieldVo">
+        select a.TableID_ as oneTableId,a.TableName_ as oneTableName,a.FiledNumber_ as oneTableFieldNumber,a.FiledName_
+        as oneTableFieldName,a.id_ as oneTableFieldId
+        ,a.ChineseFiledName_ as oneTableChineseFiledName,
+        B.TableID_ as twoTableId,B.TableName_ as twoTableName,a.ReferenceNumber_ as twoTableFieldNumber, b.FiledName_ as
+        twoTableFieldName,
+        b.ChineseFiledName_ as twoTableChineseFiledName,b.ID_ as twoTableFieldId into #temp_metadata_mapper
+        from
+        METADATA_B_METADATAFIELDS a
+        join METADATA_B_METADATAFIELDS B
+        on a.ReferenceNumber_ =b.FiledNumber_
+        select a.*,b.states from #temp_metadata_mapper a join (select twoTableId,case when COUNT(twoTableId)>1 then 1
+        else 0 end states
+        from #temp_metadata_mapper
+        <where>
+            <if test="list!=null">
+                oneTableId in (
+                <foreach collection="list" item="list" separator=",">
+                    #{list}
+                </foreach>
+                )
+            </if>
+            <if test="list!=null">
+                and
+                twoTableId in (
+                <foreach collection="list" item="list" separator=",">
+                    #{list}
+                </foreach>
+                )
+            </if>
+        </where>
+        group by twoTableId) b on a.twoTableId = b.twoTableId
+        <where>
+            <if test="list!=null">
+                A.oneTableId in (
+                <foreach collection="list" item="list" separator=",">
+                    #{list}
+                </foreach>
+                )
+            </if>
+            <if test="list!=null">
+                and
+                A.twoTableId in (
+                <foreach collection="list" item="list" separator=",">
+                    #{list}
+                </foreach>
+                )
+            </if>
+        </where>
+        drop table #temp_metadata_mapper
+
+    </select>
+    <select id="showLabelDataTables" resultType="com.saving.metadata.vo.MapperFieldVo">
+        select a.TableID_ as oneTableId,a.TableName_ as oneTableName,a.FiledNumber_ as oneTableFieldNumber,a.FiledName_
+        as oneTableFieldName,a.id_ as oneTableFieldId
+        ,a.ChineseFiledName_ as oneTableChineseFiledName,
+        B.TableID_ as twoTableId,B.TableName_ as twoTableName,a.ReferenceNumber_ as twoTableFieldNumber, b.FiledName_ as
+        twoTableFieldName,
+        b.ChineseFiledName_ as twoTableChineseFiledName,b.ID_ as twoTableFieldId into #temp_metadata_mapper
+        from
+        METADATA_B_METADATAFIELDS a
+        join METADATA_B_METADATAFIELDS B
+        on a.ReferenceNumber_ =b.FiledNumber_
+        select a.*,b.states from #temp_metadata_mapper a join (select twoTableId,case when COUNT(twoTableId)>1 then 1
+        else 0 end states
+        from #temp_metadata_mapper
+        <where>
+            <if test="list!=null">
+                oneTableId in (
+                <foreach collection="list" item="list" separator=",">
+                    #{list}
+                </foreach>
+                )
+            </if>
+
+        </where>
+        group by twoTableId) b on a.twoTableId = b.twoTableId
+        <where>
+            <if test="list!=null and list.size()>0">
+                A.oneTableId in (
+                <foreach collection="list" item="list" separator=",">
+                    #{list}
+                </foreach>
+                )
+            </if>
+
+        </where>
+        drop table #temp_metadata_mapper
+    </select>
+    <select id="getShowFieldList" resultType="com.saving.metadata.pojo.MetaDataFileds">
+        select top 1000000000 * from ( <foreach collection="maps.entrySet()" index="key" item="value"
+                                                separator="union all ">
+        select top 1000000000 TableName_ as tableName,#{key} as tableId,FiledName_ AS filedName,
+        ChineseFiledName_ as chineseFiledName from METADATA_B_METADATAFIELDS where TableID_=#{value} order by cast(Sort_
+        as int) asc ,SortId_ asc , CreateTime_ desc
+    </foreach> ) A order by tableId asc
+    </select>
+
+
+</mapper>

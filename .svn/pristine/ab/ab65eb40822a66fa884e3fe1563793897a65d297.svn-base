@@ -1,0 +1,84 @@
+package com.saving.metadata.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.dao.PermissionMapper;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.pojo.Permission;
+import com.saving.metadata.pojo.User;
+import com.saving.metadata.service.PermissionService;
+import com.saving.metadata.utils.MapUtil;
+import com.saving.metadata.utils.UUID64Utils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 服务实现类
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-03-15
+ */
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permission> implements PermissionService {
+
+
+    private final PermissionMapper permissionMapper;
+
+    @Autowired
+    public PermissionServiceImpl(PermissionMapper permissionMapper) {
+        this.permissionMapper = permissionMapper;
+    }
+
+    @Override
+    public void save(String kh, String xm, Map<String, String> map) {
+        if (map.size() == 0) {
+            throw new ParamException("权限范围尚未选择!");
+        }
+        int count = permissionMapper.selectCount(new QueryWrapper<Permission>().lambda().eq(Permission::getUserName, kh));
+        if (count > 0) {
+            throw new ParamException("该用户已经存在权限记录，如需增加权限请编辑!");
+        }
+        User user = RequestHolder.getCurrenSysUser();
+        for (String s : map.keySet()) {
+            permissionMapper.insert(Permission.builder()
+                    .id(UUID64Utils.get64UUIDString())
+                    .userName(kh)
+                    .name(xm)
+                    .authorityId(s)
+                    .authority(map.get(s))
+                    .creator(user.getUsername())
+                    .build());
+        }
+
+    }
+
+    @Override
+    public Page<Permission> listPage(Page<Permission> page, String str) {
+        return permissionMapper.listPage(page, str);
+    }
+
+    @Override
+    public Map<Object, Object> roleList(Integer type) {
+
+        return MapUtil.listMapTransformMap(permissionMapper.roleList(type == null ? 0 : type));
+    }
+
+    @Override
+    public List<String> roleLists(String userName) {
+        if (StringUtils.isEmpty(userName)) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        return (List<String>) (List) permissionMapper.selectObjs(new QueryWrapper<Permission>().lambda().select(Permission::getAuthority).eq(Permission::getUserName, userName));
+    }
+}

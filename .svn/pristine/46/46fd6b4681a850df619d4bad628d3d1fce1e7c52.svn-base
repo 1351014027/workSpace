@@ -1,0 +1,17 @@
+package com.saving.metadata.service;
+
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.dto.ApiParamDto;
+
+/**
+ * @author: 朱柯辉
+ * @date: 2020/7/3 10:47
+ * @Description:
+ */
+public interface ApiImplementsService {
+
+    String getToken(String schoolCode, String apiKey, String softwareNumber);
+
+
+    ServerResponse operationTable(ApiParamDto apiParamDto);
+}

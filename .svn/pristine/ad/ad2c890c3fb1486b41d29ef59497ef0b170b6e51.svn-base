@@ -1,0 +1,24 @@
+package com.saving.metadata;
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.ComponentScan;
+
+/**
+ * @author Administrator
+ */
+@SpringBootApplication
+@MapperScan("com.saving.metadata.dao")
+//@ComponentScan("com.saving.metadata.config")
+//@ComponentScan("com.saving.metadata.interceptor")
+@ServletComponentScan
+@EnableCaching
+public class MetadataApplication extends SpringBootServletInitializer {
+    public static void main(String[] args) {
+        SpringApplication.run(MetadataApplication.class, args);
+    }
+}

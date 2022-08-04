@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/style/template.css}">
+<body>
+<div class="layui-fluid layadmin-maillist-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <div class="layui-card-header" style="font-size: 23px"
+                 th:text="${metadataTable?.tableName +'('+metadataTable?.chineseTableName+')'}"></div>
+            <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                <div class="layui-form-item">
+                    <div class="layui-col-md3">
+                        <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-retreat"
+                                lay-filter="hup-file-retreat"
+                                lay-submit><i class="layui-icon layui-icon-return"></i>后退
+                        </button>
+
+                    </div>
+                    <div class="layui-col-md6 layui-col-md-offset3">
+                        <div class="layui-inline">
+                            <input autocomplete="off" class="layui-input" name="likeStr" placeholder="模糊查询"
+                                   type="text">
+                        </div>
+                        <div class="layui-inline">
+
+                            <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                                    lay-filter="hup-file-search"
+                                    lay-submit>查找
+                            </button>
+                        </div>
+                        <div class="layui-inline">
+                            <button class="layui-btn layui-btn-sm layui-btn-warm" id="exportMap">导出</button>
+                        </div>
+                        <div class="layui-inline">
+                            <button class="layui-btn layui-btn-sm layui-btn-warm" id="exportTemplateMap">模版下载</button>
+                        </div>
+                        <div class="layui-inline">
+                            <button class="layui-btn layui-btn-sm layui-btn-warm" id="importMap">导入</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="layui-card-body">
+                <table id="metadata-table-table" lay-filter="metadata-table-table"></table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-elem-field {
+        width: 300px;
+        text-align: center;
+        margin: 20px auto 20px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'upload'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , upload = layui.upload
+            , SavingFunction = layui.SavingFunction
+            , tableData = [], Table4 = {};
+        let isView = '[[${isView}]]';
+        $(document).on('click', '#hup-file-retreat', function () {
+            history.back();
+        });
+        SavingFunction.req({
+            url: '[[@{metadata/chartDisplay/tableLists.json}]]',
+            data: {tableId: '[[${metadataTable.id}]]', isView: isView},
+            done: function (res) {
+                tableData = res.records;
+                if (tableData.length === 0) {
+                    hintMsg();
+                }
+                let filed4 = [];
+                for (let key in tableData[0]) {
+                    if (key !== '__row_number__') {
+                        filed4.push({
+                            field: key,
+                            title: key,
+                            minWidth: 200
+                        });
+                    }
+                }
+                Table4 = SavingFunction.intoTable({
+                    id: 'metadata-table-table'
+                    , cols: [filed4]
+                    , height: 'full-180'
+                    , url: '[[@{metadata/chartDisplay/tableLists.json}]]'
+                    , where: {
+                        tableId: '[[${metadataTable.id}]]'
+                        , isView: isView
+                    }
+                });
+                form.render();
+            }
+        });
+
+        $('input[name="likeStr"]').keyup(function () {
+            if (Table4) {
+                Table4.reload({
+                    where: {
+                        likeStr: $('input[name="likeStr"]').val()
+                        , tableId: '[[${metadataTable.id}]]'
+                        , isView: isView
+                    }, page: {curr: 1}
+                });
+            } else {
+                hintMsg()
+            }
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            if (Table4) {
+                Table4.reload({
+                    where: {
+                        likeStr: $('input[name="likeStr"]').val()
+                        , tableId: '[[${metadataTable.id}]]'
+                        , isView: isView
+                    }, page: {curr: 1}
+                });
+            } else {
+                hintMsg()
+            }
+        });
+
+        function hintMsg() {
+            layer.msg('暂无数据!', {icon: 3, time: 5000}, function () {
+                // history.back();
+            });
+        }
+
+        $(document).on('click', '#exportMap', () => {
+            layer.confirm('是否确认导出当前页记录?', {icon: 3, title: '提示'}, function (index) {
+                SavingFunction.exportExcel('[[@{/metadata/upload/exportMap.json}]]', {
+                    exportType: 'tableType'
+                    ,
+                    id: '[[${metadataTable.id}]]'
+                    ,
+                    str: $('input[name="likeStr"]').val()
+                    ,
+                    pageNum: $("div[lay-id='metadata-table-table'] .layui-laypage-em").next().html() || 1
+                    ,
+                    pageSize: $("div[lay-id='metadata-table-table'] .layui-laypage-limits").find("option:selected").val() || 100
+                });
+                layer.close(index);
+            });
+        })
+        $(document).on('click', '#exportTemplateMap', () => {
+            layer.confirm('是否确认下载模版?', {icon: 3, title: '提示'}, function (index) {
+                SavingFunction.exportExcel('[[@{/metadata/upload/exportTemplateMap.json}]]', {
+                    id: '[[${metadataTable.id}]]'
+                });
+                layer.close(index);
+            });
+        })
+        upload.render({
+            elem: '#importMap'
+            , url: '[[@{/metadata/upload/import.json}]]'
+            , accept: 'file'
+            , exts: 'xlsx|xls'
+            , size: 1024 * 50
+            , data: {
+                tableId: function () {
+                    return '[[${metadataTable.id}]]'
+                }
+            }
+            , done: function (res) {
+                if (res.status === 0) {
+                    if (Table4) {
+                        Table4.reload({
+                            where: {
+                                likeStr: $('input[name="likeStr"]').val()
+                                , tableId: '[[${metadataTable.id}]]'
+                                , isView: isView
+                            }, page: {curr: 1}
+                        });
+                    }
+                    SavingFunction.successMsg("导入成功！");
+                } else {
+                    layer.open({
+                        title: '错误提示'
+                        , type: 1
+                        , shadeClose: true
+                        , area: ['80%', '50%']
+                        , content: '<div style="padding: 20px;">' + res.msg + '</div>'
+                    });
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

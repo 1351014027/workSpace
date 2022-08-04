@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4f8ea439-5a97-4f8a-8091-5e4174d41d45" name="默认变更列表" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/saving/metadata/listener/ImportTableDataListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/saving/metadata/listener/ImportTableDataListener.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="LogFilters">
+    <option name="FILTER_ERRORS" value="false" />
+    <option name="FILTER_WARNINGS" value="false" />
+    <option name="FILTER_INFO" value="true" />
+    <option name="FILTER_DEBUG" value="true" />
+    <option name="CUSTOM_FILTER" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="1u741dE5BILpMezKm98CWGh6yCJ" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;MyBatisLogPluginindexNum&quot;: &quot;112&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;spring.configuration.checksum&quot;: &quot;9f81f3c07476a0d97f6793673dd8e475&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Spring Boot.MetadataApplication">
+    <configuration name="MetadataApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="metadata" />
+      <option name="SHORTEN_COMMAND_LINE" value="NONE" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.saving.metadata.MetadataApplication" />
+      <option name="UPDATE_ACTION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Tomcat 7.0.78" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 7.0.78" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
+      <option name="UPDATING_POLICY" value="restart-server" />
+      <deployment />
+      <server-settings>
+        <option name="BASE_DIRECTORY_NAME" value="fc9d870c-fcd5-448b-ac6d-2737445913ca" />
+      </server-settings>
+      <predefined_log_file enabled="true" id="Tomcat" />
+      <predefined_log_file enabled="true" id="Tomcat Catalina" />
+      <predefined_log_file id="Tomcat Manager" />
+      <predefined_log_file id="Tomcat Host Manager" />
+      <predefined_log_file id="Tomcat Localhost Access" />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="13070" />
+      </RunnerSettings>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Cover">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Debug">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Profile">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Run">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Spring Boot.MetadataApplication" />
+      <item itemvalue="Tomcat 服务器.Tomcat 7.0.78" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
+  <component name="SvnConfiguration" cleanupOnStartRun="true">
+    <configuration>C:\Users\Administrator\AppData\Roaming\Subversion</configuration>
+    <supportedVersion>125</supportedVersion>
+  </component>
+  <component name="SvnFileUrlMappingImpl">
+    <option name="myMappingRoots">
+      <list>
+        <SvnCopyRootSimple>
+          <option name="myVcsRoot" value="E:\project\metadata" />
+          <option name="myCopyRoot" value="E:\project\metadata" />
+        </SvnCopyRootSimple>
+      </list>
+    </option>
+    <option name="myMoreRealMappingRoots">
+      <list>
+        <SvnCopyRootSimple>
+          <option name="myVcsRoot" value="E:\project\metadata" />
+          <option name="myCopyRoot" value="E:\project\metadata" />
+        </SvnCopyRootSimple>
+      </list>
+    </option>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="4f8ea439-5a97-4f8a-8091-5e4174d41d45" name="默认变更列表" comment="" />
+      <created>1624003080827</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1624003080827</updated>
+      <workItem from="1624003082426" duration="7781000" />
+      <workItem from="1626053986258" duration="10000" />
+      <workItem from="1626169714596" duration="807000" />
+      <workItem from="1626340942617" duration="901000" />
+      <workItem from="1626400198845" duration="733000" />
+      <workItem from="1627372822908" duration="15026000" />
+      <workItem from="1627874399210" duration="801000" />
+      <workItem from="1627891717350" duration="600000" />
+      <workItem from="1627892532720" duration="1107000" />
+      <workItem from="1627983748233" duration="753000" />
+      <workItem from="1631694048886" duration="3575000" />
+      <workItem from="1631698650764" duration="18636000" />
+      <workItem from="1636094532331" duration="4000" />
+      <workItem from="1636511106212" duration="25525000" />
+      <workItem from="1636613833703" duration="13356000" />
+      <workItem from="1636705736091" duration="2096000" />
+      <workItem from="1637132243816" duration="371000" />
+      <workItem from="1638180062879" duration="4000" />
+      <workItem from="1638325660903" duration="932000" />
+      <workItem from="1638753844378" duration="1800000" />
+      <workItem from="1639532325312" duration="5125000" />
+      <workItem from="1639966976756" duration="86000" />
+      <workItem from="1642661623015" duration="4201000" />
+      <workItem from="1644285312352" duration="666000" />
+      <workItem from="1644286861495" duration="598000" />
+      <workItem from="1645496608143" duration="4617000" />
+      <workItem from="1647572143372" duration="3972000" />
+      <workItem from="1647590623172" duration="4132000" />
+      <workItem from="1647911681786" duration="1021000" />
+      <workItem from="1647932653398" duration="1551000" />
+      <workItem from="1648171637974" duration="2201000" />
+      <workItem from="1648174543635" duration="651000" />
+      <workItem from="1648175333923" duration="2875000" />
+      <workItem from="1648197973716" duration="593000" />
+      <workItem from="1648711765669" duration="4092000" />
+      <workItem from="1648717091988" duration="4227000" />
+      <workItem from="1648801503811" duration="632000" />
+      <workItem from="1648881527660" duration="4837000" />
+      <workItem from="1649299098686" duration="995000" />
+      <workItem from="1649833402334" duration="287000" />
+      <workItem from="1649839954986" duration="24957000" />
+      <workItem from="1650349906676" duration="5312000" />
+      <workItem from="1651801700919" duration="10621000" />
+      <workItem from="1652062239228" duration="6878000" />
+      <workItem from="1655170691683" duration="2165000" />
+      <workItem from="1655188656127" duration="630000" />
+      <workItem from="1655709694863" duration="1402000" />
+      <workItem from="1655711121324" duration="1404000" />
+      <workItem from="1655778256469" duration="810000" />
+      <workItem from="1655779160904" duration="4291000" />
+      <workItem from="1657176392383" duration="6385000" />
+      <workItem from="1658129247569" duration="160000" />
+      <workItem from="1658730995964" duration="4606000" />
+      <workItem from="1658816983378" duration="17000" />
+      <workItem from="1658817135642" duration="451000" />
+      <workItem from="1658819379431" duration="1985000" />
+      <workItem from="1658826336104" duration="460000" />
+      <workItem from="1658904729342" duration="11578000" />
+      <workItem from="1659317456736" duration="10049000" />
+      <workItem from="1659578750866" duration="1438000" />
+    </task>
+    <task id="LOCAL-00001" summary="1、【数据中台】改注释">
+      <created>1658731368295</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1658731368295</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
+    <MESSAGE value="1、【数据中台】改注释" />
+    <option name="LAST_COMMIT_MESSAGE" value="1、【数据中台】改注释" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/metadata$MetadataApplication.ic" NAME="MetadataApplication 覆盖结果" MODIFIED="1624009971373" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
+</project>

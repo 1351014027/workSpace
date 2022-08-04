@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-card-body">
+    <form class="layui-form" lay-filter="userForm">
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">字段名称：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" lay-verType="tips" lay-verify="required" name="filedName"
+                           placeholder="" th:disabled="${filed?.filedname}" th:value="${filed?.filedname}"
+                           type="text">
+                </div>
+
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">中文字段：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" lay-verType="tips" lay-verify="required" name="chineseFiledName"
+                           placeholder=""
+                           th:disabled="${filed?.chinesefiledname}" th:value="${filed?.chinesefiledname}" type="text">
+                </div>
+
+            </div>
+
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">存储类型：</label>
+                <div class="layui-input-block">
+                    <select lay-filter="dms-user-schoolCode" lay-verType="tips" lay-verify="required"
+                            name="storageType"
+                            th:value="${filed?.storagetype}">
+                        <option th:each="code:${szList}" th:selected="${filed?.storagetype==code.key}"
+                                th:text="${code.name+'('+code.key+')'}" th:value="${code.key}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">字段长度：</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required|number"
+                           name="filedLength"
+                           placeholder="" style="color: red !important"
+                           th:value="${filed.operationType eq '新增'?filed?.filedlength:(filed?.filedlength+'->'+filed?.updateFiledLength)}">
+                </div>
+            </div>
+
+
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">约束：</label>
+                <div class="layui-input-block">
+                    <select lay-filter="sav-constraints" lay-verType="tips" lay-verify="required"
+                            name="constraints"
+                            th:value="${filed?.constraints}">
+                        <option th:each="code:${ysList}" th:selected="${filed?.constraints==code.key}"
+                                th:text="${code.name+'('+code.key+')'}" th:value="${code.key}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-col-lg2">
+                <label class="layui-form-label">是否主键：</label>
+                <div class="layui-input-block">
+                    <input lay-filter="sav-isPrimary" lay-skin="switch" lay-text="是|否" name="isPrimary"
+                           th:checked="${filed?.isprimary eq 1}"
+                           type="checkbox"
+                           value="1">
+                </div>
+            </div>
+            <div class="layui-col-lg2">
+                <label class="layui-form-label">是否非空：</label>
+                <div class="layui-input-block">
+                    <input lay-skin="switch" lay-text="是|否" name="isNotNull"
+                           th:checked="${filed?.isnotnull eq 1}" type="checkbox"
+                           value="1">
+                </div>
+            </div>
+            <div class="layui-col-lg2">
+                <label class="layui-form-label">是否小数：</label>
+                <div class="layui-input-block">
+                    <input lay-skin="switch" lay-text="是|否" name="isDecimals"
+                           th:checked="${filed?.isdecimals eq 1}" type="checkbox"
+                           value="1">
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">数据项说明：</label>
+            <div class="layui-input-block">
+                <textarea class="layui-textarea" name="dataItemDescription"
+                          placeholder=""
+                          th:text="${filed?.dataitemdescription}"></textarea>
+            </div>
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">标准编号：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" lay-verType="tips"
+                           lay-verify="required" name="filedNumber"
+                           placeholder=""
+                           th:value="${filed?.filednumber}" type="text">
+                </div>
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">标准来源：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" name="theStandardSource"
+                           placeholder=""
+                           th:value="${filed?.thestandardsource}" type="text">
+                </div>
+            </div>
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">字段格式：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" name="filedFormat"
+                           placeholder=""
+                           th:value="${filed?.filedformat}"
+                           type="text">
+                </div>
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">值空间：</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" name="valueSpace"
+                           placeholder=""
+                           th:value="${filed?.valuespace}" type="text">
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">引用序号：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" name="referenceNumber"
+                           placeholder=""
+
+                           th:value="${filed?.referencenumber}" type="text">
+                </div>
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">小数位数：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" name="decimalLength"
+                           placeholder="" style="color: red !important"
+                           th:value="${filed.operationType eq '新增'?filed?.decimallength:(filed?.decimallength ne null&&filed?.updateDecimallength  ne null?(filed?.decimallength+'->'+filed?.updateDecimallength):'')}"
+                           type="text">
+                </div>
+            </div>
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+
+
+            <div class="layui-col-lg12">
+                <label class="layui-form-label">默认值：</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input"
+                           name="defaultValue" placeholder=""
+                           th:value="${filed?.defaultvalue}"
+                           type="text">
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <label class="layui-form-label">字段索引：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" name="fieldindex"
+                       placeholder=""
+                       th:value="${filed?.fieldindex}"
+                       type="text">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">字段注释：</label>
+            <div class="layui-input-block">
+                <textarea class="layui-textarea" name="annotation"
+                          placeholder=""
+                          th:text="${filed?.annotation}"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+        </div>
+    </form>
+</div>
+</body>
+<style>
+    .layui-disabled, .layui-disabled:hover {
+        color: #000000 !important
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , SavingFunction = layui.SavingFunction;
+        $('input,select,textarea').attr("disabled", "disabled");
+        $('input:disabled,textarea:disabled').addClass('layui-disabled');
+        form.render()
+    });
+</script>
+</html>

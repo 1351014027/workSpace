@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtree.css}">
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtreefont.css}">
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">字段管理</div>
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md2">
+                    <div class="layui-form-item" style="margin-bottom: 5px">
+                        <button class="layui-btn layui-btn-sm layui-btn-normal layuiadmin-btn-role"
+                                data-type="tableCreate">新增
+                        </button>
+                    </div>
+                    <ul class="dtree" data-id="0" id="tableTree" style="width: 80%"></ul>
+                </div>
+                <div class="layui-col-md10">
+                    <div class="layui-form layui-card-header layuiadmin-card-header-auto" style="padding: 0">
+                        <div class="layui-form-item" style="font-size: 18px;margin-bottom: 0">当前选择表:<span
+                                sav-checkId="type"></span>
+                        </div>
+                        <div class="layui-form-item" style="margin-bottom: 0">
+                            <div class="layui-inline">过滤查询：</div>
+                            <div class="layui-inline">
+                                <input autocomplete="off" class="layui-input" name="tableName"
+                                       placeholder="字段名称(中英文模糊查询)"
+                                       type="text">
+                            </div>
+                            <div class="layui-inline">
+                                <div class="layui-input-inline">
+                                    <input class="layui-input" id="metadata-date" placeholder="(创建)开始时间-结束时间"
+                                           type="text">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                                        lay-filter="hup-file-search"
+                                        lay-submit="">查找
+                                </button>
+                            </div>
+                        </div>
+                        <blockquote class="layui-elem-quote">注意：排序功能选择对应的记录的排序按钮后,然后选择需要则排序到对应的记录的，排序会变成所选记录的上一行<br/>
+                            注意：约束中的M代表着必备数据元素，O代表着可选数据元素
+                        </blockquote>
+                    </div>
+                    <table id="metadata-table-table" lay-filter="metadata-table-table"></table>
+
+                    <script id="TableToolbar" type="text/html">
+                        {{# if (d.isStandard!==1){}}
+                        <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="findByField">编辑</button>
+                        {{#}}}
+                        <button class="layui-btn layui-btn-xs layui-btn-warm" lay-event="updateSort">排序</button>
+                        <a class="layui-btn  layui-btn-xs layui-btn-primary" lay-event="lift"><i
+                                class="layui-icon" style="margin-right: 0px">&#xe619;</i></a>
+                        <a class="layui-btn  layui-btn-xs layui-btn-primary" lay-event="decline"><i
+                                class="layui-icon" style="margin-right: 0px">&#xe61a;</i></a>
+                    </script>
+                    <script id="TableTopToolbar" type="text/html">
+                        <div class="layui-btn-container">
+                            <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="CreateField">新增</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="metadataDel">删除</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Export">导出选中</button>
+                            <button class="layui-btn layui-btn-sm " lay-event="Import">批量导入</button>
+                        </div>
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="importPopup" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <div class="layui-elem-quote layui-text">
+                支持文件格式为xlsx,xls;</br>
+                请设置整个Excel为文本格式;
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Excel文件:</label>
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="typeExcel"><i class="layui-icon layui-icon-file-b"></i>上传文件
+                </button>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-dms-typeCreates" id="sav-dms-typeCreates" value="新增保存">
+            <input type="button" lay-submit lay-filter="sav-dms-typeUpdates" id="sav-dms-typeUpdates" value="编辑保存">
+        </div>
+    </div>
+</script>
+<script id="tablePopup" type="text/html">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">字段排序</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input type="text" name="tableName" placeholder="字段名称(中英文模糊查询)" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="popup-date" placeholder="(创建)开始时间-结束时间">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" lay-submit
+                            lay-filter="popupSearch">查找
+                    </button>
+                </div>
+            </div>
+        </div>
+        <blockquote class="layui-elem-quote">注意：选择对应的记录则排序替换到对应的记录上一行</blockquote>
+        <div class="layui-card-body">
+            <table id="table1" lay-filter="table1"></table>
+        </div>
+    </div>
+</script>
+<input sav-checkId="type" type="hidden"/>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'layUploader', 'laydate', 'laytpl', 'dtree', 'upload'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , table = layui.table
+            , laytpl = layui.laytpl
+            , setter = layui.setter
+            , tablePlug = layui.tablePlug
+            , upload = layui.upload
+            , laydate = layui.laydate
+            , SavingFunction = layui.SavingFunction
+            , dtree = layui.dtree
+            , dtreeData = [], szOption = {}, ysOption = {};
+        laydate.render({
+            elem: '#metadata-date'
+            , range: true
+        });
+        SavingFunction.req({
+            url: '[[@{/metadata/option/list.json}]]',
+            async: false,
+            data: {
+                hierarchyId: setter.savParam.szOptionId
+            },
+            done: function (res) {
+                szOption = res;
+                res.forEach(d => {
+                    szOption[d.key] = d.name;
+                })
+            }
+        });
+        SavingFunction.req({
+            url: '[[@{/metadata/option/list.json}]]',
+            async: false,
+            data: {
+                hierarchyId: setter.savParam.ysOptionId
+            },
+            done: function (res) {
+                res.forEach(d => {
+                    ysOption[d.key] = d.name;
+                })
+            }
+        });
+        SavingFunction.req({
+            url: '[[@{/metadata/metaDataFileds/lastList.json}]]',
+            async: false,
+            done: function (res) {
+                dtreeData = res
+            }
+        });
+        let dTreeCofing = {
+                elem: "#tableTree",
+                data: dtreeData,
+                icon: "-1",
+                accordion: true,
+                dataStyle: "layuiStyle",
+                width: $("#tableTree").parent().width()
+            }, Tree = dtree.render(dTreeCofing),
+
+            field = [
+                {type: 'checkbox', title: '序号', align: 'center'}
+                , {type: 'numbers', align: 'center'}
+                , {
+                    field: 'filedName', minWidth: 120, title: '字段名(中文字段名)', templet: function (d) {
+                        return d.filedName + '（' + d.chineseFiledName + '）';
+                    }
+                }
+                , {
+                    field: 'storageType', minWidth: 200, title: '字段类型(类型代码)[长度]', templet: function (d) {
+                        return szOption[d.storageType] + '（' + d.storageType + '）[' + d.filedLength + ']';
+                    }
+                }
+                , {
+                    field: 'constraints', title: '约束', width: 60, align: 'center'
+                }
+                , {field: 'dataItemDescription', title: '描述', align: 'center'}
+                , {title: '操作', width: 180, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+            ];
+        dtree.on("node('tableTree')", function (param) {
+
+            if (param.param.basicData.xzz !== 'false') {
+                $('input[sav-checkId="type"]').val(param.param.nodeId);
+                $('span[sav-checkId="type"]').text(param.param.context.replace(/(\d*$)/, ''));
+                userTable.reload({
+                    where: {
+                        tableId: param.param.nodeId
+                    }
+                });
+            } else {
+                $('input[sav-checkId="type"]').val('');
+                $('span[sav-checkId="type"]').text('');
+            }
+        });
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-table-table'
+            , url: '[[@{/metadata/metaDataFileds/listPage.json}]]'
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+            , height: 'full-270'
+            , done: function (res, curr, count) {
+                let checkDisabledData = [];
+                res.data.forEach(function (item) {
+                    if (item.isStandard === 1) {
+                        checkDisabledData.push(item.id);
+                    }
+                });
+                if (checkDisabledData.length !== 0) {
+                    tablePlug.disabledCheck('metadata-table-table', checkDisabledData);
+                }
+            }
+            , primaryKey: 'id'
+            , checkDisabled: {
+                enabled: true,
+                data: []
+            }
+        });
+
+        table.on('toolbar(metadata-table-table)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-table-table');
+            let dabs = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < dabs.length; i++) {
+                ids[i] = dabs[i].id;
+            }
+            let tableId = $('input[sav-checkId="type"]').val();
+            switch (obj.event) {
+                case 'CreateField':
+                    if (tableId) {
+                        parent.layer.open({
+                            title: '新增'
+                            , type: 2
+                            , maxmin: true
+                            , content: '[[@{/popup/fieldPopup.page}]]'
+                            , btn: ['保存', '关闭']
+                            , area: admin.screen() === 3 ? ['80%', '85%'] : ['90%', '95%']
+                            , yes: function (index, layero) {
+                                let iframeWindow = parent.window['layui-layer-iframe' + index];
+                                iframeWindow.layui.form.on('submit(sav-metadata-userCreates)', function (datas) {
+                                    let field = datas.field;
+                                    field.tableId = $('input[sav-checkId="type"]').val();
+                                    SavingFunction.req({
+                                        url: '[[@{/metadata/metaDataFileds/save.json}]]',
+                                        data: SavingFunction.filterParams(field),
+                                        done: function () {
+                                            SavingFunction.successMsg('新增成功！');
+                                            userTable.reload({
+                                                where: {
+                                                    tableId: tableId
+                                                }
+                                            });
+                                            parent.layer.close(index);
+                                        }
+                                    });
+
+                                });
+                                iframeWindow.layui.$('#sav-metadata-userCreates').click();
+
+                            }
+                        });
+                    } else {
+                        SavingFunction.warnMsg('请选择左侧的表后再尝试点击!');
+                    }
+                    break;
+                case 'metadataDel':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/metaDataFileds/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'Export':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认导出勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.exportExcel('[[@{/metadata/upload/export.json}]]', {
+                            ids: ids,
+                            pojoName: 'MetaDataFileds',
+                            pojoChineseName: "表字段管理"
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'Import':
+                    if (tableId) {
+                        let loadIndex;
+                        laytpl(importPopup.innerHTML).render({}, function (html) {
+                            admin.popup({
+                                title: '批量导入'
+                                , type: 1
+                                , area: admin.screen() === 3 ? ['500px', '65%'] : ['500px', '85%']
+                                , id: 'LAY-import-add'
+                                , content: html
+                                , btn: ['提交', '关闭']
+                                , success: function (layero, index) {
+                                    upload.render({
+                                        elem: '#typeExcel'
+                                        , url: '[[@{/metadata/metaDataFileds/import.json}]]'
+                                        , accept: 'file'
+                                        , exts: 'xlsx|xls'
+                                        , auto: false
+                                        , bindAction: '#sav-dms-typeCreates'
+                                        , size: 1024 * 50
+                                        , data: {
+                                            tableId: function () {
+                                                return tableId
+                                            }
+                                        }
+                                        , done: function (res) {
+                                            top.layer.close(loadIndex);
+                                            if (res.status === 0) {
+                                                userTable.reload({page: {curr: 1}});
+                                                SavingFunction.successMsg("导入成功！");
+                                            } else {
+                                                layer.open({
+                                                    title: '错误提示'
+                                                    , type: 1
+                                                    , shadeClose: true
+                                                    , area: ['80%', '50%']
+                                                    , content: '<div style="padding: 20px;">' + res.msg + '</div>'
+                                                });
+                                            }
+                                        }
+                                    });
+                                    form.render();
+                                }
+                                , yes: function (index, layero) {
+                                    $('#sav-dms-typeCreates').click();
+                                    layer.close(index);
+                                    loadIndex = SavingFunction.loading();
+                                }
+                            });
+                        });
+                    } else {
+                        SavingFunction.warnMsg('请选择左侧的表后再尝试点击!');
+                    }
+                    break;
+            }
+        });
+
+        $('input[name="tableName"]').keyup(function () {
+            userTable.reload({
+                where: {
+                    filedName: $('input[name="tableName"]').val()
+                    , tableId: $('input[sav-checkId="type"]').val()
+                }, page: {curr: 1}
+            });
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            userTable.reload({
+                where: {
+                    filedName: $('input[name="tableName"]').val(),
+                    startDate: $('#metadata-date').val().split(' - ')[0],
+                    endDate: $('#metadata-date').val().split(' - ')[1]
+                    , tableId: $('input[sav-checkId="type"]').val()
+                }, page: {curr: 1}
+            });
+        });
+
+
+        table.on('tool(metadata-table-table)', function (obj) {
+            let trData = obj.data;
+            if (obj.event === 'lift') {
+                if (!table.cache['metadata-table-table'][obj.tr[0].rowIndex - 1]) {
+                    return SavingFunction.warnMsg("已经是当前页置顶的记录了！")
+                }
+                SavingFunction.req({
+                    url: '[[@{/metadata/metaDataFileds/updateSort.json}]]'
+                    , data: {
+                        oneId: table.cache['metadata-table-table'][obj.tr[0].rowIndex - 1].id,
+                        twoId: trData.id
+                    },
+                    done: function () {
+                        userTable.reload();
+                    }
+                });
+            } else if (obj.event === 'decline') {
+                if (!table.cache['metadata-table-table'][obj.tr[0].rowIndex + 1]) {
+                    return SavingFunction.warnMsg("已经是当前页最下的记录了！")
+                }
+                SavingFunction.req({
+                    url: '[[@{/metadata/metaDataFileds/updateSort.json}]]'
+                    , data: {
+                        oneId: trData.id,
+                        twoId: table.cache['metadata-table-table'][obj.tr[0].rowIndex + 1].id
+                    },
+                    done: function () {
+                        userTable.reload();
+                    }
+                });
+            } else if (obj.event === 'findByField') {
+                let tableId = $('input[sav-checkId="type"]').val();
+                parent.layer.open({
+                    title: '修改'
+                    , type: 2
+                    , maxmin: true
+                    , content: '[[@{/popup/fieldPopup.page}]]?id=' + trData.id
+                    , btn: ['保存', '关闭']
+                    , area: admin.screen() === 3 ? ['80%', '85%'] : ['90%', '95%']
+                    , yes: function (index, layero) {
+                        let iframeWindow = parent.window['layui-layer-iframe' + index];
+                        iframeWindow.layui.form.on('submit(sav-metadata-userCreates)', function (datas) {
+                            let field = datas.field;
+                            field.id = trData.id;
+                            field.tableId = tableId;
+                            SavingFunction.req({
+                                url: '[[@{/metadata/metaDataFileds/update.json}]]',
+                                data: SavingFunction.filterParams(field),
+                                done: function () {
+                                    SavingFunction.successMsg('修改成功！');
+                                    userTable.reload({
+                                        where: {
+                                            tableId: tableId
+                                        }
+                                    });
+                                    parent.layer.close(index);
+                                }
+                            });
+
+                        });
+                        iframeWindow.layui.$('#sav-metadata-userCreates').click();
+
+                    }
+                });
+            } else if (obj.event === 'updateSort') {
+                laytpl(tablePopup.innerHTML).render({}, function (html) {
+                    admin.popup({
+                        title: '排序'
+                        , type: 1
+                        , area: ['95%', '95%']
+                        , id: 'LAY-import-add'
+                        , content: html
+                        , btn: ['提交', '关闭']
+                        , success: function (layero, index) {
+                            laydate.render({
+                                elem: '#popup-date'
+                                , range: true
+                            });
+                            let field1 = [
+                                {type: 'radio', title: '序号', align: 'center'}
+                                , {field: 'tableName', minWidth: 120, title: '表名(中文表名)'}
+                                , {
+                                    field: 'filedName', minWidth: 120, title: '字段名(中文字段名)', templet: function (d) {
+                                        return d.filedName + '（' + d.chineseFiledName + '）';
+                                    }
+                                }
+                            ];
+
+                            let userTable1 = SavingFunction.intoTable({
+                                id: 'table1'
+                                , url: '[[@{/metadata/metaDataFileds/listPage.json}]]'
+                                , filter: true
+                                , cols: [field1]
+                                , height: 'full-200'
+                                , primaryKey: 'id'
+                                , checkDisabled: {
+                                    enabled: true,
+                                    data: [trData.id]
+                                }
+                                , where: {
+                                    tableId: $('input[sav-checkId="type"]').val()
+                                }
+                            });
+                            form.on('submit(popupSearch)', function () {
+                                userTable1.reload({
+                                    where: {
+                                        tableName: $(layero).find('input[name="tableName"]').val(),
+                                        startDate: $('#mpopup-date').val().split(' - ')[0],
+                                        endDate: $('#popup-date').val().split(' - ')[1],
+                                        tableId: $('input[sav-checkId="type"]').val()
+                                    }, page: {curr: 1}
+                                });
+                            });
+                            form.render();
+                        }
+                        , yes: function (index, layero) {
+                            let checkStatus = table.checkStatus('table1');
+                            let dabs = checkStatus.data;
+                            let ids = [];
+                            for (let i = 0; i < dabs.length; i++) {
+                                ids[i] = dabs[i].id;
+                            }
+                            if (trData.id === dabs[0].id) {
+                                return SavingFunction.warnMsg('不能选择自身来进行排序调整！');
+                            }
+                            SavingFunction.req({
+                                url: '[[@{/metadata/metaDataFileds/updateSortUser.json}]]'
+                                , data: {
+                                    oneId: trData.id,
+                                    twoId: dabs[0].id
+                                },
+                                done: function () {
+                                    layer.close(index);
+                                    SavingFunction.successMsg('操作成功！');
+                                    userTable.reload();
+                                }
+                            });
+
+                        }
+                    });
+                });
+            }
+        });
+        let active = {
+            tableCreate: function (d) {
+                parent.layer.open({
+                    title: '添加'
+                    , type: 2
+                    , content: '[[@{/popup/tablePopup.page}]]'
+                    , maxmin: true
+                    , area: admin.screen() === 3 ? ['500px', '65%'] : ['500px', '85%']
+                    , btn: ['保存', '关闭']
+                    , yes: function (index, layero) {
+                        var iframeWindow = parent.window['layui-layer-iframe' + index];
+                        iframeWindow.layui.form.on('submit(sav-dms-typeCreates)', function (datas) {
+                            let field = datas.field;
+                            SavingFunction.req({
+                                url: '[[@{/metadata/metaDataTables/save.json}]]',
+                                data: field,
+                                done: function () {
+                                    SavingFunction.successMsg('添加成功！');
+                                    Tree.reload();
+                                    parent.layer.close(index);
+                                }
+                            });
+
+                        });
+                        iframeWindow.layui.$('#sav-dms-typeCreates').click();
+                    }
+                });
+            }
+        };
+        $('.layui-btn.layuiadmin-btn-role').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+</script>
+</body>
+</html>

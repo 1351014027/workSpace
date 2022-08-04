@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<style>
+    .layui-upload-img {
+        width: 92px;
+        height: 92px;
+        margin: 0 10px 10px 0;
+    }
+
+    html {
+        height: 100%
+    }
+
+    body {
+        min-height: 100%;
+        background: #ffffff
+    }
+
+    #metadata-dataRelated {
+        text-align: center;
+        font-size: 16px;
+        width: 100%;
+    }
+
+    #metadata-dataRelated td {
+        border: 1px solid #0C0C0C;
+        padding: 5px 15px 5px 15px;
+        min-width: 100px
+
+    }
+
+    #metadata-dataRelated th {
+        border: 1px solid #0C0C0C;
+        padding: 5px 15px 5px 15px;
+        background-color: #9F9F9F;
+        color: #0C0C0C;
+    }
+
+    .sav-item-body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .sav-item {
+        margin: 0 15px;
+        text-align: center;
+        border-right: 1px solid #eeeeee;
+        border-left: 1px solid #eeeeee;
+    }
+</style>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px" th:text="基础数据"></div>
+        <div class="layui-card-body sav-item-body">
+            <table id="metadata-dataRelated" lay-filter="metadata-dataRelated">
+                <tbody>
+                <tr>
+                    <th colspan="7">数据表</th>
+                    <th>数据源系统数量</th>
+                    <th>数据目标系统数量</th>
+                </tr>
+                <tr>
+                    <td colspan="7" th:text="${countList.sjb}">0</td>
+                    <td rowspan="5" th:text="${countList.sjyxtsl}">0</td>
+                    <td rowspan="5" th:text="${countList.sjmbxtsl}">0</td>
+                </tr>
+                <tr>
+                    <th colspan="3">基础版本</th>
+                    <th colspan="4">扩展版本</th>
+                </tr>
+                <tr>
+                    <th>表数量</th>
+                    <th>字段数量</th>
+                    <th>已使用表数量</th>
+                    <th>表数量</th>
+                    <th>字段数量</th>
+                    <th>已使用表数量</th>
+                    <th>已使用表字段</th>
+                </tr>
+                <tr>
+                    <td th:text="${countList.jcbsl}">0</td>
+                    <td th:text="${countList.jcbzdsl}">0</td>
+                    <td th:text="${countList.jcysybsl}">0</td>
+                    <td th:text="${countList.kzbsl}">0</td>
+                    <td th:text="${countList.kzzdsl}">0</td>
+                    <td th:text="${countList.kzysybsl}">0</td>
+                    <td th:text="${countList.kzysybzd}">0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px" th:text="业务视图"></div>
+        <div class="layui-card-body">
+            <div class="layui-col-md1">
+                <div style="margin-top: 57px;text-align: right">应用系统</div>
+                <div style="margin-top: 330px;text-align: right">数据源系统</div>
+            </div>
+            <div class="layui-col-md11" id="container" style="height: 480px;"></div>
+        </div>
+    </div>
+</div>
+<style>
+    body {
+        overflow-y: scroll;
+    }
+
+    .sav-item-body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .sav-item {
+        margin: 0 15px;
+        text-align: center;
+        border-right: 1px solid #eeeeee;
+        border-left: 1px solid #eeeeee;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script th:inline="javascript" type="text/javascript">
+    /*<![CDATA[*/
+    var nodes = [[${apiTables}]]
+    /*]]>*/
+</script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'echarts'], function () {
+        let $ = layui.$
+            , SavingFunction = layui.SavingFunction;
+
+        let nodesM = [{
+            name: '数据中台'
+        }];
+
+        let charts = {
+            nodes: [],
+            links: [],
+            linesData: []
+        };
+        let x = 0;
+        let x2 = 0;
+        let y = 1;
+        let dataMap = new Map();
+        let aValue = [];
+        for (let j = 0; j < nodes.length; j++) {
+            if (nodes[j].issjyxt === 1) { //偶数
+                aValue = [x, y];
+                x += 2;
+            } else if (nodes[j].issjmbxt === 1) {
+                aValue = [x2, y - 2];
+                x2 += 2;
+            }
+            let node = {
+                name: nodes[j].id,
+                sysName: nodes[j].sysName,
+                value: aValue,
+                symbolSize: 40,
+                symbol: 'image://images/bd1.png',
+                itemStyle: {
+                    normal: {
+                        color: '#12b5d0',
+                        fontSize: 12,
+                        fontWeight: 'normal'
+                    }
+                }
+            };
+            dataMap.set(nodes[j].id, aValue);
+            charts.nodes.push(node);
+        }
+        for (let k = 0; k < nodesM.length; k++) {
+            let node = {
+                name: nodesM[k].name,
+                value: [x / 2 + k - 1, y - 1],
+                sysName: nodesM[k].name,
+                symbolSize: 100,
+                symbol: 'image://images/bgm.png'
+            };
+            dataMap.set(nodesM[k].name, [x / 2 + k - 1, y - 1]);
+            charts.nodes.push(node)
+        }
+        for (let i = 0; i < nodes.length; i++) {
+            let link = {
+                source: nodes[i].id,
+                target: nodesM[0].name,
+                lineStyle: {
+                    normal: {
+                        color: '#ed46a2',
+                        width: .5
+                    }
+                }
+            };
+            charts.links.push(link);
+
+            //判断传输状态1 传输动效改变线条颜色
+            if (nodes[i].issjmbxt === 1) {
+                link.lineStyle.normal.color = '#27b0fe';
+                let lines = [{
+                    coord: dataMap.get(nodes[i].id)
+                }, {
+                    coord: dataMap.get(nodesM[0].name)
+                }];
+                charts.linesData.push(lines)
+            }
+        }
+        let option = {
+            grid: {
+                left: '5%',
+                right: '5%',
+                padding: '0 0 0 0 ',
+                containLabel: true,
+            },
+            xAxis: {
+                show: false,
+                type: 'value'
+            },
+            yAxis: {
+                show: false,
+                type: 'value'
+            },
+            series: [{
+                type: 'graph',
+                layout: 'none',
+                coordinateSystem: 'cartesian2d',
+                symbolSize: 0,
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'bottom',
+                        color: '#000000'
+                    }
+                },
+                lineStyle: {
+                    normal: {
+                        shadowColor: 'none',
+                        opacity: 1, //尾迹线条透明度
+                        curveness: .1 //尾迹线条曲直度
+                    }
+
+                },
+                roam: true,
+                nodeScaleRatio: 0.6,
+                edgeSymbolSize: 8,
+                data: charts.nodes,
+                links: charts.links,
+                itemStyle: {
+                    normal: {
+                        label: {
+                            show: true,
+                            formatter: function (item) {
+                                return item.data.sysName
+                            }
+                        }
+                    }
+                }
+            }, {
+                name: 'A',
+                type: 'lines',
+                coordinateSystem: 'cartesian2d',
+                effect: {
+                    show: false,
+                    period: 4, //箭头指向速度，值越小速度越快
+                    trailLength: 0.02,
+                    symbol: 'pin',
+                    color: '#ffaa5f',
+                    symbolSize: 10
+
+                },
+                lineStyle: {
+                    color: '#fff',
+                    curveness: .1 //尾迹线条曲直度
+                },
+                data: charts.linesData
+            }]
+        };
+
+        let dom = document.getElementById("container");
+        let myChartNM = echarts.init(dom, 'purple-passion');
+        myChartNM.setOption(option);
+        window.onresize = myChartNM.resize;
+
+    });
+</script>
+</body>
+</html>
+

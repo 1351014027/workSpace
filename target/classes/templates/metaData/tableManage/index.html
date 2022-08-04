@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">表管理</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto"
+             style="padding-bottom: 5px;padding-top: 5px;">
+            <div class="layui-form-item" style="margin-bottom: 0;">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <select lay-filter="metadata-metadataTypeIds" name="metadataTypeIds">
+
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <select lay-filter="tableStatus" name="tableStatus">
+                        <option value=""> 状态</option>
+                        <option value="1"> 已创建</option>
+                        <option value="0"> 未创建</option>
+                    </select></div>
+                <div class="layui-inline">
+                    <select lay-filter="nature" name="nature">
+                        <option value=""> 类型</option>
+                        <option value="1">标准</option>
+                        <option value="0">扩展</option>
+                    </select></div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="tableName" placeholder="表名称(中英文模糊查询)"
+                           type="text">
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input class="layui-input" id="metadata-date" placeholder="(创建)开始时间-结束时间" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                            lay-filter="hup-file-search"
+                            lay-submit>查找
+                    </button>
+                </div>
+            </div>
+        </div>
+        <blockquote class="layui-elem-quote" style="margin-bottom: 0;">
+            <strong>注意：</strong>排序功能选择对应的记录的排序按钮后,然后选择需要则排序到对应的记录的，排序会变成所选记录的上一行</br>
+            <strong>表格行背景：</strong> <span class="layui-badge-dot layui-bg-orange"
+                                          style="background-color: rgba(255,184,0,0.5)!important"></span> 代表是扩展表
+            <span class="layui-badge-dot layui-bg-green" style="background-color:rgba(0,150,136,0.5)!important"></span>
+            代表自建表
+            <span class="layui-badge-dot layui-bg-blue" style="background-color: rgba(30,191,255,0.5)!important"></span>
+            代表基础表
+        </blockquote>
+        <div class="layui-card-body">
+            <table id="metadata-table-table" lay-filter="metadata-table-table"></table>
+        </div>
+    </div>
+</div>
+<script id="TableToolbar" type="text/html">
+    <button class="layui-btn layui-btn-xs" lay-event="update">编辑</button>
+    <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="findByField">字段</button>
+    <button class="layui-btn layui-btn-xs layui-btn-warm" lay-event="updateSort">排序</button>
+    <a class="layui-btn  layui-btn-xs layui-btn-primary" lay-event="lift"><i class="layui-icon"
+                                                                             style="margin-right: 0px">&#xe619;</i></a>
+    <a class="layui-btn  layui-btn-xs layui-btn-primary" lay-event="decline"><i
+            class="layui-icon" style="margin-right: 0px">&#xe61a;</i></a>
+</script>
+<script id="TableTopToolbar" type="text/html">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="metadataCreate">新增表记录</button>
+        <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Create">生成表实体</button>
+        <button class="layui-btn layui-btn-sm layui-btn-primary" lay-event="metadataSync">同步字段数量</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="metadataDel">记录删除</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="metadataDelTable">删除表实体</button>
+        <button class="layui-btn layui-btn-sm " lay-event="Import">批量导入记录</button>
+        <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Export">导出选中记录</button>
+        <button class="layui-btn layui-btn-sm" lay-event="metadataVerified">效验</button>
+        <!--        <button class="layui-btn layui-btn-sm" lay-event="metadataVerified">保存修改字段</button>-->
+
+    </div>
+</script>
+<script id="tablePopup" type="text/html">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">表管理</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline"><select name="metadataTypeIds" lay-filter="metadata-metadataTypeIds"></select>
+                </div>
+                <div class="layui-inline">
+                    <select lay-filter="tableStatus" name="tableStatus">
+                        <option value=""> 全部</option>
+                        <option value="1"> 已创建</option>
+                        <option value="0"> 未创建</option>
+                    </select></div>
+                <div class="layui-inline">
+                    <input type="text" name="tableName" placeholder="表名称(中英文模糊查询)" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="popup-date" placeholder="(创建)开始时间-结束时间">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" lay-submit
+                            lay-filter="popupSearch">查找
+                    </button>
+                </div>
+            </div>
+        </div>
+        <blockquote class="layui-elem-quote">注意：选择对应的记录则排序替换到对应的记录上一行</blockquote>
+        <div class="layui-card-body">
+            <table id="table1" lay-filter="table1"></table>
+        </div>
+    </div>
+</script>
+<script id="importPopup" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">元数据类型:</label>
+            <div class="layui-input-block">
+                <select name="metadataTypeId"></select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-elem-quote layui-text">
+                支持文件格式为xlsx,xls;</br>
+                第一列标题<b>目录</b></br>第二列标题为<b>表名称</b></br>第三列标题为<b>中文表名称</b></br>第四列标题为<b>备注</b></br>请设置整个Excel为文本格式;
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Excel文件:</label>
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="typeExcel"><i class="layui-icon layui-icon-file-b"></i>上传文件
+                </button>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-dms-typeCreates" id="sav-dms-typeCreates" value="新增保存">
+            <input type="button" lay-submit lay-filter="sav-dms-typeUpdates" id="sav-dms-typeUpdates" value="编辑保存">
+        </div>
+    </div>
+</script>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'layUploader', 'laydate', 'laytpl', 'upload'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , table = layui.table
+            , laytpl = layui.laytpl
+            , upload = layui.upload
+            , laydate = layui.laydate
+            , SavingFunction = layui.SavingFunction,
+            hierarchyList = [];
+        laydate.render({
+            elem: '#metadata-date'
+            , range: true
+        });
+        let
+            field = [
+                {type: 'checkbox'}
+                , {
+                    field: 'tableName', title: '中文表名/表名/元数据类型/字段数量/状态', templet: function (d) {
+                        return d.catalog + '  ' + d.chineseTableName
+                            + '<span class="layui-badge layui-bg-orange" style="margin-left: 5px">' + d.tableName + '</span>'
+                            + '<span class="layui-badge layui-bg-green" style="margin-left: 5px">' + d.typeName + '</span>'
+                            + '<span class="layui-badge layui-bg-gray" style="margin-left: 5px">字段数量:' + d.fieldSize + '</span>'
+                            + (d.tableStatus === 1 ? '<span class="layui-badge layui-bg-blue" style="margin-left: 5px">已创建</span>' : '<span class="layui-badge layui-bg-red" style="margin-left: 5px">未创建</span>')
+                            + '<span class="sav-tr layui-hide" >' + d.nature + '</span>';
+                    }
+                }
+                , {title: '操作', width: 250, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+            ];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-table-table'
+            , url: '[[@{/metadata/metaDataTables/listPage.json}]]'
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+            , height: 'full-225'
+            , where: {
+                isStandard: 1
+            },
+            done: function () {
+                $('.sav-tr').each((index, item) => {
+                    let color = '#FFFFFF';
+                    if ($(item).text() === '0') {
+                        color = 'rgba(0,150,136,0.5)';
+                    } else if ($(item).text() === '1') {
+                        color = 'rgba(30,191,255,0.5)';
+                    } else if ($(item).text() === '2') {
+                        color = 'rgba(255,184,0,0.5)';
+                    }
+                    $(item).parent().css("background-color", color);
+                })
+            }
+        });
+
+        SavingFunction.req({
+            url: '[[@{/metadata/hierarchy/list.json}]]',
+            async: false,
+            data: {
+                parent: 7
+            }
+            , done: function (res) {
+                hierarchyList = res;
+                let html = '<option value="">类型</option>';
+                hierarchyList.forEach(d => {
+                    html += '<option value="' + d.id + '">' + d.typeName + '</option>'
+                });
+                $('select[name="metadataTypeIds"]').html(html);
+                form.render();
+            }
+        });
+        table.on('toolbar(metadata-table-table)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-table-table');
+            let dabs = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < dabs.length; i++) {
+                ids[i] = dabs[i].id;
+            }
+            switch (obj.event) {
+                case 'metadataCreate':
+                    parent.layer.open({
+                        title: '添加'
+                        , type: 2
+                        , content: '[[@{/popup/tablePopup.page?isStandard=true}]]'
+                        , maxmin: true
+                        , area: admin.screen() === 3 ? ['500px', '65%'] : ['500px', '85%']
+                        , btn: ['保存', '关闭']
+                        , yes: function (index, layero) {
+                            var iframeWindow = parent.window['layui-layer-iframe' + index];
+                            iframeWindow.layui.form.on('submit(sav-dms-typeCreates)', function (datas) {
+                                let field = datas.field;
+                                field.isStandard = 1;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/metaDataTables/save.json}]]',
+                                    data: field,
+                                    done: function () {
+                                        SavingFunction.successMsg('添加成功！');
+                                        userTable.reload({page: {curr: 1}});
+                                        parent.layer.close(index);
+                                    }
+                                });
+
+                            });
+                            iframeWindow.layui.$('#sav-dms-typeCreates').click();
+                        }
+                    });
+                    break;
+                case 'metadataDel':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录(会导致物理表一同删除)?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/metaDataTables/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'Export':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认导出勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.exportExcel('[[@{/metadata/upload/export.json}]]', {
+                            ids: ids,
+                            pojoName: 'MetaDataTables',
+                            pojoChineseName: "标准表管理"
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'metadataVerified':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认校验勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/metaDataFileds/getUpdatedFiledCode.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function (res) {
+                                if (res) {
+                                    parent.layer.open({
+                                        title: '确认列表'
+                                        , type: 2
+                                        , content: '[[@{/popup/metadataVerifiedPopup.page}]]?id=' + res
+                                        , area: ['95%', '95%']
+                                        , btn: ['提交', '关闭']
+                                        , yes: function (checkerindex, layero) {
+                                            let iframeWindow = parent.window['layui-layer-iframe' + checkerindex];
+                                            parent.layer.confirm('是否确认执行,此操作涉及字段变更长度、类型、主键、小数位,可能会丢失数据?', {
+                                                icon: 2,
+                                                title: '警告'
+                                            }, function (index) {
+                                                parent.layer.close(index);
+                                                parent.layer.confirm('二次确认是否执行,此操作涉及字段变更长度、类型、主键、小数位,可能会丢失数据?', {
+                                                    icon: 2,
+                                                    title: '警告'
+                                                }, function (index) {
+                                                    iframeWindow.layui.$('#sav-metadataVerified-typeCreates').click();
+                                                    parent.layer.close(checkerindex);
+                                                    parent.layer.close(index);
+                                                })
+                                            })
+                                        }
+                                    });
+                                } else {
+                                    SavingFunction.successMsg('暂无需要变更的字段！');
+                                }
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'Import':
+                    let loadIndex;
+                    laytpl(importPopup.innerHTML).render({}, function (html) {
+                        admin.popup({
+                            title: '批量导入'
+                            , type: 1
+                            , area: admin.screen() === 3 ? ['500px', '65%'] : ['500px', '85%']
+                            , id: 'LAY-import-add'
+                            , content: html
+                            , btn: ['提交', '关闭']
+                            , success: function (layero, index) {
+                                let html = '';
+                                hierarchyList.forEach(d => {
+                                    html += '<option value="' + d.id + '">' + d.typeName + '</option>'
+                                });
+                                layero.find('select[name="metadataTypeId"]').html(html);
+                                upload.render({
+                                    elem: '#typeExcel'
+                                    , url: '[[@{/metadata/metaDataTables/import.json}]]'
+                                    , accept: 'file'
+                                    , exts: 'xlsx|xls'
+                                    , auto: false
+                                    , bindAction: '#sav-dms-typeCreates'
+                                    , size: 1024 * 50
+                                    , data: {
+                                        metadataTypeId: function () {
+                                            return layero.find('select[name="metadataTypeId"]').val()
+                                        },
+                                        isStandard: function () {
+                                            return 1;
+                                        }
+
+                                    }
+                                    , done: function (res) {
+                                        top.layer.close(loadIndex);
+                                        if (res.status === 0) {
+                                            userTable.reload({page: {curr: 1}});
+                                            SavingFunction.successMsg("导入成功！");
+                                        } else {
+                                            layer.open({
+                                                title: '错误提示'
+                                                , type: 1
+                                                , shadeClose: true
+                                                , area: ['80%', '50%']
+                                                , content: '<div style="padding: 20px;">' + res.msg + '</div>'
+                                            });
+                                        }
+                                    }
+                                });
+                                form.render();
+                            }
+                            , yes: function (index, layero) {
+                                $('#sav-dms-typeCreates').click();
+                                layer.close(index);
+                                loadIndex = SavingFunction.loading();
+                            }
+                        });
+                    });
+                    break;
+                case 'Create':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认生成表结构（重新生成会导致原存在的表删除！）?', {icon: 3, title: '提示'}, function (index) {
+                        layer.confirm('是否确认生成表结构（此操作不可逆，再次确认是否生成）?', {icon: 3, title: '提示'}, function (index) {
+                            let loadingIndex = SavingFunction.loading();
+                            SavingFunction.req({
+                                url: '[[@{/metadata/metaDataTables/createDataBase.json}]]',
+                                data: JSON.stringify(ids)
+                                , dataType: "json",
+                                contentType: "application/json",
+                                done: function () {
+                                    top.layer.close(loadingIndex);
+                                    SavingFunction.successMsg('生成成功！');
+                                    userTable.reload({page: {curr: 1}});
+                                },
+                                error: function (e) {
+                                    top.layer.close(loadingIndex);
+                                    SavingFunction.errorMsg(e);
+
+                                }
+                            });
+                            layer.close(index);
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'metadataDelTable':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除选中的表（物理删除存储中实际的表,此操作不可逆！）?', {icon: 3, title: '提示'}, function (index) {
+                        layer.confirm('是否确认删除选中的表（此操作不可逆，再次确认是否删除）?', {icon: 3, title: '提示'}, function (index) {
+                            let loadingIndex = SavingFunction.loading();
+                            SavingFunction.req({
+                                url: '[[@{/metadata/metaDataTables/delDataBase.json}]]',
+                                data: JSON.stringify(ids)
+                                , dataType: "json",
+                                contentType: "application/json",
+                                done: function () {
+                                    top.layer.close(loadingIndex);
+                                    SavingFunction.successMsg('删除成功！');
+                                    userTable.reload({page: {curr: 1}});
+                                },
+                                error: function (e) {
+                                    top.layer.close(loadingIndex);
+                                    SavingFunction.errorMsg(e);
+
+                                }
+                            });
+                            layer.close(index);
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'metadataSync':
+                    let loadingIndex = SavingFunction.loading();
+                    SavingFunction.req({
+                        url: '[[@{/metadata/metaDataTables/syncDataBase.json}]]',
+                        done: function () {
+                            top.layer.close(loadingIndex);
+                            SavingFunction.successMsg('同步成功！');
+                            userTable.reload({page: {curr: 1}});
+                        },
+                        error: function (e) {
+                            top.layer.close(loadingIndex);
+                            SavingFunction.errorMsg(e);
+                        }
+                    });
+                    break;
+            }
+
+        });
+        form.on('select(metadata-metadataTypeIds)', function (data) {
+            userTable.reload({
+                where: {
+                    tableName: $('input[name="tableName"]').val(),
+                    metadataTypeId: data.value,
+                    isStandard: 1,
+                    tableStatus: $('select[name="tableStatus"]').val(),
+                    nature: $('select[name="nature"]').val(),
+                }, page: {curr: 1}
+            });
+        });
+        form.on('select(tableStatus)', function (data) {
+            userTable.reload({
+                where: {
+                    tableName: $('input[name="tableName"]').val(),
+                    metadataTypeId: $('select[name="metadataTypeIds"]').val(),
+                    tableStatus: data.value,
+                    nature: $('select[name="nature"]').val(),
+                    isStandard: 1
+                }, page: {curr: 1}
+            });
+        });
+        form.on('select(nature)', function (data) {
+            userTable.reload({
+                where: {
+                    tableName: $('input[name="tableName"]').val(),
+                    metadataTypeId: $('select[name="metadataTypeIds"]').val(),
+                    tableStatus: $('select[name="tableStatus"]').val(),
+                    nature: data.value,
+                    isStandard: 1
+                }, page: {curr: 1}
+            });
+        });
+
+        $('input[name="tableName"]').keyup(function () {
+            userTable.reload({
+                where: {
+                    tableName: $('input[name="tableName"]').val(),
+                    metadataTypeId: $('select[name="metadataTypeIds"]').val(),
+                    tableStatus: $('select[name="tableStatus"]').val(),
+                    nature: $('select[name="nature"]').val(),
+                    isStandard: 1
+                }, page: {curr: 1}
+            });
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            userTable.reload({
+                where: {
+                    tableName: $('input[name="tableName"]').val(),
+                    startDate: $('#metadata-date').val().split(' - ')[0],
+                    endDate: $('#metadata-date').val().split(' - ')[1],
+                    metadataTypeId: $('select[name="metadataTypeIds"]').val(),
+                    isStandard: 1
+                }, page: {curr: 1}
+            });
+        });
+
+        table.on('tool(metadata-table-table)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'lift') {
+                if (!table.cache['metadata-table-table'][obj.tr[0].rowIndex - 1]) {
+                    return SavingFunction.warnMsg("已经是当前页置顶的记录了！")
+                }
+                SavingFunction.req({
+                    url: '[[@{/metadata/metaDataTables/updateSort.json}]]'
+                    , data: {
+                        oneId: table.cache['metadata-table-table'][obj.tr[0].rowIndex - 1].id,
+                        twoId: data.id
+                    },
+                    done: function () {
+                        userTable.reload();
+                    }
+                });
+            } else if (obj.event === 'decline') {
+                if (!table.cache['metadata-table-table'][obj.tr[0].rowIndex + 1]) {
+                    return SavingFunction.warnMsg("已经是当前页最下的记录了！")
+                }
+                SavingFunction.req({
+                    url: '[[@{/metadata/metaDataTables/updateSort.json}]]'
+                    , data: {
+                        oneId: data.id,
+                        twoId: table.cache['metadata-table-table'][obj.tr[0].rowIndex + 1].id
+                    },
+                    done: function () {
+                        userTable.reload();
+                    }
+                });
+            } else if (obj.event === 'findByField') {
+                parent.layer.open({
+                    title: '字段列表'
+                    , type: 2
+                    , maxmin: true
+                    , content: '[[@{/popup/filedListsPopup.page?isStandard=1&id=}]]' + data.id
+                    , btn: ['关闭']
+                    , area: ['98%', '98%']
+                    , yes: function (index, layero) {
+                        parent.layer.close(index);
+                    }
+                });
+            } else if (obj.event === 'update') {
+                parent.layer.open({
+                    title: '编辑选项'
+                    , type: 2
+                    , maxmin: true
+                    , content: '[[@{/popup/tablePopup.page?isStandard=true&id=}]]' + data.id
+                    , btn: ['保存', '关闭']
+                    , area: admin.screen() === 3 ? ['500px', '65%'] : ['500px', '85%']
+                    , yes: function (index, layero) {
+                        var iframeWindow = parent.window['layui-layer-iframe' + index];
+                        iframeWindow.layui.form.on('submit(sav-dms-typeUpdates)', function (datas) {
+                            var field = datas.field;
+                            field.id = data.id;
+                            SavingFunction.req({
+                                url: '[[@{/metadata/metaDataTables/update.json}]]',
+                                data: SavingFunction.filterParams(field),
+                                done: function () {
+                                    SavingFunction.successMsg('修改成功！');
+                                    userTable.reload();
+                                    parent.layer.close(index);
+                                }
+                            });
+
+                        });
+                        iframeWindow.layui.$('#sav-dms-typeUpdates').click();
+
+                    }
+                });
+            } else if (obj.event === 'updateSort') {
+                laytpl(tablePopup.innerHTML).render({}, function (html) {
+                    admin.popup({
+                        title: '排序'
+                        , type: 1
+                        , area: ['95%', '95%']
+                        , id: 'LAY-import-add'
+                        , content: html
+                        , btn: ['提交', '关闭']
+                        , success: function (layero, index) {
+
+                            let html = '<option value="">全部</option>';
+                            hierarchyList.forEach(d => {
+                                html += '<option value="' + d.id + '">' + d.typeName + '</option>'
+                            });
+                            $(layero).find('select[name="metadataTypeIds"]').html(html);
+                            form.render();
+
+                            laydate.render({
+                                elem: '#popup-date'
+                                , range: true
+                            });
+                            let field1 = [
+                                {type: 'radio', title: '序号', align: 'center'}
+                                , {
+                                    field: 'tableName', title: '表名', templet: function (d) {
+                                        return d.tableName;
+                                    }
+                                }
+                                , {field: 'chineseTableName', title: '中文表名'}
+                                , {field: 'fieldSize', title: '字段数量', width: 100, align: 'center'}
+                                , {field: 'typeName', title: '元数据类型'}
+                            ];
+
+                            let userTable1 = SavingFunction.intoTable({
+                                id: 'table1'
+                                , url: '[[@{/metadata/metaDataTables/listPage.json}]]'
+                                , filter: true
+                                , cols: [field1]
+                                , height: 'full-200'
+                                , primaryKey: 'id'
+                                , checkDisabled: {
+                                    enabled: true,
+                                    data: [data.id]
+                                }
+                                , where: {
+                                    isStandard: 1
+                                }
+                            });
+                            form.on('submit(popupSearch)', function () {
+                                userTable1.reload({
+                                    where: {
+                                        tableName: $(layero).find('input[name="tableName"]').val(),
+                                        startDate: $('#mpopup-date').val().split(' - ')[0],
+                                        endDate: $('#popup-date').val().split(' - ')[1],
+                                        metadataTypeId: $(layero).find('select[name="metadataTypeIds"]').val(),
+                                        isStandard: 1
+                                    }, page: {curr: 1}
+                                });
+                            });
+                            form.render();
+                        }
+                        , yes: function (index, layero) {
+                            let checkStatus = table.checkStatus('table1');
+                            let dabs = checkStatus.data;
+                            let ids = [];
+                            for (let i = 0; i < dabs.length; i++) {
+                                ids[i] = dabs[i].id;
+                            }
+                            if (data.id === dabs[0].id) {
+                                return SavingFunction.warnMsg('不能选择自身来进行排序调整！');
+                            }
+                            SavingFunction.req({
+                                url: '[[@{/metadata/metaDataTables/updateSortUser.json}]]'
+                                , data: {
+                                    oneId: data.id,
+                                    twoId: dabs[0].id
+                                },
+                                done: function () {
+                                    layer.close(index);
+                                    SavingFunction.successMsg('操作成功！');
+                                    userTable.reload();
+                                }
+                            });
+
+                        }
+                    });
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

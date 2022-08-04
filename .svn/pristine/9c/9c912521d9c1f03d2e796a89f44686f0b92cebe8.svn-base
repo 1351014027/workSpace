@@ -1,0 +1,36 @@
+package com.saving.metadata.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+/**
+ * @author: 朱柯辉
+ * @date: 2020/5/20 15:45
+ * @Description:
+ */
+@Configuration
+public class CorsConfig {
+
+    @Bean
+    public CorsConfiguration corsConfiguration() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        //实际请求中允许携带的首部字段
+        corsConfiguration.addAllowedHeader("*");
+        //允许那些域跨域访问
+        corsConfiguration.addAllowedOrigin("*");
+        //允许那些请求方法
+        corsConfiguration.addAllowedMethod("*");
+        return corsConfiguration;
+    }
+
+    @Bean
+    public CorsFilter corsFilter(CorsConfiguration corsConfiguration) {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+        return new CorsFilter(source);
+    }
+
+}

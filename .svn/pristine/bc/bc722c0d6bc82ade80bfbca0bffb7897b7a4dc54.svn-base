@@ -1,0 +1,143 @@
+package com.saving.metadata.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.dao.RevisionlogMapper;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.param.MetaDataFiledsParam;
+import com.saving.metadata.pojo.MetaDataFileds;
+import com.saving.metadata.pojo.Revisionlog;
+import com.saving.metadata.pojo.User;
+import com.saving.metadata.service.MetaDataFiledsService;
+import com.saving.metadata.service.RevisionlogService;
+import com.saving.metadata.utils.BeanValidator;
+import com.saving.metadata.utils.DateUtil;
+import com.saving.metadata.utils.UUID64Utils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * <p>
+ * 服务实现类
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-05-09
+ */
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class RevisionlogServiceImpl extends ServiceImpl<RevisionlogMapper, Revisionlog> implements RevisionlogService {
+
+    private final RevisionlogMapper revisionlogMapper;
+
+    private final MetaDataFiledsService metaDataFiledsService;
+
+
+    @Autowired
+    public RevisionlogServiceImpl(RevisionlogMapper revisionlogMapper, MetaDataFiledsService metaDataFiledsService) {
+        this.revisionlogMapper = revisionlogMapper;
+        this.metaDataFiledsService = metaDataFiledsService;
+    }
+
+
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void saveCheck(Revisionlog param) {
+        BeanValidator.check(param);
+        if (StringUtils.isEmpty(param.getSchoolcode())
+                || StringUtils.isEmpty(param.getFiledId())
+                || StringUtils.isEmpty(param.getTableid())) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        MetaDataFiledsParam filedsParam = MetaDataFiledsParam.builder().build();
+        MetaDataFileds byId = metaDataFiledsService.getById(param.getFiledId());
+        BeanUtils.copyProperties(byId, filedsParam);
+        metaDataFiledsService.checkUpdateParam(filedsParam, byId);
+        param.setId(UUID64Utils.get64UUIDString());
+        param.setSort(null);
+        param.setSortid(null);
+        param.setCreatetime(Date.from(LocalDateTime.now()
+                .atZone(ZoneId.systemDefault()).toInstant()));
+        save(param);
+    }
+
+    @Override
+    public void dispose(List<String> ids) {
+        User user = RequestHolder.getCurrenSysUser();
+        List<Revisionlog> revisions = list(new QueryWrapper<Revisionlog>().lambda()
+                .in(Revisionlog::getId, ids));
+        revisions.forEach(obj -> {
+            MetaDataFileds dataFileds = metaDataFiledsService.getById(obj.getFiledId());
+            if (dataFileds != null) {
+                if ("新增".equals(obj.getOperationType())) {
+                    if (metaDataFiledsService.checkExist(obj.getFiledname(), null, obj.getTableid())) {
+                        throw new ParamException(obj.getSchoolname() + "新增" + obj.getFiledname() + "在标准表中" + obj.getTablename() + "存在相同的字段名");
+                    }
+                    MetaDataFileds metaDataFileds = MetaDataFileds.builder()
+                            .id(UUID64Utils.get64UUIDString())
+                            .dataItemDescription(obj.getDataitemdescription())
+                            .decimalLength(obj.getDecimallength())
+                            .defaultValue(obj.getDefaultvalue())
+                            .fieldIndex(obj.getFieldindex())
+                            .filedFormat(obj.getFiledformat())
+                            .fieldStatus(obj.getFieldstatus())
+                            .filedLength(obj.getFiledlength())
+                            .filedName(obj.getFiledname())
+                            .filedNumber(obj.getFilednumber())
+                            .isDecimals(obj.getIsdecimals())
+                            .isNotNull(obj.getIsnotnull())
+                            .isPrimary(obj.getIsprimary())
+                            .isStandard(obj.getIsstandard())
+                            .annotation(obj.getAnnotation())
+                            .canYouDelete(obj.getCanyoudelete())
+                            .canYouEdit(obj.getCanyouedit())
+                            .cdmpVersion(DateUtil.getYyyyMmDd())
+                            .chineseFiledName(obj.getChinesefiledname())
+                            .constraints(obj.getConstraints())
+                            .creator(user.getUsername())
+                            .referenceNumber(obj.getReferencenumber())
+                            .remark(obj.getRemark())
+                            .schoolCode(user.getSchoolCode())
+                            .storageType(obj.getStoragetype())
+                            .tableId(obj.getTableid())
+                            .tableName(obj.getTablename())
+                            .theStandardSource(obj.getThestandardsource())
+                            .valueSpace(obj.getValuespace())
+                            .createTime(Date.from(LocalDateTime.now()
+                                    .atZone(ZoneId.systemDefault()).toInstant()))
+                            .build();
+                    metaDataFiledsService.save(metaDataFileds);
+                } else if ("更新".equals(obj.getOperationType())) {
+                    if ("C".equals(obj.getStoragetype())) {
+                        if (obj.getUpdateFiledLength() < obj.getFiledlength()) {
+                            throw new ParamException(obj.getSchoolname() + "修改" + obj.getFiledname() + "标准字段只能允许改大字段长度不允许改小!");
+                        }
+                        if ("N".equals(obj.getStoragetype())) {
+                            if (obj.getUpdateDecimallength() < obj.getDecimallength()) {
+                                throw new ParamException(obj.getSchoolname() + "修改" + obj.getFiledname() + "标准字段只能允许改大小数位数不允许改小!");
+                            }
+                        }
+                    }
+                    MetaDataFileds metaDataFileds = MetaDataFileds.builder()
+                            .id(dataFileds.getId())
+                            .filedLength(obj.getUpdateFiledLength())
+                            .decimalLength(obj.getUpdateDecimallength()).build();
+                    metaDataFiledsService.updateById(metaDataFileds);
+                }
+                updateById(Revisionlog.builder().id(obj.getId()).operationStatus(1).build());
+            }
+        });
+
+    }
+}

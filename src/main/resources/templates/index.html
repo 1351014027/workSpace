@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<head>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="layui-layout-body">
+
+<div id="LAY_app">
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <ul class="layui-nav layui-layout-left">
+                <li class="layui-nav-item layadmin-flexible " lay-unselect>
+                    <a href="javascript:" layadmin-event="flexible" title="侧边伸缩">
+                        <i class="layui-icon layui-icon-shrink-right" id="LAY_app_flexible"></i>
+                    </a>
+                </li>
+                <li class="layui-nav-item " lay-unselect>
+                    <a href="javascript:" layadmin-event="refresh" title="刷新">
+                        <i class="layui-icon layui-icon-refresh-3"></i>
+                    </a>
+
+                </li>
+            </ul>
+            <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right" style="padding: 0 10px">
+
+                <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                    <a href="javascript:" layadmin-event="note" title="便签">
+                        <i class="layui-icon layui-icon-note"></i>
+                    </a>
+                </li>
+                <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                    <a href="javascript:" layadmin-event="fullscreen" title="全屏">
+                        <i class="layui-icon layui-icon-screen-full"></i>
+                    </a>
+                </li>
+                <li class="layui-nav-item" lay-unselect>
+                    <a href="javascript:">
+                        <cite th:text="${session.currentuser.name}">未登录</cite>
+                    </a>
+                    <dl class="layui-nav-child">
+                        <hr>
+                        <dd><a style="text-align: center;" th:href="@{/logout.page}">退出</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+        <div class="layui-side layui-side-menu">
+            <div class="layui-side-scroll">
+                <div class="layui-logo">
+                    <img height="25" th:src="@{/images/logo.ico}" width="30"><span
+                        style="margin-left: 5px" th:text="${session.webAppName}"></span>
+                </div>
+                <ul class="layui-nav layui-nav-tree" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu"
+                    lay-shrink="all">
+                    <li class="layui-nav-item" data-name="HomePage">
+                        <a th:lay-href="@{/welcome.page}">
+                            <i class="layui-icon layui-icon-home"></i>
+                            <cite>首页</cite>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item" data-name="DataAssets">
+                        <a href="javascript:">
+                            <i class="layui-icon iconfont layui-icon-sav-wulumuqishigongandashujuguanlipingtai-ico-1"></i>
+                            <cite>数据资产</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd data-name="fileManagement"><a
+                                    th:if="${session.isCloud && (#lists.contains(session.metadataRoles,'超级管理员')|| #lists.contains(session.metadataRoles,'专家权限（查看）')|| #lists.contains(session.metadataRoles,'专家权限（查看限制）'))}"
+                                    th:lay-href="@{/metaData/fileManagement.page?isStandard=true}"
+                            >标准文件(标准)</a>
+                            </dd>
+                            <dd data-name="fileManagement"><a
+                                    th:if="${!session.isCloud && (#lists.contains(session.metadataRoles,'标准文件管理') || #lists.contains(session.metadataRoles,'超级管理员')|| #lists.contains(session.metadataRoles,'专家权限（查看）'))}"
+                                    th:lay-href="@{/metaData/fileManagement.page}"
+                            >标准文件</a></dd>
+                            <dd data-name="tableManage"><a
+                                    th:if="${session.isCloud && #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/tableManage.page}"
+                            >元数据维护(标准)</a></dd>
+                            <dd data-name="metadataList"><a
+                                    th:if="${!session.isCloud && (#lists.contains(session.metadataRoles,'元数据维护') || #lists.contains(session.metadataRoles,'超级管理员'))}"
+                                    th:lay-href="@{/metaData/metadataList.page}"
+                            >元数据维护</a></dd>
+                            <dd data-name="theDataMap"><a th:lay-href="@{/metaData/theDataMap.page}">数据地图</a></dd>
+                            <!--                            <dd data-name="Undefined"><a-->
+                            <!--                                    th:if="${!session.isCloud&& (#lists.contains(session.metadataRoles,'软件资产') || #lists.contains(session.metadataRoles,'超级管理员'))}"-->
+                            <!--                                    th:lay-href="@{/metaData/apiTable.page}"-->
+                            <!--                            >软件资产</a></dd>-->
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'元数据分析') || #lists.contains(session.metadataRoles,'超级管理员')|| #lists.contains(session.metadataRoles,'专家权限（查看）')|| !#lists.contains(session.metadataRoles,'专家权限（查看限制）')}"
+                                    th:lay-href="@{/chartDisplayOne.page}"
+                            >元数据分析</a></dd>
+                            <dd data-name="Undefined"><a
+                                    th:if="${session.isCloud && #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/revisionLog.page}"
+                            >修订日志</a></dd>
+
+                        </dl>
+                    </li>
+                    <!--                    <li class="layui-nav-item" data-name="DataLabel">-->
+                    <!--                        <a href="javascript:">-->
+                    <!--                            <i class="layui-icon iconfont layui-icon-sav-wulumuqishigongandashujuguanlipingtai-ico-20"></i>-->
+                    <!--                            <cite>数据标签</cite>-->
+                    <!--                        </a>-->
+                    <!--                        <dl class="layui-nav-child">-->
+                    <!--                            <dd data-name="Undefined"><a-->
+                    <!--                                    th:if="${session.isCloud &&#lists.contains(session.metadataRoles,'标准标签') || #lists.contains(session.metadataRoles,'超级管理员')}"-->
+                    <!--                                    th:lay-href="@{/metaData/dataLabel.page}"-->
+                    <!--                            >标签查询</a></dd>-->
+                    <!--                            <dd data-name="Undefined"><a-->
+                    <!--                                    th:if="${session.isCloud &&#lists.contains(session.metadataRoles,'标准标签') || #lists.contains(session.metadataRoles,'超级管理员')}"-->
+                    <!--                                    th:lay-href="@{/metaData/tagManagement.page}"-->
+                    <!--                            >标签管理</a></dd>-->
+                    <!--                        </dl>-->
+                    <!--                    </li>-->
+                    <!--                    <li class="layui-nav-item" data-name="DataExchange">-->
+                    <!--                        <a href="javascript:">-->
+                    <!--                            <i class="layui-icon iconfont layui-icon-sav-wulumuqishigongandashujuguanlipingtai-ico-26"></i>-->
+                    <!--                            <cite>数据交换</cite>-->
+                    <!--                        </a>-->
+                    <!--                        <dl class="layui-nav-child">-->
+                    <!--                            <dd data-name="pasteSourceData"><a-->
+                    <!--                                    th:if="${ !session.isCloud && (#lists.contains(session.metadataRoles,'贴源数据管理') || #lists.contains(session.metadataRoles,'超级管理员'))}"-->
+                    <!--                                    th:lay-href="@{/metaData/pasteSourceData.page}"-->
+                    <!--                            >贴源数据管理</a></dd>-->
+                    <!--                            <dd data-name="conversionRecord"><a-->
+                    <!--                                    th:if="${!session.isCloud && (#lists.contains(session.metadataRoles,'数据交换作业') || #lists.contains(session.metadataRoles,'超级管理员'))}"-->
+                    <!--                                    th:lay-href="@{/metaData/conversionRecord.page}"-->
+                    <!--                            >数据交换作业</a></dd>-->
+                    <!--                        </dl>-->
+                    <!--                    </li>-->
+                    <li class="layui-nav-item" data-name="StatisticalQuery">
+                        <a href="javascript:">
+                            <i class="layui-icon iconfont layui-icon-sav-wulumuqishigongandashujuguanlipingtai-ico-4"></i>
+                            <cite>统计查询</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd data-name="chartDisplay"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'校本数据列表') || #lists.contains(session.metadataRoles,'超级管理员')|| #lists.contains(session.metadataRoles,'专家权限（查看）')|| !#lists.contains(session.metadataRoles,'专家权限（查看限制）')}"
+                                    th:lay-href="@{/chartDisplay.page}"
+                            >校本数据列表</a></dd>
+                            <dd data-name="tableIndexList"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'校本数据文档') || #lists.contains(session.metadataRoles,'超级管理员')|| #lists.contains(session.metadataRoles,'专家权限（查看）')|| #lists.contains(session.metadataRoles,'专家权限（查看限制）')}"
+                                    th:lay-href="@{/metaData/tableIndexList.page}"
+                            >校本数据文档</a>
+                            </dd>
+                            <!--                            <dd data-name="DataExchangeAnalysis"><a-->
+                            <!--                                    th:if="${!session.isCloud && (#lists.contains(session.metadataRoles,'数据交换分析') || #lists.contains(session.metadataRoles,'超级管理员') || #lists.contains(session.metadataRoles,'超级管理员'))}"-->
+                            <!--                                    th:lay-href="@{/metaData/dataExchangeAnalysis.page}"-->
+                            <!--                            >数据交换分析</a></dd>-->
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item" data-name="APIManagement">
+                        <a href="javascript:">
+                            <i class="layui-icon iconfont  layui-icon-sav-wulumuqishigongandashujuguanlipingtai-ico-8"></i>
+                            <cite>API管理</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'校本数据API') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/metaApi.page}"
+                            >校本数据API</a></dd>
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'状态数据API') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/ztptApi.page}"
+                            >状态数据API</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item" data-name="DataBackup">
+                        <a th:if="${#lists.contains(session.metadataRoles,'数据备份') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                           th:lay-href="@{/metaData/dataBackup.page}"
+                        >
+                            <i class="layui-icon iconfont layui-icon-sav-wulumuqishigongandashujuguanlipingtai-ico-25"></i>
+                            <cite>数据备份</cite>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item" data-name="SysSet">
+                        <a href="javascript:">
+                            <i class="layui-icon  layui-icon-set"></i>
+                            <cite>系统设置</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'类型管理') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/typeManage.page}"
+                            >类型管理</a></dd>
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'选项管理') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/optionManage.page}"
+                            >选项管理</a></dd>
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'多键值选项') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/manykeyValues.page}"
+                            >多键值选项</a></dd>
+                            <dd data-name="Undefined"><a
+                                    th:if="${session.isCloud && (#lists.contains(session.metadataRoles,'校端同步授权') || #lists.contains(session.metadataRoles,'超级管理员'))}"
+                                    th:lay-href="@{/metaData/apiAccredit.page}"
+                            >校端同步授权</a></dd>
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'权限分配') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/permission.page}"
+                            >权限分配</a>
+                            </dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item" data-name="SysLog">
+                        <a href="javascript:">
+                            <i class="layui-icon iconfont layui-icon-sav-wulumuqishigongandashujuguanlipingtai-ico-9"></i>
+                            <cite>系统日志</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'系统日志') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/operationTableRecord.page}"
+                            >系统操作日志</a>
+                            </dd>
+                            <dd data-name="Undefined"><a
+                                    th:if="${#lists.contains(session.metadataRoles,'系统日志') || #lists.contains(session.metadataRoles,'超级管理员')}"
+                                    th:lay-href="@{/metaData/apiTableLog.page}"
+                            >接口调用日志</a></dd>
+                            </dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item" data-name="Instructions">
+                        <a th:lay-href="@{/doc/specification.pdf}">
+                            <i class="layui-icon iconfont layui-icon-sav-wulumuqishigongandashujuguanlipingtai-ico-13"></i>
+                            <cite>使用说明</cite>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item" data-name="version">
+                        <a th:lay-href="@{/metaData/version.page}">
+                            <i class="layui-icon layui-icon-log"></i>
+                            <cite>更新日志</cite>
+                        </a>
+                    </li>
+                    <li class="layui-nav-item" data-name="AboutUs">
+                        <a th:lay-href="@{/metaData/aboutUs.page}">
+                            <i class="layui-icon layui-icon-about"></i>
+                            <cite>关于我们</cite>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 页面标签 -->
+        <div class="layadmin-pagetabs" id="LAY_app_tabs">
+            <div class="layui-icon layadmin-tabs-control layui-icon-prev" layadmin-event="leftPage"></div>
+            <div class="layui-icon layadmin-tabs-control layui-icon-next" layadmin-event="rightPage"></div>
+            <div class="layui-icon layadmin-tabs-control layui-icon-down">
+                <ul class="layui-nav layadmin-tabs-select" lay-filter="layadmin-pagetabs-nav">
+                    <li class="layui-nav-item" lay-unselect>
+                        <a href="javascript:"></a>
+                        <dl class="layui-nav-child layui-anim-fadein">
+                            <dd layadmin-event="closeThisTabs"><a href="javascript:">关闭当前标签页</a></dd>
+                            <dd layadmin-event="closeOtherTabs"><a href="javascript:">关闭其它标签页</a></dd>
+                            <dd layadmin-event="closeAllTabs"><a href="javascript:">关闭全部标签页</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+            <div class="layui-tab" lay-allowClose="true" lay-filter="layadmin-layout-tabs" lay-unauto>
+                <ul class="layui-tab-title" id="LAY_app_tabsheader">
+                    <li class="layui-this" th:lay-attr="@{/welcome.page}" th:lay-id="@{/welcome.page}"><i
+                            class="layui-icon layui-icon-home"></i></li>
+                </ul>
+            </div>
+        </div>
+        <div class="layui-body" id="LAY_app_body" style="background-color: #ffffff">
+            <div class="layadmin-tabsbody-item layui-show" style="background-color: #ffffff">
+                <iframe class="layadmin-iframe" frameborder="0" style="background-color: #ffffff"
+                        th:src="@{/welcome.page}"></iframe>
+            </div>
+        </div>
+        <div class="layadmin-body-shade" layadmin-event="shade"></div>
+    </div>
+</div>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index'], function () {
+        var $ = layui.$;
+        $('#LAY-system-side-menu li').each(function () {
+            let this_ = $(this);
+            if (this_.find('dl  dd').children().length == 0) {
+                if (this_.find('a cite').text() != '数据备份' && this_.find('a cite').text() != '使用说明' && this_.find('a cite').text() != '关于我们' && this_.find('a cite').text() != '更新日志' && this_.find('a cite').text() != '首页') {
+                    this_.remove();
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
+
+

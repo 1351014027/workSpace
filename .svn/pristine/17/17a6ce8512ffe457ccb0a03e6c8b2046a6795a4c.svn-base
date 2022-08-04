@@ -1,0 +1,49 @@
+package com.saving.metadata.controller;
+
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.service.ApiParamService;
+import com.saving.metadata.vo.ApiParamGatewayParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+
+/**
+ * @author: 朱柯辉
+ * @date: 2020/6/1 9:42
+ * @Description:
+ */
+
+@RestController
+@RequestMapping("/apiParam")
+@Api(tags = "接口进行数据(增删改查)相关接口")
+public class ApiParamController<T> {
+
+    @Resource
+    private ApiParamService apiParamService;
+
+    @PostMapping(value = "apiParamGateway.json")
+    @ApiOperation(value = "接口进行数据(增删改查)相关接口", notes = "中转网关")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "tableName", value = "表名", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "schoolCode", value = "学校代码", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "interfaceType", value = "接口类型", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "apiKey", value = "apiKey加密密钥", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "sysNumber", value = "软件编号", required = true, paramType = "query")
+    })
+    public ServerResponse<T> apiParamGateway(@RequestBody ApiParamGatewayParam apiParamGatewayParam) {
+        return apiParamService.apiMetaDataInterface(
+                apiParamGatewayParam.getTableName(),
+                apiParamGatewayParam.getSchoolCode(),
+                apiParamGatewayParam.getInterfaceType(),
+                apiParamGatewayParam.getApiKey(),
+                apiParamGatewayParam.getSysNumber(),
+                apiParamGatewayParam.getParamMaps());
+    }
+}

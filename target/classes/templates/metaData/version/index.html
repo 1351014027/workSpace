@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-tab layui-tab-brief">
+            <ul class="layui-tab-title">
+                <li class="layui-this">更新日志</li>
+            </ul>
+
+            <div class="layui-tab-content">
+                <ul class="layui-timeline" th:each="gxrz:${resgxrz}">
+                    <li class="layui-timeline-item">
+                        <a name="2-5-x"> </a>
+                        <i class="layui-icon layui-timeline-axis"></i>
+                        <div class="layui-timeline-content layui-text">
+                            <div class="layui-timeline-title">
+                                <h2 th:text="${gxrz.topVersion}"></h2>
+                            </div>
+                            <ul>
+                                <li th:each="item:${gxrz.getLists()}">
+                                    <span th:text="${item.getSmailVersion()}"></span>
+                                    <span class="layui-badge-rim" th:text="${item.getVersionDate()}"></span>
+                                    <ul th:utext="${item.getContent()}">
+                                    </ul>
+                                    <hr>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                </ul>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'util', 'laydate'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , table = layui.table
+            , util = layui.util
+            , laydate = layui.laydate
+            , SavingFunction = layui.SavingFunction;
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.DwdxxbjzMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.Dwdxxbjz">
+        <result column="ID_" property="id"/>
+        <result column="Hierarchy_ID_" property="hierarchyId"/>
+        <result column="Hierarchy_Key_" property="hierarchyKey"/>
+        <result column="FILED_1_KEY_" property="filed1Key"/>
+        <result column="FILED_1_VALUE_" property="filed1Value"/>
+        <result column="FILED_2_KEY_" property="filed2Key"/>
+        <result column="FILED_2_VALUE_" property="filed2Value"/>
+        <result column="FILED_3_KEY_" property="filed3Key"/>
+        <result column="FILED_3_VALUE_" property="filed3Value"/>
+        <result column="FILED_4_KEY_" property="filed4Key"/>
+        <result column="FILED_4_VALUE_" property="filed4Value"/>
+        <result column="FILED_5_KEY_" property="filed5Key"/>
+        <result column="FILED_5_VALUE_" property="filed5Value"/>
+        <result column="FILED_6_KEY_" property="filed6Key"/>
+        <result column="FILED_6_VALUE_" property="filed6Value"/>
+        <result column="FILED_7_KEY_" property="filed7Key"/>
+        <result column="FILED_7_VALUE_" property="filed7Value"/>
+        <result column="FILED_8_KEY_" property="filed8Key"/>
+        <result column="FILED_8_VALUE_" property="filed8Value"/>
+        <result column="FILED_9_KEY_" property="filed9Key"/>
+        <result column="FILED_9_VALUE_" property="filed9Value"/>
+        <result column="FILED_10_KEY_" property="filed10Key"/>
+        <result column="FILED_10_VALUE_" property="filed10Value"/>
+        <result column="Sort_" property="sort"/>
+        <result column="Status_" property="status"/>
+        <result column="IsDelete_" property="isDelete"/>
+        <result column="SchoolCode_" property="schoolCode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createTime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updateTime"/>
+        <result column="Remark_" property="remark"/>
+        <result column="CanYouEdit_" property="canYouEdit"/>
+        <result column="CanYouDelete_" property="canYouDelete"/>
+        <result column="SortId_" property="sortId"/>
+        <result column="IsStandard_" property="isStandard"/>
+        <result column="CdmpVersion_" property="cdmpVersion"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_,Hierarchy_ID_,Hierarchy_Key_, FILED_1_KEY_, FILED_1_VALUE_, FILED_2_KEY_, FILED_2_VALUE_, FILED_3_KEY_, FILED_3_VALUE_, FILED_4_KEY_, FILED_4_VALUE_, FILED_5_KEY_, FILED_5_VALUE_, FILED_6_KEY_, FILED_6_VALUE_, FILED_7_KEY_, FILED_7_VALUE_, FILED_8_KEY_, FILED_8_VALUE_, FILED_9_KEY_, FILED_9_VALUE_, FILED_10_KEY_, FILED_10_VALUE_, Sort_, Status_, IsDelete_, SchoolCode_, Creator_, CreateTime_, Updateor_, UpdateTime_, Remark_, CanYouEdit_, CanYouDelete_, SortId_, CdmpVersion_,IsStandard_
+    </sql>
+
+</mapper>

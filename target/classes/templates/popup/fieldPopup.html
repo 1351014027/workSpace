@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-card-body">
+    <form class="layui-form" lay-filter="userForm">
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">字段名称：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" lay-verType="tips" lay-verify="required" name="filedName"
+                           placeholder="字段名称" th:disabled="${filed?.filedName}" th:value="${filed?.filedName}"
+                           type="text">
+                </div>
+
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">中文字段：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" lay-verType="tips" lay-verify="required" name="chineseFiledName"
+                           placeholder="中文字段"
+                           th:disabled="${filed?.chineseFiledName}" th:value="${filed?.chineseFiledName}" type="text">
+                </div>
+
+            </div>
+
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">存储类型：</label>
+                <div class="layui-input-block">
+                    <select lay-filter="dms-user-schoolCode" lay-search="" lay-verType="tips" lay-verify="required"
+                            name="storageType"
+                            th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                            th:value="${filed?.storageType}">
+                        <option th:each="code:${szList}" th:selected="${filed?.storageType==code.key}"
+                                th:text="${code.name+'('+code.key+')'}" th:value="${code.key}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">字段长度：</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required|number"
+                           name="filedLength" placeholder="字段长度"
+                           th:value="${filed?.filedLength}" type="number">
+                </div>
+            </div>
+
+
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">约束：</label>
+                <div class="layui-input-block">
+                    <select lay-filter="sav-constraints" lay-search="" lay-verType="tips" lay-verify="required"
+                            name="constraints"
+                            th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                            th:value="${filed?.constraints}">
+                        <option th:each="code:${ysList}" th:selected="${filed?.constraints==code.key}"
+                                th:text="${code.name+'('+code.key+')'}" th:value="${code.key}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-col-lg2">
+                <label class="layui-form-label">是否主键：</label>
+                <div class="layui-input-block">
+                    <input lay-filter="sav-isPrimary" lay-skin="switch" lay-text="是|否" name="isPrimary"
+                           th:checked="${filed?.isPrimary eq 1}"
+                           th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                           type="checkbox"
+                           value="1">
+                </div>
+            </div>
+            <div class="layui-col-lg2">
+                <label class="layui-form-label">是否非空：</label>
+                <div class="layui-input-block">
+                    <input lay-filter="sav-isNotNull" lay-skin="switch" lay-text="是|否" name="isNotNull"
+                           th:checked="${filed?.isNotNull eq 1}"
+                           th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }" type="checkbox"
+                           value="1">
+                </div>
+            </div>
+            <div class="layui-col-lg2">
+                <label class="layui-form-label">是否小数：</label>
+                <div class="layui-input-block">
+                    <input lay-skin="switch" lay-text="是|否" name="isDecimals"
+                           th:checked="${filed?.isDecimals eq 1}"
+                           th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }" type="checkbox"
+                           value="1">
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">数据项说明：</label>
+            <div class="layui-input-block">
+                <textarea class="layui-textarea" name="dataItemDescription"
+                          placeholder="数据项说明"
+                          th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                          th:text="${filed?.dataItemDescription}"></textarea>
+            </div>
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">标准编号：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" lay-verType="tips"
+                           lay-verify="required" name="filedNumber"
+                           placeholder="标准编号"
+                           th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                           th:value="${filed?.filedNumber}" type="text">
+                </div>
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">标准来源：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" name="theStandardSource"
+                           placeholder="标准来源"
+                           th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                           th:value="${filed?.theStandardSource}" type="text">
+                </div>
+            </div>
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">字段格式：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" name="filedFormat"
+                           placeholder="字段格式" th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                           th:value="${filed?.filedFormat}"
+                           type="text">
+                </div>
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">值空间：</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" name="valueSpace"
+                           placeholder="值空间" th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                           th:value="${filed?.valueSpace}" type="text">
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">引用序号：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" name="referenceNumber"
+                           placeholder="引用序号" th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+
+                           th:value="${filed?.referenceNumber}" type="text">
+                </div>
+            </div>
+            <div class="layui-col-lg6">
+                <label class="layui-form-label">小数位数：</label>
+                <div class="layui-input-block">
+                    <input class="layui-input" name="decimalLength"
+                           placeholder="小数位数"
+                           th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 and filed.storageType ne 'N'}"
+                           th:value="${filed?.decimalLength}"
+                           type="text">
+                </div>
+            </div>
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+
+
+            <div class="layui-col-lg12">
+                <label class="layui-form-label">默认值：</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input"
+                           name="defaultValue"
+                           placeholder="默认值"
+                           th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                           th:value="${filed?.defaultValue}"
+                           type="text">
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-row layui-col-space10 layui-form-item">
+            <label class="layui-form-label">字段索引：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" name="fieldIndex"
+                       placeholder="字段索引" th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                       th:value="${filed?.fieldIndex}"
+                       type="text">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">字段注释：</label>
+            <div class="layui-input-block">
+                <textarea class="layui-textarea" name="annotation"
+                          placeholder="字段注释" th:disabled="${isStandard ne 1 and filed?.isStandard eq 1 }"
+                          th:text="${filed?.annotation}"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input id="sav-metadata-userCreates" lay-filter="sav-metadata-userCreates" lay-submit type="button"
+                   value="新增保存">
+            <input id="sav-metadata-userUpdates" lay-filter="sav-metadata-userUpdates" lay-submit type="button"
+                   value="编辑保存">
+        </div>
+    </form>
+</div>
+</body>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , SavingFunction = layui.SavingFunction;
+        form.on('select(sav-constraints)', function (data) {
+            if (data.value === 'M') {
+                $('input[name="isNotNull"]').prop('checked', true);
+            } else {
+                $('input[name="isNotNull"]').removeAttr('checked');
+            }
+            layui.form.render('checkbox');
+        });
+
+        form.on('select(dms-user-schoolCode)', function (data) {
+            if (data.value === 'M') {
+                $('input[name="decimalLength"]').val(4);
+                $('input[name="isDecimals"]').prop('checked', true);
+            } else if (data.value === 'N') {
+                $('input[name="decimalLength"]').val(2);
+                $('input[name="isDecimals"]').prop('checked', true);
+            } else {
+                $('input[name="decimalLength"]').val('');
+                $('input[name="isDecimals"]').removeAttr('checked');
+            }
+            layui.form.render('checkbox');
+        });
+
+        form.on('switch(sav-isPrimary)', function (data) {
+            if (data.elem.checked) {
+                $('input[name="isNotNull"]').prop('checked', true);
+                $("select[name='constraints']").val("M");
+            } else {
+                $('input[name="isNotNull"]').removeAttr('checked');
+                $("select[name='constraints']").val("O");
+            }
+            layui.form.render('checkbox');
+            layui.form.render('select');
+        });
+        form.on('switch(sav-isNotNull)', function (data) {
+            if (data.elem.checked) {
+                $("select[name='constraints']").val("M");
+            } else {
+                $("select[name='constraints']").val("O");
+            }
+            layui.form.render('checkbox');
+            layui.form.render('select');
+        });
+        $('input:disabled,textarea:disabled').addClass('layui-disabled');
+    });
+</script>
+</html>

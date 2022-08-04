@@ -1,0 +1,54 @@
+package com.saving.metadata.handler;
+
+import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
+import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
+import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.saving.metadata.pojo.MetaDataFileds;
+import com.saving.metadata.service.MetaDataFiledsService;
+import com.saving.metadata.utils.LambdaUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Comment;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+
+import java.util.List;
+
+/**
+ * 自定义拦截器.新增注释,第一行头加批注
+ *
+ * @author : 陈志强
+ * @date : 2020/8/5 10:14
+ */
+public class CommentWriteHandler extends AbstractRowWriteHandler {
+
+    private final MetaDataFiledsService metaDataFiledsService;
+    private final String tableId;
+
+    public CommentWriteHandler(String tableId, MetaDataFiledsService metaDataFiledsService) {
+        this.metaDataFiledsService = metaDataFiledsService;
+        this.tableId = tableId;
+    }
+
+    @Override
+    public void afterRowDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row,
+                                Integer relativeRowIndex, Boolean isHead) {
+        if (isHead) {
+            Sheet sheet = writeSheetHolder.getSheet();
+            Drawing<?> drawingPatriarch = sheet.createDrawingPatriarch();
+            List<MetaDataFileds> list = metaDataFiledsService.list(new QueryWrapper<MetaDataFileds>().lambda().eq(MetaDataFileds::getTableId, tableId));
+            list.forEach(LambdaUtils.consumerWithIndex((obj, index) -> {
+                if (StringUtils.isNotEmpty(obj.getDataItemDescription())) {
+                    Comment comment = drawingPatriarch.createCellComment(
+                            new XSSFClientAnchor(0, 0, 0, 0, (short) index.longValue(), 0, (short) 2, 1));
+                    comment.setString(new XSSFRichTextString(obj.getDataItemDescription()));
+                    sheet.getRow(0).getCell(index).setCellComment(comment);
+                }
+            }));
+        }
+    }
+
+}

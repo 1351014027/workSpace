@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">类型代码:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="typeKey"
+                   placeholder="请输入类型代码"
+                   th:value="${hierarchy?.typeKey}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">类型名称:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="typeName"
+                   placeholder="请输入类型名称"
+                   th:value="${hierarchy?.typeName}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">父级类型:</label>
+        <div class="layui-input-block">
+            <input class="layui-input" id="tree" lay-filter="tree" name="parent" placeholder="无父类可不填"
+                   th:value="${hierarchy?.parent}" type="text"/>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">多键值选项</label>
+        <div class="layui-input-block">
+            <input lay-skin="switch" lay-text="是|否" name="isManyKeyValues"
+                   th:checked="${hierarchy?.isManyKeyValues eq 1}" type="checkbox" value="1">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">排序:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required|number"
+                   name="sort"
+                   placeholder="排序"
+                   th:value="${hierarchy?.sort}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">备注:</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" name="remark" placeholder="备注" th:text="${hierarchy?.remark}"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <input id="sav-dms-typeCreates" lay-filter="sav-dms-typeCreates" lay-submit type="button" value="新增保存">
+        <input id="sav-dms-typeUpdates" lay-filter="sav-dms-typeUpdates" lay-submit type="button" value="编辑保存">
+    </div>
+</div>
+</body>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'treeSelect', 'SavingFunction', 'form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , SavingFunction = layui.SavingFunction
+            , treeSelect = layui.treeSelect, treeData = {};
+        SavingFunction.req({
+            url: '[[@{/metadata/hierarchy/list.json}]]',
+            async: false,
+            done: function (res) {
+                treeData = SavingFunction.toTree(res, 'sortId');
+            }
+        });
+        if (treeData.length < 1) {
+            $('input[name="parent"]').attr('disabled', 'disabled');
+            form.render();
+        }
+        treeSelect.render({
+            elem: '#tree',
+            placeholder: '父级类型',
+            search: true,
+            dataList: treeData
+            , simpleData: {
+                enable: true,// 表示是否使用简单数据
+                idKey: "id",// 树结构的id的字段名称
+                pIdKey: "parent"
+            },
+            style: {
+                folder: {
+                    enable: true
+                },
+                line: {
+                    enable: true
+                }
+            },
+            click: function (d) {
+                SavingFunction.req({
+                    url: '[[@{/metadata/hierarchy/parentList.json}]]',
+                    async: false,
+                    data: {
+                        parent: d.current.id
+                    },
+                    done: function (res) {
+                        let sort = $('input[name="sort"]').val();
+                        if (!sort) {
+                            $('input[name="sort"]').val(res)
+                        }
+                    }
+                });
+
+            },
+            success: function () {
+                let parent = $('input[name="parent"]').val();
+                if (parent !== '0') {
+                    treeSelect.checkNode('tree', parent);
+                }
+            }
+        });
+    });
+</script>
+</html>

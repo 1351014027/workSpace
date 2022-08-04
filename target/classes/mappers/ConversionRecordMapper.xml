@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.ConversionRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.ConversionRecord">
+        <id column="ID_" property="id"/>
+        <result column="Transformations_Name_" property="transformationsName"/>
+        <result column="Transformations_Path_" property="transformationsPath"/>
+        <result column="Transformations_Explained_" property="transformationsExplained"/>
+        <result column="Transformations_Stauts_" property="transformationsStauts"/>
+        <result column="Start_Time_" property="startTime"/>
+        <result column="End_Time_" property="endTime"/>
+        <result column="Execution_Time_" property="executionTime"/>
+        <result column="Operating_Record_" property="operatingRecord"/>
+        <result column="Operating_Table_Length_" property="operatingTableLength"/>
+        <result column="Source_Table_" property="sourceTable"/>
+        <result column="Target_Table_" property="targetTable"/>
+        <result column="Operation_Type_" property="operationType"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, Transformations_Name_, Transformations_Path_, Transformations_Explained_, Transformations_Stauts_, Start_Time_, End_Time_, Execution_Time_, Operating_Record_, Operating_Table_Length_, Source_Table_, Target_Table_, Operation_Type_
+    </sql>
+    <select id="listPageAnalysis" resultType="org.apache.commons.collections4.map.LinkedMap">
+        <if test="str==0">
+            SELECT Year(Start_Time_) 年份,SUM(CASE WHEN Transformations_Stauts_ ='成功' THEN 1 ELSE 0 END) 成功次数
+            ,SUM(CASE WHEN Transformations_Stauts_ ='失败' THEN 1 ELSE 0 END) 失败次数
+            FROM [METADATA_B_CONVERSION_RECORD_] group by Year(Start_Time_)
+        </if>
+        <if test="str==1">
+            SELECT cast(Year(Start_Time_) as varchar(255))+'年'+cast(month(Start_Time_) as varchar(255))+'月' 月份,SUM(CASE
+            WHEN Transformations_Stauts_ ='成功' THEN 1 ELSE 0 END) 成功次数
+            ,SUM(CASE WHEN Transformations_Stauts_ ='失败' THEN 1 ELSE 0 END) 失败次数
+            FROM [METADATA_B_CONVERSION_RECORD_] group by cast(Year(Start_Time_) as
+            varchar(255))+'年'+cast(month(Start_Time_) as varchar(255))+'月'
+        </if>
+        <if test="str==3">
+            SELECT cast(Year(Start_Time_) as varchar(255))+'年'+cast(month(Start_Time_) as varchar(255))+'月'+
+            cast(day(Start_Time_) as varchar(255))+'日' 每天,SUM(CASE WHEN Transformations_Stauts_ ='成功' THEN 1 ELSE 0 END)
+            成功次数
+            ,SUM(CASE WHEN Transformations_Stauts_ ='失败' THEN 1 ELSE 0 END) 失败次数
+            FROM [METADATA_B_CONVERSION_RECORD_] group by cast(Year(Start_Time_) as
+            varchar(255))+'年'+cast(month(Start_Time_) as varchar(255))+'月'+cast(day(Start_Time_) as varchar(255))+'日'
+        </if>
+        <if test="str==2">
+            SELECT cast(Year(Start_Time_) as varchar(255))+'年第'+cast(DateName (ww,Start_Time_)+1 as varchar(64))+'周'
+            周数,SUM(CASE WHEN Transformations_Stauts_ ='成功' THEN 1 ELSE 0 END) 成功次数
+            ,SUM(CASE WHEN Transformations_Stauts_ ='失败' THEN 1 ELSE 0 END) 失败次数
+            FROM [METADATA_B_CONVERSION_RECORD_] group by cast(Year(Start_Time_) as varchar(255))+'年第'+cast(DateName
+            (ww,Start_Time_)+1 as varchar(64))+'周'
+        </if>
+    </select>
+
+</mapper>

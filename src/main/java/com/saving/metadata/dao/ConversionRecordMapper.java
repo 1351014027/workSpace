@@ -1,0 +1,27 @@
+package com.saving.metadata.dao;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.saving.metadata.pojo.ConversionRecord;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * Mapper 接口
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2020-01-15
+ */
+@Mapper
+@Repository
+public interface ConversionRecordMapper extends BaseMapper<ConversionRecord> {
+
+    List<Map<String, String>> listPageAnalysis(@Param("page") Page<Map<String, String>> page,
+                                               @Param("str") String str);
+}

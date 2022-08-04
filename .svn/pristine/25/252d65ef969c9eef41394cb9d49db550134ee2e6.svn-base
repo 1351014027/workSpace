@@ -1,0 +1,66 @@
+package com.saving.metadata.dto;
+
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.saving.metadata.pojo.FileStore;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+import lombok.experimental.Tolerate;
+
+import java.io.Serializable;
+
+/**
+ * @author: 陈志强
+ * @date: 2019/12/19 10:05
+ * @Description: 文件上传对象DTO
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+@ApiModel(value = "FileStore对象", description = "文件上传对象")
+@Builder
+public class FileStoreDto extends Model<FileStore> {
+    private static final long serialVersionUID = 1L;
+    @TableId("ID_")
+    private String id;
+    @TableField(value = "FileName_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String fileName;
+    @TableField(value = "Versions_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String versions;
+    @TableField(value = "FilePath_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String filePath;
+    @TableField(value = "FileSize_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String fileSize;
+    @TableField(value = "FileType_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String fileType;
+    @TableField(value = "SaveFileName_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String saveFileName;
+    @TableField(value = "Remark_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String remark;
+    @TableField(value = "Sort_", fill = FieldFill.INSERT)
+    private String sort;
+    @TableField(value = "ParentId_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String parentId;
+    @TableField(value = "ParentType_", insertStrategy = FieldStrategy.NOT_NULL)
+    private String parentType;
+    @TableField(value = "CanYouDown_", insertStrategy = FieldStrategy.NOT_NULL)
+    private Integer canYouDown;
+    @TableField(value = "CanYouDelete_", insertStrategy = FieldStrategy.NOT_NULL)
+    private Integer canYouDelete;
+
+    @Tolerate
+    public FileStoreDto() {
+    }
+
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
+}
+

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.PermissionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.Permission">
+        <id column="ID_" property="id"/>
+        <result column="User_Name_" property="userName"/>
+        <result column="Name_" property="name"/>
+        <result column="Authority_Id_" property="authorityId"/>
+        <result column="Authority_" property="authority"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createtime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, User_Name_, Name_, Authority_Id_, Authority_, Creator_, CreateTime_
+    </sql>
+    <select id="listPage" resultType="com.saving.metadata.pojo.Permission">
+        select User_Name_ as userName,Name_ as name, authority=stuff((select ','+Authority_ from METADATA_B_PERMISSION t
+        where User_Name_=METADATA_B_PERMISSION.User_Name_ for
+        xml path('')), 1, 1, '')
+        from METADATA_B_PERMISSION
+        <where>
+            <if test="str!=null and str!=''">
+                User_Name_ like '%'+#{str}+'%' and Name_ like '%'+#{str}+'%'
+            </if>
+        </where>
+        group by User_Name_,Name_
+    </select>
+    <select id="roleList" resultType="java.util.Map">
+        SELECT [ID_]
+        ,[ROLE_NAME_]
+        FROM [METADATA_B_ROLELIST]
+        <where>
+            [TYPE_] = #{type}
+            <if test="type==0">
+                and [ROLE_NAME_] not in('校本数据API','状态数据API','数据交换分析','软件资产','贴源数据管理','数据交换作业')
+            </if>
+        </where>
+    </select>
+
+</mapper>

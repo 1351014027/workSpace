@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.User">
+        <result column="卡号" property="username"/>
+        <result column="姓名" property="name"/>
+        <result column="部门" property="department"/>
+        <result column="部门ID" property="departmentId"/>
+        <result column="密码" property="password"/>
+        <result column="使用状态" property="status"/>
+        <result column="学校代码" property="schoolCode"/>
+        <result column="性别" property="sex"/>
+        <result column="用工性质" property="workCharacteristics"/>
+        <result column="顺序" property="sort"/>
+    </resultMap>
+    <resultMap id="GxrzBaseResultMap" type="com.saving.metadata.vo.ResGxrzMap">
+        <result property="topVersion" column="Top_Version_"/>
+        <collection property="lists" resultMap="GxrzResultMap"/>
+    </resultMap>
+    <sql id="GxrzList_Column_List">
+        ID_,Top_Version_,Smail_Version_,Content_,Version_Date_
+    </sql>
+    <resultMap id="GxrzResultMap" type="com.saving.metadata.vo.ResGxrz">
+        <id column="ID_" property="id" jdbcType="VARCHAR"/>
+        <result column="Top_Version_" property="topVersion" jdbcType="VARCHAR"/>
+        <result column="Smail_Version_" property="smailVersion" jdbcType="VARCHAR"/>
+        <result column="Content_" property="content" jdbcType="VARCHAR"/>
+        <result column="Version_Date_" property="versionDate" jdbcType="VARCHAR"/>
+    </resultMap>
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        [卡号],[姓名],[部门],[密码],[使用状态],[学校代码],[性别],[部门ID],[顺序],[用工性质]
+    </sql>
+    <select id="getDepMaps" resultType="java.util.Map">
+    select 部门ID as ID_, 部门名称 as bmmc from SAV_IO_部门信息 group by 部门ID,部门名称,排序 ORDER BY 排序
+    </select>
+    <select id="findZtpt" resultType="com.saving.metadata.vo.AicTablesVo">
+        select A.ID AS id, A.目录编号 as cataNo , A.目录简称 AS catalog,a.表名 as tableName,b.目录名称 as typeName,c.字段总数 as fieldSize from Set_B_Main A
+join (select 目录编号,目录名称 from Set_B_Main where 目录简称='') B on a.上级编号 = b.目录编号
+join (select 目录编号, count (1) as 字段总数 from Set_B_BJG   where  是否删除 = 0  group by 目录编号) C
+on  a.目录编号=c.目录编号
+where A.目录简称!=''and A.是否删除 = 0  order by  cast(left(A.目录编号, CHARINDEX('.',A.目录编号)-1 ) as int ),A.目录编号,A.上级编号
+    </select>
+    <select id="findZtptByCataNo" parameterType="string" resultType="com.saving.metadata.vo.AicFieldsVo">
+        <if test="CataNo!=null and CataNo!=''">
+            select ID as id,ZDM as zdm,ZDLX as zdlx,ZDKD as zdkd,RQGS rqgs from Set_B_BJG where
+            目录编号=#{CataNo}
+        </if>
+    </select>
+    <select id="findDomainName" resultType="string">
+        select bi域名 from [EIC].dbo.DB_B_常量信息
+    </select>
+    <select id="selCsxy" resultType="java.lang.String">
+            SELECT top 1  门户域名 from EIC.DBO.db_vb_常量信息
+    </select>
+    <select id="selJwIp" resultType="java.lang.String">
+            SELECT top 1 教务域名 from EIC.DBO.db_vb_常量信息
+    </select>
+    <select id="selHttp" resultType="java.lang.String">
+  SELECT top 1  case when MAX(传输协议) IS NULL then 'http' else 传输协议 end as [传输协议] from EIC.DBO.db_vb_常量信息 GROUP BY 传输协议
+    </select>
+    <select id="getShowVersion" resultMap="GxrzBaseResultMap">
+        select Top_Version_,
+        <include refid="GxrzList_Column_List"/>
+        from IQAS_B_SYSTEMVERSION where System_Name_ =#{sysName};
+    </select>
+    <select id="findSchoolName" resultType="java.lang.String">
+  SELECT top 1  学校全称 from EIC.DBO.db_vb_常量信息 GROUP BY 学校全称
+    </select>
+</mapper>

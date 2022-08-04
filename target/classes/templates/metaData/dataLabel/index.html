@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtree.css}">
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtreefont.css}">
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">标签查询</div>
+
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md2">
+                    <ul class="dtree" data-id="963" id="tableTree" style="width: 100%"></ul>
+                </div>
+                <div class="layui-col-md10">
+                    <div class="layui-collapse">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">数据标签介绍</h2>
+                            <div class="layui-colla-content layui-show" id="dataShowLabel">
+                                请点击左侧标签查询后查看
+
+                            </div>
+                        </div>
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">数据标签数据概览</h2>
+                            <div class="layui-colla-content layui-show" id="dataShowLabelData">
+                                请点击左侧标签查询后查看
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script id="tablePopup" type="text/html">
+    <div class="layui-card">
+        {{# if(d.tableName){}}
+        <div class="layui-card-header">
+            <div style="font-size: 23px;float: left">{{d.tableName}}</div>
+            <div class="layui-form-mid layui-word-aux" style="line-height: 30px">{{d.tableDescribe}}</div>
+        </div>
+        {{#}else{}}
+        <div class="layui-card-header">
+            <div class="layui-inline" style="margin-bottom: 5px">
+                <input autocomplete="off" class="layui-input" name="likeStr" placeholder="模糊查询"
+                       type="text">
+            </div>
+            <div class="layui-inline" style="margin-bottom: 5px">
+                <button class="layui-btn layui-btn-sm layui-btn-warm" id="exportMap">导出</button>
+            </div>
+        </div>
+        {{#}}}
+        <div class="layui-card-body">
+            <table id="{{d.tableId}}" lay-filter="{{d.tableId}}"></table>
+        </div>
+    </div>
+</script>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'util', 'laytpl', 'dtree', 'element'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , table = layui.table
+            , laytpl = layui.laytpl
+            , util = layui.util
+            , element = layui.element
+            , SavingFunction = layui.SavingFunction
+            , dtree = layui.dtree;
+        let dTreeCofing = {
+            elem: "#tableTree",
+            url: '[[@{/metadata/hierarchy/lastList.json}]]',
+            method: "post",
+            initLevel: "1",
+            load: true,
+            dot: false,
+            cache: true,
+            response: {message: "msg", statusCode: 0, statusName: "code", rootName: "data", treeId: "id"},
+            icon: "-1",
+            dataFormat: "list",  //配置data的风格为list
+            accordion: true,
+            dataStyle: "layuiStyle",
+            width: $("#tableTree").parent().width(),
+            success: function (data, obj) {
+                if (data.data.length < 1) {
+                    SavingFunction.warnMsg("无类型数据!")
+                }
+            },
+            request: {
+                nodeId: 963,
+                parentId: 0,
+                level: 1,
+                isTag: true
+            }
+        }, Tree = dtree.render(dTreeCofing), TempCurTableData;
+
+        let tableOneField = [
+            {type: 'numbers', title: '序号', align: 'center'}
+            , {
+                field: 'labelFiledName', title: '字段名称', templet: function (d) {
+                    return d.labelFiledName + '<span class="layui-badge layui-bg-green" style="margin:0 15px">' + d.labelFiledZnName + '</span>'
+                }
+            }
+            , {field: 'labelFiledDescribe', title: '字段释义'}
+            , {field: 'labelFiledSource', title: '字段来源'}
+        ];
+        let tableTwoField = [
+            {type: 'numbers', title: '序号', align: 'center'}
+        ];
+        dtree.on("node('tableTree')", function (treeData) {
+            if (treeData.param.leaf && treeData.param.basicData.isRw) {
+                laytpl(tablePopup.innerHTML).render({
+                    tableName: treeData.param.context + '<span class="layui-badge layui-bg-green" style="margin:0 15px">' + treeData.param.basicData.bcwjm + '</span>',
+                    tableDescribe: treeData.param.basicData.xzz,
+                    tableId: 'tableOne'
+                }, (html) => {
+                    $('#dataShowLabel').html(html);
+                    intoDataTable({
+                        tableId: 'tableOne',
+                        field: tableOneField
+                        , url: '[[@{/metadata/labelFiled/listNoPage.json}]]'
+                        , where: {
+                            labelParentId: treeData.param.nodeId
+                        }
+                        , page: false
+                    })
+                })
+                TempCurTableData = treeData.param.nodeId;
+                SavingFunction.req({
+                    url: '[[@{/metadata/label/showLabelDataTable.json}]]',
+                    data: {id: treeData.param.nodeId},
+                    done(res) {
+                        let tableData = res.records;
+                        if (tableData.length === 0) {
+                            layer.msg('暂无数据!', {icon: 3});
+                        }
+                        let filed4 = [];
+                        for (let key in tableData[0]) {
+                            if (key !== '__row_number__') {
+                                filed4.push({
+                                    field: key,
+                                    title: key,
+                                    minWidth: 200
+                                });
+                            }
+                        }
+                        laytpl(tablePopup.innerHTML).render({tableId: 'tableTwo'}, (html) => {
+                            $('#dataShowLabelData').html(html);
+                            let tableTwo = intoDataTable({
+                                tableId: 'tableTwo'
+                                , field: filed4
+                                , url: '[[@{/metadata/label/showLabelDataTable.json}]]'
+                                , where: {
+                                    id: treeData.param.nodeId
+                                }
+                                , done: function (res, curr, count) {
+                                    TempMapData = res;
+                                }
+                            })
+                            $(document).on('keyup', 'input[name="likeStr"]', () => {
+                                tableTwo.reload({
+                                    where: {
+                                        str: $('input[name="likeStr"]').val()
+                                        , id: treeData.param.nodeId
+                                    }, page: {curr: 1}
+                                });
+                            });
+                        })
+                    }
+                });
+
+            } else {
+                const tipMsg = "请点击左侧标签查询后查看";
+                $('#dataShowLabel').html(tipMsg);
+                $('#dataShowLabelData').html(tipMsg);
+            }
+        });
+
+        let intoDataTable = (event) => {
+            let optionTable = {
+                id: event.tableId,
+                height: 'full-605',
+                cols: [event.field],
+                where: event.where,
+                page: event.page
+            };
+            event.url ? optionTable.url = event.url : optionTable.data = [];
+            return SavingFunction.intoTable(optionTable);
+        };
+
+        $('h2.layui-colla-title').click(() => {
+            let curTable = $('div.layui-colla-content.layui-show').find('table');
+            if (curTable.length > 0) {
+                let tableId = $('div.layui-colla-content.layui-show').find('table').attr('id');
+                if ($('div.layui-colla-content.layui-show').length === 1 && tableId) {
+                    table.reload(tableId, {
+                        height: 'full-265',
+                    })
+                } else {
+                    table.reload('tableTwo', {
+                        height: 'full-605',
+                    })
+                    table.reload('tableOne', {
+                        height: 'full-605',
+                    })
+                }
+            }
+
+        })
+        $(document).on('click', '#exportMap', () => {
+            layer.confirm('是否确认导出当前页记录?', {icon: 3, title: '提示'}, function (index) {
+                SavingFunction.exportExcel('[[@{/metadata/upload/exportMap.json}]]', {
+                    exportType: 'labelType'
+                    , id: TempCurTableData
+                    , str: $('input[name="likeStr"]').val()
+                    , pageNum: $("div[lay-id='tableTwo'] .layui-laypage-em").next().html() || 1
+                    , pageSize: $("div[lay-id='tableTwo'] .layui-laypage-limits").find("option:selected").val() || 100
+                });
+                layer.close(index);
+            });
+        })
+    });
+</script>
+</body>
+</html>

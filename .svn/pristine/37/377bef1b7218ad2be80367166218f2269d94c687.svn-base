@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-form layui-form-pane" lay-filter="formType" style="padding: 20px 30px;">
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="软件编号"><span style="color: red">*</span>软件编号：</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="rjbh"
+                       placeholder="请输入软件编号"
+                       style="width: 80%;display:inline" th:value="${apiTable?.rjbh}" type="text">
+                <i class="layui-icon alone-tips" lay-tips="学校自编"></i>
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="软件名称"><span style="color: red">*</span>软件名称：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="sysName"
+                       placeholder="请输入系统名称"
+                       style="width: 80%;display:inline" th:value="${apiTable?.sysName}" type="text">
+            </div>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="版本号">版本号：</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input"
+                       name="bbh"
+                       placeholder="请输入系统名称"
+                       style="width: 80%;display: inline" th:value="${apiTable?.bbh}" type="text">
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="来源"><span style="color: red">*</span>来源：</label>
+            <div class="layui-input-block" style="width: 60%;">
+                <select lay-verType="tips" lay-verify="required" name="ly" th:value="${apiTable?.ly}">
+                    <option th:selected="${apiTable?.ly=='1'} " value="1">购置</option>
+                    <option th:selected="${apiTable?.ly=='2'} " value="2">自研</option>
+                    <option th:selected="${apiTable?.ly=='3'} " value="3">社会捐赠</option>
+                    <option th:selected="${apiTable?.ly=='4'} " value="4">社会准捐</option>
+                    <option th:selected="${apiTable?.ly=='5'} " value="5">赠</option>
+                    <option th:selected="${apiTable?.ly=='6'} " value="6">其他</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="(准)捐赠单位代码">(准)捐赠单位代码：</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input"
+                       name="jzdwdm"
+                       placeholder="请输入(准)捐赠单位代码"
+                       style="width: 80%;display:inline" th:value="${apiTable?.jzdwdm}" type="text">
+                <i class="layui-icon alone-tips" lay-tips="填写该单位统一社会信用代码"></i>
+
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="(准)捐赠者名称">(准)捐赠者名称：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input"
+                       name="jzzmc"
+                       placeholder="请输入(准)捐赠者名称"
+                       style="width: 80%;display:inline" th:value="${apiTable?.jzzmc}" type="text">
+                <i class="layui-icon " lay-tips="填写单位名称或个人姓名"></i>
+            </div>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="生产国别码"><span style="color: red">*</span>生产国别码：</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="scgbm"
+                       placeholder="请输入生产国别码"
+                       style="width: 80%;display:inline" th:value="${apiTable?.scgbm}" type="text">
+                <i class="layui-icon alone-tips" lay-tips="采用三字母代码，如：CHN中国，USA 美国，取本规范3.1.5世界各国和地区名称代码表中的代码"></i>
+
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="购置日期"><span style="color: red">*</span>购置日期：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="gzrq"
+                       placeholder="请输入购置日期"
+                       style="width: 80%;display:inline" th:value="${apiTable?.gzrq}" type="text">
+                <i class="layui-icon " lay-tips="格式：YYYYMMDD，如果是（准）捐赠，则是捐赠日期"></i>
+            </div>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="生产厂家社会信用码">生产厂家社会信用码：</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input"
+                       name="sccjxym"
+                       placeholder="请输入生产厂家社会信用码"
+                       style="width: 80%;display:inline" th:value="${apiTable?.sccjxym}" type="text">
+                <i class="layui-icon " lay-tips="如果是国内厂家，填写该生产厂家统一社会信用代码"></i>
+            </div>
+
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="生产厂家名称"><span style="color: red">*</span>生产厂家名称：</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="sccjmc"
+                       placeholder="请输入生产厂家名称"
+                       style="width: 80%;display:inline" th:value="${apiTable?.sccjmc}" type="text">
+            </div>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="单价"><span style="color: red">*</span>单价:</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required|number"
+                       name="dj"
+                       placeholder="请输入单价"
+                       style="width: 80%;display:inline" th:value="${apiTable?.dj}" type="number">
+                <i class="layui-icon " lay-tips="单价：元"></i>
+            </div>
+        </div>
+        <div class="layui-col-md6" style="padding-left: 30px;">
+            <label class="layui-form-label">现状码：</label>
+            <div class="layui-input-block" style="width: 60%;">
+                <select name="xzm" th:value="${apiTable?.xzm}">
+                    <option th:each="code:${yqdm}" th:selected="${apiTable?.xzm==code.key} "
+                            th:text="${code.name}" th:value="${code.key}"></option>
+                </select>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label" lay-tips="系统URL">系统URL:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input"
+                   name="sysUrl"
+                   placeholder="请输入系统URL"
+                   style="width: 92%;display:inline" th:value="${apiTable?.sysUrl}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label" lay-tips="APIKey"><span style="color: red">*</span>APIKey:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="key"
+                   placeholder="请输入APIKey"
+                   style="width: 92%;display:inline" th:value="${apiTable?.key}" type="text">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-col-md6">
+            <label class="layui-form-label" lay-tips="厂家负责人">厂家负责人:</label>
+            <div class="layui-input-block" style="margin-right: 30px;">
+                <input autocomplete="off" class="layui-input"
+                       name="manufacturersUser"
+                       placeholder="请输入厂家负责人"
+                       style="width: 80%;display:inline" th:value="${apiTable?.manufacturersUser}" type="text">
+            </div>
+        </div>
+        <div class="layui-col-md6 " style="padding-left: 30px;">
+            <label class="layui-form-label" lay-tips="负责人电话">负责人电话:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verify="phone"
+                       name="manufacturersPhone"
+                       placeholder="请输入负责人电话"
+                       style="width: 80%;display:inline" th:value="${apiTable?.manufacturersPhone}" type="text">
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label" lay-tips="功能简介" style="height: 150px">功能简介:</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" name="gnjj" placeholder="功能简介" style="height: 150px"
+                      th:text="${apiTable?.gnjj}"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label " lay-tips="备注" style="height: 150px">备注:</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" name="remark" placeholder="备注" style="height: 150px"
+                      th:text="${apiTable?.remark}"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <input id="sav-dms-typeCreates" lay-filter="sav-dms-typeCreates" lay-submit type="button" value="新增保存">
+        <input id="sav-dms-typeUpdates" lay-filter="sav-dms-typeUpdates" lay-submit type="button" value="编辑保存">
+    </div>
+</div>
+</body>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'laydate'], function () {
+        var $ = layui.$
+            , form = layui.form;
+        let findType = '[[${findType}]]';
+        if (findType === 'true') {
+            $('input').addClass('layui-disabled');
+            $('input').attr('disabled', 'disabled');
+            $('select').addClass('layui-disabled');
+            $('select').attr('disabled', 'disabled');
+            $('textarea').addClass('layui-disabled');
+            $('textarea').attr('disabled', 'disabled');
+            form.render();
+        }
+
+
+    });
+</script>
+</html>

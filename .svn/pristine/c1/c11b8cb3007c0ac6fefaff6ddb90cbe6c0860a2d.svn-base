@@ -1,0 +1,139 @@
+package com.saving.metadata.controller;
+
+
+import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.pojo.Dwdxxbjz;
+import com.saving.metadata.pojo.User;
+import com.saving.metadata.service.DwdxxbjzService;
+import com.saving.metadata.utils.DateUtil;
+import com.saving.metadata.utils.IpUtils;
+import com.saving.metadata.utils.UUID64Utils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * <p>
+ * 前端控制器
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-05-18
+ */
+@RestController
+@RequestMapping("/metadata/dwdxxbjz")
+@Slf4j
+@Api(tags = "多键值控制器接口")
+public class DwdxxbjzController {
+
+    private final DwdxxbjzService dwdxxbjzService;
+
+    @Value("${application.isCloud}")
+    private Boolean isCloud;
+
+
+    @Autowired
+    public DwdxxbjzController(DwdxxbjzService dwdxxbjzService) {
+        this.dwdxxbjzService = dwdxxbjzService;
+    }
+
+    @PostMapping("listPage.json")
+    @ApiOperation(value = "多键值查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "id", value = "类型主键过滤，用于过滤")
+    })
+    public ServerResponse<Page<Dwdxxbjz>> listPage(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize
+            , String id) {
+        Page<Dwdxxbjz> page = dwdxxbjzService.page(new Page<>(pageNum, pageSize), new QueryWrapper<Dwdxxbjz>().lambda()
+                .eq(Dwdxxbjz::getHierarchyId, id)
+                .orderByAsc(Dwdxxbjz::getSortId));
+        return ServerResponse.createBySuccess(page);
+    }
+
+
+    @PostMapping(value = "deletes.json")
+    @ApiOperation(value = "批量删除类型接口", notes = "字段删除")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "ids", value = "选项对象主键组", required = true, paramType = "query")
+    })
+    public ServerResponse del(@RequestBody List<String> ids) {
+        if (!ids.isEmpty()) {
+            dwdxxbjzService.removeByIds(ids);
+            dwdxxbjzService.update(Dwdxxbjz.builder().cdmpVersion(DateUtil.getYyyyMmDd()).build(), new QueryWrapper<Dwdxxbjz>().lambda().in(Dwdxxbjz::getId, ids));
+            HttpServletRequest request = RequestHolder.getCurrenRequest();
+            User user = RequestHolder.getCurrenSysUser();
+            log.error("【数据中台系统】卡号为{}的用户删除了ID为{}的多键值下拉选项数据，删除记录数量为{},删除IP为{}", user.getUsername(), ids, ids.size(), IpUtils.getIpAddr(request));
+
+        }
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "update.json")
+    @ApiOperation(value = "更新选项接口", notes = "更新类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "param", value = "选项对象，用于更新", required = true, paramType = "query")
+    })
+    public ServerResponse update(Dwdxxbjz dwdxxbjz) {
+        Dwdxxbjz byId = dwdxxbjzService.getById(dwdxxbjz.getId());
+        if (byId == null) {
+            throw new ParamException("待更新的对象不存在!");
+        }
+
+        if (dwdxxbjz.getIsStandard() == null) {
+            dwdxxbjz.setIsStandard(0);
+        }
+        dwdxxbjz.setCdmpVersion(DateUtil.getYyyyMmDd());
+        dwdxxbjzService.updateById(dwdxxbjz);
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping(value = "save.json")
+    @ApiOperation(value = "新增选项接口", notes = "新增类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "param", value = "选项对象，用于新增", required = true, paramType = "query")
+    })
+    public ServerResponse save(Dwdxxbjz dwdxxbjz) {
+        dwdxxbjz.setId(UUID64Utils.get64UUIDString());
+        dwdxxbjz.setSort(String.valueOf(dwdxxbjzService.count(new QueryWrapper<Dwdxxbjz>().lambda()
+                .eq(Dwdxxbjz::getHierarchyId, dwdxxbjz.getHierarchyId()).eq(Dwdxxbjz::getIsDelete, 0)) + 1));
+        dwdxxbjz.setCdmpVersion(DateUtil.getYyyyMmDd());
+        if (isCloud) {
+            dwdxxbjz.setIsStandard(1);
+        }
+        dwdxxbjzService.save(dwdxxbjz);
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping("import.json")
+    @ResponseBody
+    @ApiOperation(value = "批量导入", notes = "批量导入")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "file", value = "文件流", required = true, paramType = "query"),
+    })
+    public ServerResponse<? extends Object> importExcel(@RequestParam(value = "file", required = false) MultipartFile file, String hierarchyId, String hierarchyKey) throws IOException {
+        dwdxxbjzService.importExcel(EasyExcel.read(file.getInputStream()).sheet().doReadSync(), hierarchyId, hierarchyKey);
+        return ServerResponse.createBySuccess();
+    }
+}
+

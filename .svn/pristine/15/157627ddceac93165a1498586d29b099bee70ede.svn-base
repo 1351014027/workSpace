@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">数据交换作业</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="transformationsName" placeholder="转换名称(模糊查询)"
+                           type="text">
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input autocomplete="off" class="layui-input" id="metadata-date" placeholder="开始时间-结束时间"
+                               type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                            lay-filter="hup-file-search"
+                            lay-submit="">查找
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-card-body">
+            <table id="metadata-operation-tableLog" lay-filter="metadata-operation-tableLog"></table>
+            <script id="TableTopToolbar" type="text/html">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Export">导出选中</button>
+                </div>
+            </script>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'util', 'laydate'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , table = layui.table
+            , util = layui.util
+            , laydate = layui.laydate
+            , SavingFunction = layui.SavingFunction;
+
+        laydate.render({
+            elem: '#metadata-date'
+            , range: true
+        });
+
+        let field = [
+            {type: 'checkbox'},
+            {type: 'numbers', title: '序号', align: 'center'}
+            , {field: 'transformationsName', title: '转换名称', align: 'center'}
+            , {field: 'transformationsPath', title: '转换路径', align: 'center'}
+            , {field: 'transformationsExplained', title: '转换说明', align: 'center'}
+            , {field: 'transformationsStauts', title: '转换状态', align: 'center'}
+            , {
+                field: 'startTime', title: '开始时间', width: 200, align: 'center', templet: function (d) {
+                    return util.toDateString(d.startTime);
+                }
+            }
+            , {
+                field: 'endTime', title: '结束时间', width: 200, align: 'center', templet: function (d) {
+                    return util.toDateString(d.endTime);
+                }
+            }
+            , {field: 'executionTime', title: '执行时间', align: 'center'}
+            , {field: 'operatingRecord', title: '操作说明', align: 'center'}
+            , {field: 'operatingTableLength', title: '操作表数目', align: 'center'}
+            , {field: 'sourceTable', title: '源头表', align: 'center'}
+            , {field: 'targetTable', title: '目标表', align: 'center'}
+            , {field: 'operationType', title: '操作类型', align: 'center'}
+        ];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-operation-tableLog'
+            , url: '[[@{/metadata/conversionRecord/listPage.json}]]'
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+            , height: 'full-180'
+        });
+
+        table.on('toolbar(metadata-operation-tableLog)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-operation-tableLog');
+            let datas = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < datas.length; i++) {
+                ids[i] = datas[i].id;
+            }
+            switch (obj.event) {
+                case 'Export':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认导出勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.exportExcel('[[@{/metadata/upload/export.json}]]', {
+                            ids: ids,
+                            pojoName: 'ConversionRecord',
+                            pojoChineseName: "ETL操作表记录"
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+
+        });
+
+        $('input[name="transformationsName"]').keyup(function () {
+            userTable.reload({
+                where: {
+                    transformationsName: $('input[name="transformationsName"]').val()
+                }, page: {curr: 1}
+            });
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            userTable.reload({
+                where: {
+                    transformationsName: $('input[name="transformationsName"]').val(),
+                    startDate: $('#metadata-date').val().split(' - ')[0],
+                    endDate: $('#metadata-date').val().split(' - ')[1]
+                }, page: {curr: 1}
+            });
+        });
+
+
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.OptionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.Option">
+        <id column="ID_" property="id"/>
+        <result column="Key_" property="key"/>
+        <result column="Name_" property="name"/>
+        <result column="Hierarchy_ID_" property="hierarchyId"/>
+        <result column="Hierarchy_Key_" property="hierarchyKey"/>
+        <result column="Parent_" property="parent"/>
+        <result column="Depth_" property="depth"/>
+        <result column="Level_" property="level"/>
+        <result column="Sort_" property="sort"/>
+        <result column="Status_" property="status"/>
+        <result column="IsDelete_" property="isDelete"/>
+        <result column="SchoolCode_" property="schoolCode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createTime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updateTime"/>
+        <result column="Remark_" property="remark"/>
+        <result column="CanYouEdit_" property="canYouEdit"/>
+        <result column="CanYouDelete_" property="canYouDelete"/>
+        <result column="SortId_" property="sortId"/>
+        <result column="IsStandard_" property="isStandard"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, Key_, Name_, Hierarchy_ID_, Hierarchy_Key_, Parent_, Depth_, Level_, Sort_, Status_, IsDelete_, SchoolCode_, Creator_, CreateTime_, Updateor_, UpdateTime_, Remark_, CanYouEdit_, CanYouDelete_, SortId_,IsStandard_
+    </sql>
+    <select id="checkOptionValue" resultType="com.saving.metadata.pojo.Option">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM METADATA_B_OPTION
+        where Hierarchy_ID_ in(SELECT ID_ FROM METADATA_B_HIERARCHY WHERE TypeKey_=#{typeKey} and IsDelete_ !=1)
+        and Key_ = #{key} and IsDelete_ !=1
+    </select>
+
+</mapper>

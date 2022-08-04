@@ -1,0 +1,209 @@
+package com.saving.metadata.controller;
+
+
+import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.saving.metadata.common.LayuiTreeResult;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.param.HierarchyParam;
+import com.saving.metadata.pojo.Hierarchy;
+import com.saving.metadata.pojo.MetaDataTables;
+import com.saving.metadata.pojo.Option;
+import com.saving.metadata.pojo.User;
+import com.saving.metadata.service.HierarchyService;
+import com.saving.metadata.service.MetaDataTablesService;
+import com.saving.metadata.service.OptionService;
+import com.saving.metadata.utils.DateUtil;
+import com.saving.metadata.utils.IpUtils;
+import com.saving.metadata.vo.LayuiTreeVo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 前端控制器
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2019-12-18
+ */
+@RestController
+@RequestMapping("/metadata/hierarchy")
+@Slf4j
+@Api(tags = "类型管理相关接口")
+public class HierarchyController {
+
+    private final HierarchyService hierarchyService;
+
+    private final OptionService optionService;
+
+    private final MetaDataTablesService metaDataTablesService;
+
+    @Value("${application.isCloud}")
+    private Boolean isCloud;
+
+    @Autowired
+    public HierarchyController(HierarchyService hierarchyService, OptionService optionService, MetaDataTablesService metaDataTablesService) {
+        this.hierarchyService = hierarchyService;
+        this.optionService = optionService;
+        this.metaDataTablesService = metaDataTablesService;
+    }
+
+    @PostMapping(value = "del.json")
+    @ApiOperation(value = "批量删除类型接口", notes = "字段删除")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "ids", value = "类型校验对象主键组", required = true, paramType = "query")
+    })
+    public ServerResponse del(@RequestBody List<String> ids) {
+
+        List<Hierarchy> hierarchies = hierarchyService.listByIds(ids);
+        StringBuffer errMsg = new StringBuffer();
+        hierarchies.forEach(obj -> {
+            int num = hierarchyService.count(new QueryWrapper<Hierarchy>().lambda().eq(Hierarchy::getParent, obj.getSortId()));
+            if (num > 0) {
+                errMsg.append(obj.getTypeName()).append("(").append(obj.getTypeKey()).append(")在类型管理中存在引用记录;");
+            }
+            int count = optionService.count(new QueryWrapper<Option>().lambda().eq(Option::getHierarchyId, obj.getTypeKey()));
+            if (count > 0) {
+                errMsg.append(obj.getTypeName()).append("(").append(obj.getTypeKey()).append(")在选项管理中存在引用记录;");
+            }
+            int tableCount = metaDataTablesService.count(new QueryWrapper<MetaDataTables>().lambda().eq(MetaDataTables::getMetadataTypeId, obj.getId()));
+            if (tableCount > 0) {
+                errMsg.append(obj.getTypeName()).append("(").append(obj.getTypeKey()).append(")在表管理中存在引用记录;");
+            }
+        });
+        if (StringUtils.isNotEmpty(errMsg.toString())) {
+            throw new ParamException(errMsg.toString());
+        }
+        if (!ids.isEmpty()) {
+            hierarchyService.removeByIds(ids);
+            hierarchyService.update(Hierarchy.builder().cdmpVersion(DateUtil.getYyyyMmDd()).build(), new QueryWrapper<Hierarchy>().lambda().in(Hierarchy::getId, ids));
+            HttpServletRequest request = RequestHolder.getCurrenRequest();
+            User user = RequestHolder.getCurrenSysUser();
+            log.error("【数据中台系统】卡号为{}的用户删除了ID为{}的类型数据，删除记录数量为{},删除IP为{}", user.getUsername(), ids, ids.size(), IpUtils.getIpAddr(request));
+        }
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "update.json")
+    @ApiOperation(value = "更新类型接口", notes = "更新类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "param", value = "类型校验对象，用于更新", required = true, paramType = "query")
+    })
+    public ServerResponse update(HierarchyParam param) {
+        hierarchyService.update(param);
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "save.json")
+    @ApiOperation(value = "新增类型接口", notes = "新增类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "param", value = "类型校验对象，用于新增", required = true, paramType = "query")
+    })
+    public ServerResponse save(HierarchyParam param) {
+        hierarchyService.save(param, isCloud);
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping("list.json")
+    @ApiOperation(value = "查询接口", notes = "无分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "hierarchy", value = "类型对象，用于过滤", required = true, paramType = "query")
+    })
+    public ServerResponse<List<Hierarchy>> list(Hierarchy hierarchy) {
+
+        return ServerResponse.createBySuccess(hierarchyService.treeList(hierarchy));
+    }
+
+    @PostMapping(value = "parentList.json")
+    public ServerResponse parentList(Integer parent) {
+        return ServerResponse.createBySuccess(hierarchyService.list(new QueryWrapper<Hierarchy>().lambda()
+                .eq(Hierarchy::getSchoolCode, RequestHolder.getCurrenSysUser().getSchoolCode())
+                .eq(parent != null, Hierarchy::getParent, parent)).size() + 1);
+
+    }
+
+    @PostMapping("listPage.json")
+    @ApiOperation(value = "类型分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "startDate", value = "过滤上传日期开始时间"),
+            @ApiImplicitParam(name = "endDate", value = "过滤上传日期结束时间")
+    })
+    public ServerResponse<Page<Hierarchy>> listPage(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize
+            , Hierarchy hierarchy
+            , String startDate
+            , String endDate) {
+        User user = RequestHolder.getCurrenSysUser();
+        LambdaQueryWrapper<Hierarchy> wrapper = new QueryWrapper<Hierarchy>().lambda().like(StringUtils.isNoneBlank(hierarchy.getTypeName()), Hierarchy::getTypeName, hierarchy.getTypeName())
+                .between(StringUtils.isNoneBlank(startDate) && StringUtils.isNoneBlank(endDate), Hierarchy::getCreateTime, startDate, endDate).eq(Hierarchy::getSchoolCode, user.getSchoolCode())
+                .orderByAsc(Hierarchy::getSort)
+                .orderByAsc(Hierarchy::getSortId)
+                .orderByAsc(Hierarchy::getCreateTime);
+        Page<Hierarchy> page = hierarchyService.page(new Page<>(pageNum, pageSize), wrapper);
+        return ServerResponse.createBySuccess(page);
+    }
+
+
+    @PostMapping("import.json")
+    @ResponseBody
+    @ApiOperation(value = "批量导入", notes = "批量导入")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "file", value = "文件流", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "parent", value = "父类型", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "remark", value = "备注", required = true, paramType = "query")
+    })
+    public ServerResponse<? extends Object> importExcel(@RequestParam(value = "file", required = false) MultipartFile file, String parent, String remark) throws IOException {
+        List<Map<Integer, String>> listMap = EasyExcel.read(file.getInputStream()).sheet().doReadSync();
+        hierarchyService.importExcel(listMap, parent, remark, isCloud);
+        log.info("parent:{},remark:{}", parent, remark);
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping("lastList.json")
+    public LayuiTreeResult<List<LayuiTreeVo>> lastList(String nodeId, String parentId, String level, String isReload, @RequestParam(defaultValue = "false") Boolean isTag) {
+        return LayuiTreeResult.createBySuccess("渲染成功!", hierarchyService.lastList(nodeId, parentId, level, isReload, RequestHolder.getCurrenSysUser().getSchoolCode(), isTag));
+    }
+
+
+    @PostMapping("manykeyValuesListPage.json")
+    @ApiOperation(value = "多键值分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query")
+    })
+    public ServerResponse<Page<Hierarchy>> manykeyValuesListPage(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize) {
+        User user = RequestHolder.getCurrenSysUser();
+        LambdaQueryWrapper<Hierarchy> wrapper = new QueryWrapper<Hierarchy>().lambda().eq(Hierarchy::getIsManyKeyValues, 1).eq(Hierarchy::getSchoolCode, user.getSchoolCode())
+                .orderByAsc(Hierarchy::getSort)
+                .orderByAsc(Hierarchy::getSortId)
+                .orderByAsc(Hierarchy::getCreateTime);
+        Page<Hierarchy> page = hierarchyService.page(new Page<>(pageNum, pageSize), wrapper);
+        return ServerResponse.createBySuccess(page);
+    }
+}
+

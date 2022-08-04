@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body class="layui-box">
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">类型设置</div>
+        <div class="layui-card-body">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-sm layuiadmin-btn-role layui-btn-normal" data-id="1"
+                        data-type="typesCreate">新增
+                </button>
+                <button class="layui-btn layui-btn-danger layui-btn-sm layuiadmin-btn-role" data-type="typesDelete">删除
+                </button>
+                <button class="layui-btn layui-btn-sm layui-btn-warm layuiadmin-btn-role" data-type="typesExport">导出选中
+                </button>
+                <button class="layui-btn layui-btn-sm  layuiadmin-btn-role" data-type="typesImport">批量导入</button>
+            </div>
+            <table class="layui-table layui-form" id="sav-dms-type"></table>
+        </div>
+    </div>
+</div>
+<script id="importPopup" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">父级类型:</label>
+            <div class="layui-input-block">
+                <input class="layui-input" id="tree" lay-filter="tree" name="parent" placeholder="无父类可不填" type="text"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注:</label>
+            <div class="layui-input-block">
+                <textarea name="remark" placeholder="备注" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-elem-quote layui-text">
+                支持文件格式为xlsx,xls;第一列标题类型代码,第二列标题为类型名称,请设置整个Excel为文本格式;
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Excel文件:</label>
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn layui-btn-sm " id="typeExcel"><i
+                        class="layui-icon layui-icon-file-b"></i>上传文件
+                </button>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-dms-typeCreates" id="sav-dms-typeCreates" value="新增保存">
+            <input type="button" lay-submit lay-filter="sav-dms-typeUpdates" id="sav-dms-typeUpdates" value="编辑保存">
+        </div>
+    </div>
+</script>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'admin', 'treeTable', 'laytpl', 'treeSelect', 'upload'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , SavingFunction = layui.SavingFunction
+            , treeTable = layui.treeTable
+            , treeSelect = layui.treeSelect
+            , upload = layui.upload
+            , laytpl = layui.laytpl
+            , layer = layui.layer;
+        var tempData = {}, treeData = {};
+        var filed = [
+            {key: 'typeKey', title: '类型代码'},
+            {key: 'typeName', title: '类型名称'},
+            {
+                key: 'remark', title: '备注', template: function (item) {
+                    return item.remark ? item.remark : '';
+                }
+            },
+            {
+                key: 'isStandard', title: '标准', width: '220px', template: function (item) {
+                    return item.isStandard === 1 ? '<span class="layui-badge layui-bg-blue">云端标准</span>' : '<span class="layui-badge layui-bg-gray">自建</span>';
+                }
+            },
+            {key: 'sort', title: '排序号', width: '220px'},
+            {
+                title: '操作', align: 'center', align: 'center', width: '150px',
+                template: function (item) {
+                    return '<a class="layui-btn  layui-btn-sm" lay-filter="edit"  >编辑</a><a class="layui-btn  layui-btn-sm" lay-filter="delete"  >删除</a>';
+                }
+            }];
+
+        var re = treeTable.render({
+            elem: '#sav-dms-type',
+            data: [],
+            icon_key: 'typeName',
+            is_checkbox: true,
+            top_value: 0,
+            primary_key: 'id',
+            id_key: 'sortId',
+            parent_key: 'parent',
+            end: function () {
+                form.render();
+            },
+            cols: filed
+        });
+        initData({});
+        treeTable.closeAll(re);
+
+        function initData() {
+            SavingFunction.req({
+                url: '[[@{/metadata/hierarchy/list.json}]]',
+                done: function (res) {
+                    tempData = $.extend(true, {}, res);
+                    let datas = $.extend(true, {}, res);
+                    treeData = SavingFunction.toTree(tempData, 'sortId');
+                    treeTable.render($.extend(re, {data: datas}));
+                }
+            });
+        }
+
+        var active = {
+            typesCreate: function (d) {
+                parent.layer.open({
+                    title: '添加类型'
+                    , type: 2
+                    , content: '[[@{/popup/typePopup.page}]]'
+                    , maxmin: true
+                    , area: admin.screen() == 3 ? ['500px', '65%'] : ['500px', '85%']
+                    , btn: ['保存', '关闭']
+                    , yes: function (index, layero) {
+                        var iframeWindow = parent.window['layui-layer-iframe' + index];
+                        iframeWindow.layui.form.on('submit(sav-dms-typeCreates)', function (datas) {
+                            let field = datas.field;
+                            field.isManyKeyValues = field.isManyKeyValues ? field.isManyKeyValues : 0;
+                            SavingFunction.req({
+                                url: '[[@{/metadata/hierarchy/save.json}]]',
+                                data: field,
+                                done: function () {
+                                    SavingFunction.successMsg('添加成功！');
+                                    initData();
+                                    parent.layer.close(index);
+                                }
+                            });
+
+                        });
+                        iframeWindow.layui.$('#sav-dms-typeCreates').click();
+                    }
+                });
+            },
+            typesDelete: function () {
+                let field = {};
+                field = treeTable.checked(re);
+                if (field.length === 0) {
+                    return SavingFunction.warnMsg('请选择一条记录后进行操作');
+                }
+                parent.layer.confirm("是否删除所选目录?", function (index) {
+                    SavingFunction.req({
+                        url: '[[@{/metadata/hierarchy/del.json}]]'
+                        , data: JSON.stringify(field)
+                        , dataType: "json",
+                        contentType: "application/json",
+                        done: function () {
+                            SavingFunction.successMsg('删除成功！');
+                            initData();
+                        }
+                    });
+
+                });
+            },
+            typesExport: function () {
+                let field;
+                field = treeTable.checked(re);
+                if (field.length < 1) {
+                    return layer.msg('请选择一条记录后进行操作！');
+                }
+                layer.confirm('是否确认导出勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                    SavingFunction.exportExcel('[[@{/metadata/upload/export.json}]]', {
+                        ids: field,
+                        pojoName: 'Hierarchy',
+                        pojoChineseName: "类型管理"
+                    });
+                    layer.close(index);
+                });
+            },
+            typesImport: function () {
+                let loadIndex;
+                laytpl(importPopup.innerHTML).render({}, function (html) {
+                    admin.popup({
+                        title: '批量导入'
+                        , type: 1
+                        , area: admin.screen() == 3 ? ['500px', '65%'] : ['500px', '85%']
+                        , id: 'LAY-import-add'
+                        , content: html
+                        , btn: ['提交', '关闭']
+                        , success: function (layero, index) {
+                            treeSelect.render({
+                                elem: '#tree',
+                                placeholder: '父级类型',
+                                search: true,
+                                dataList: treeData
+                                , simpleData: {
+                                    enable: true,// 表示是否使用简单数据
+                                    idKey: "id",// 树结构的id的字段名称
+                                    pIdKey: "parent"
+                                },
+                                style: {
+                                    folder: {
+                                        enable: true
+                                    },
+                                    line: {
+                                        enable: true
+                                    }
+                                }
+                            });
+                            upload.render({
+                                elem: '#typeExcel'
+                                , url: '[[@{/metadata/hierarchy/import.json}]]'
+                                , accept: 'file'
+                                , exts: 'xlsx|xls'
+                                , auto: false
+                                , bindAction: '#sav-dms-typeCreates'
+                                , size: 1024 * 50
+                                , data: {
+                                    parent: function () {
+                                        return layero.find('input[name="parent"]').val();
+                                    }, remark: function () {
+                                        return layero.find('textarea[name="remark"]').val();
+                                    }
+                                }
+                                , done: function (res) {
+                                    top.layer.close(loadIndex);
+                                    if (res.status === 0) {
+                                        initData();
+                                        SavingFunction.successMsg("导入成功！");
+                                    } else {
+                                        layer.open({
+                                            title: '错误提示'
+                                            , type: 1
+                                            , shadeClose: true
+                                            , area: ['80%', '50%']
+                                            , content: '<div style="padding: 20px;">' + res.msg + '</div>'
+                                        });
+                                    }
+                                }
+                            });
+                            form.render();
+                        }
+                        , yes: function (index, layero) {
+                            $('#sav-dms-typeCreates').click();
+                            layer.close(index);
+                            loadIndex = SavingFunction.loading();
+                        }
+                    });
+                });
+            }
+        };
+        $('.layui-btn.layuiadmin-btn-role').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+        treeTable.on('tree(edit)', function (data) {
+            parent.layer.open({
+                title: '编辑类型'
+                , type: 2
+                , maxmin: true
+                , content: '[[@{/popup/typePopup.page?id=}]]' + data.item.id
+                , btn: ['保存', '关闭']
+                , area: admin.screen() == 3 ? ['500px', '65%'] : ['500px', '85%']
+                , yes: function (index, layero) {
+                    var iframeWindow = parent.window['layui-layer-iframe' + index];
+                    iframeWindow.layui.form.on('submit(sav-dms-typeUpdates)', function (datas) {
+                        var field = datas.field;
+                        field.id = data.item.id;
+                        field.parent = field.parent ? field.parent : 0;
+                        field.isManyKeyValues = field.isManyKeyValues ? field.isManyKeyValues : 0;
+                        SavingFunction.req({
+                            url: '[[@{/metadata/hierarchy/update.json}]]',
+                            data: SavingFunction.filterParams(field),
+                            done: function () {
+                                SavingFunction.successMsg('修改成功！');
+                                initData();
+                                parent.layer.close(index);
+                            }
+                        });
+
+                    });
+                    iframeWindow.layui.$('#sav-dms-typeUpdates').click();
+
+                }
+            });
+        })
+        treeTable.on('tree(delete)', function (data) {
+            parent.layer.confirm("是否删除所选目录?", function (index) {
+                SavingFunction.req({
+                    url: '[[@{/metadata/hierarchy/del.json}]]'
+                    , data: JSON.stringify([data.item.id])
+                    , dataType: "json",
+                    contentType: "application/json",
+                    done: function () {
+                        SavingFunction.successMsg('删除成功！');
+                        initData();
+                    }
+                });
+
+            });
+        })
+    });
+</script>
+</body>
+</html>

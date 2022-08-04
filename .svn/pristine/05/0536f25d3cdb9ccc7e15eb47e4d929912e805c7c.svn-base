@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/style/template.css}">
+<body>
+<div class="layui-container layadmin-maillist-fluid">
+    <div class="layui-row layui-col-space15" th:each="code:${metadataType}">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend th:text="${code.typeName}">尚未加载数据</legend>
+        </fieldset>
+        <div class="layui-col-md4 layui-col-sm6" th:each="codes:${metadataTable}"
+             th:if="${code.typeName eq codes.typeName}">
+            <div class="layadmin-contact-box" style="min-height: 200px;">
+                <div class="layui-col-md4 layui-col-sm6">
+                    <a th:href="@{formTheQuery.page(id=${codes.id})}">
+                        <div class="layadmin-text-center">
+                            <img src="">
+                            <div class="layadmin-maillist-img layadmin-font-blod" th:text="${codes.typeName}">尚未加载数据
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="layui-col-md8 layadmin-padding-left20 layui-col-sm6">
+                    <a th:href="@{formTheQuery.page(id=${codes.id})}">
+                        <h3 class="layadmin-title">
+                            <strong><span th:text="${codes.chineseTableName}"></span></strong>
+                            <br/>
+                            <span class="layui-badge layui-bg-blue" th:text="${codes.tableName}">尚未加载数据</span>
+                        </h3>
+                        <p class="layadmin-textimg">
+                            <i class="layui-icon layui-icon-table"></i>
+                            记录数:<span th:text="${codes.counts}">尚未加载数据</span>
+                        </p>
+                    </a>
+                    <div class="layadmin-address">
+                        <a th:href="@{formTheQuery.page(id=${codes.id})}">
+                            <addr title="phone">字段数量:</addr>
+                            <span th:text="${codes.filedSize}">尚未加载数据</span>
+                            <br>
+                            <addr title="phone">记录大小:</addr>
+                            <span th:text="${codes.usedSpace}">尚未加载数据</span>
+                            <br>
+                            <addr title="phone">索引占用空间:</addr>
+                            <span th:text="${codes.indexSpace}">尚未加载数据</span>
+                            <br>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-elem-field {
+        width: 300px;
+        text-align: center;
+        margin: 20px auto 20px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction'], function () {
+        let $ = layui.$
+            , SavingFunction = layui.SavingFunction;
+        let divs = $('div .layadmin-maillist-img.layadmin-font-blod');
+        let fieldset = $('.layui-elem-field.layui-field-title');
+        divs.each(function (index, element) {
+            $(element).prev().attr('src', SavingFunction.textToImg($(element).text().substring(0, 4)));
+        });
+        fieldset.each(function (index, element) {
+            if ($(element).next().length === 0) {
+                $(element).remove();
+            }
+        });
+    });
+</script>
+</body>
+</html>

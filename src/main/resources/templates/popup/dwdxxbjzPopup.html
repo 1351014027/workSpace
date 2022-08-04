@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtree.css}">
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtreefont.css}">
+
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px" th:text="|${hierarchyKey}数据浏览|">数据浏览</div>
+
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <table id="metadata-table-table" lay-filter="metadata-table-table"></table>
+
+                    <script id="TableToolbar" type="text/html">
+                        <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="update">编辑</button>
+                    </script>
+                    <script id="TableTopToolbar" type="text/html">
+                        <div class="layui-btn-container">
+                            <button class="layui-btn layui-btn-sm " lay-event="save">新增</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="import">批量导入</button>
+                        </div>
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0;
+    }
+
+    .layui-form-item {
+        margin-bottom: 0;
+    }
+</style>
+<script id="saveTemplate" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        {{# layui.each(d,function(index,item){}}
+        <div class="layui-form-item" style="margin-bottom: 10px">
+            <label class="layui-form-label">{{ item.dylmc}}:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="{{ item.dyl}}"
+                       placeholder="请输入{{ item.dylmc}}" type="text">
+            </div>
+        </div>
+        {{#});}}
+        <div class="layui-form-item layui-hide">
+            <input id="sav-filedListsPopup-save" lay-filter="sav-filedListsPopup-save" lay-submit type="button"
+                   value="新增保存">
+            <input id="sav-filedListsPopup-update" lay-filter="sav-filedListsPopup-update" lay-submit type="button"
+                   value="编辑保存">
+        </div>
+    </div>
+</script>
+<script id="importPopup" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <div class="layui-elem-quote layui-text">
+                支持文件格式为xlsx,xls;</br>
+                请设置整个Excel为文本格式;
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Excel文件:</label>
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" id="typeExcel"><i class="layui-icon layui-icon-file-b"></i>上传文件
+                </button>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-dms-typeCreates" id="sav-dms-typeCreates" value="新增保存">
+            <input type="button" lay-submit lay-filter="sav-dms-typeUpdates" id="sav-dms-typeUpdates" value="编辑保存">
+        </div>
+    </div>
+</script>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'laytpl', 'upload'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , table = layui.table
+            , laytpl = layui.laytpl
+            , SavingFunction = layui.SavingFunction
+            , upload = layui.upload
+            , hierarchyId = '[[${hierarchyId}]]'
+            , hierarchyKey = '[[${hierarchyKey}]]'
+            , dwdxxbzmys = []
+            , filedName = [];
+        let field = [
+            {type: 'checkbox'}
+            , {type: 'numbers', title: '序号'}
+
+        ];
+        SavingFunction.req({
+            url: '[[@{/metadata/dwdxxbzdmys/findById.json}]]',
+            data: {
+                hierarchyId: hierarchyId
+            },
+            async: false,
+            done: function (res) {
+                dwdxxbzmys = res;
+                dwdxxbzmys.forEach(item => {
+                    item.dyl = item.dyl.replace(/_/g, "").toLocaleLowerCase().replace("key", "Key").replace("value", "Value");
+                    filedName.push(item.dyl);
+                    field.push({field: item.dyl, title: item.dylmc, align: 'center'});
+                })
+                field.push({title: '操作', width: 180, align: 'center', fixed: 'right', toolbar: '#TableToolbar'});
+            }
+        });
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-table-table'
+            , url: '[[@{/metadata/dwdxxbjz/listPage.json}]]'
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+            , height: 'full-100'
+            , where: {
+                id: hierarchyId
+            }
+        });
+        table.on('toolbar(metadata-table-table)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-table-table');
+            let dabs = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < dabs.length; i++) {
+                ids[i] = dabs[i].id;
+            }
+            switch (obj.event) {
+                case 'save':
+                    if (dwdxxbzmys.length <= 0) {
+                        return SavingFunction.warnMsg("请设置列名后尝试!");
+                    }
+                    laytpl(saveTemplate.innerHTML).render(dwdxxbzmys, function (html) {
+                        top.layer.open({
+                            title: '新增'
+                            , type: 1
+                            , maxmin: true
+                            , content: html
+                            , btn: ['保存', '关闭']
+                            , area: '500px'
+                            , yes: function (index, layero) {
+                                top.layui.form.on('submit(sav-filedListsPopup-save)', function (datas) {
+                                    let field = datas.field;
+                                    field.hierarchyId = hierarchyId;
+                                    field.hierarchyKey = hierarchyKey;
+                                    SavingFunction.req({
+                                        url: '[[@{/metadata/dwdxxbjz/save.json}]]',
+                                        data: SavingFunction.filterParams(field),
+                                        done: function () {
+                                            SavingFunction.successMsg('新增成功！');
+                                            userTable.reload({
+                                                where: {
+                                                    id: hierarchyId
+                                                }
+                                            });
+                                            top.layer.close(index);
+                                        }
+                                    });
+                                });
+                                top.layui.$('#sav-filedListsPopup-save').click();
+                            }
+                        });
+                    });
+                    break;
+                case 'del':
+                    if (dwdxxbzmys.length <= 0) {
+                        return SavingFunction.warnMsg("请设置列名后尝试!");
+                    }
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/dwdxxbjz/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'import':
+                    let loadIndex;
+                    if (dwdxxbzmys.length <= 0) {
+                        return SavingFunction.warnMsg("请设置列名后尝试!");
+                    }
+                    laytpl(importPopup.innerHTML).render({}, function (html) {
+                        admin.popup({
+                            title: '批量导入'
+                            , type: 1
+                            , area: admin.screen() === 3 ? ['65%'] : ['85%']
+                            , id: 'LAY-import-dwdxxbjz'
+                            , content: html
+                            , btn: ['提交', '关闭']
+                            , success: function (layero, index) {
+                                upload.render({
+                                    elem: '#typeExcel'
+                                    , url: '[[@{/metadata/dwdxxbjz/import.json}]]'
+                                    , accept: 'file'
+                                    , exts: 'xlsx|xls'
+                                    , auto: false
+                                    , bindAction: '#sav-dms-typeCreates'
+                                    , size: 1024 * 50
+                                    , data: {
+                                        hierarchyId: function () {
+                                            return hierarchyId
+                                        },
+                                        hierarchyKey: function () {
+                                            return hierarchyKey;
+                                        },
+                                    }
+                                    , done: function (res) {
+                                        top.layer.close(loadIndex);
+                                        if (res.status === 0) {
+                                            userTable.reload({page: {curr: 1}});
+                                            SavingFunction.successMsg("导入成功！");
+                                        } else {
+                                            layer.open({
+                                                title: '错误提示'
+                                                , type: 1
+                                                , shadeClose: true
+                                                , area: ['80%', '50%']
+                                                , content: '<div style="padding: 20px;">' + res.msg + '</div>'
+                                            });
+                                        }
+                                    }
+                                });
+                                form.render();
+                            }
+                            , yes: function (index, layero) {
+                                $('#sav-dms-typeCreates').click();
+                                layer.close(index);
+                                loadIndex = SavingFunction.loading();
+                            }
+                        });
+                    });
+                    break;
+            }
+        });
+        table.on('tool(metadata-table-table)', function (obj) {
+            let trData = obj.data;
+            if (obj.event === 'update') {
+                laytpl(saveTemplate.innerHTML).render(dwdxxbzmys, function (html) {
+                    top.layer.open({
+                        title: '修改'
+                        , type: 1
+                        , maxmin: true
+                        , content: html
+                        , btn: ['保存', '关闭']
+                        , area: '500px'
+                        , success: function (layero, index) {
+                            filedName.forEach(item => {
+                                $(layero).find("input[name=" + item + "]").val(trData[item]);
+                            })
+                            top.layui.form.render();
+                        }
+                        , yes: function (index, layero) {
+                            top.layui.form.on('submit(sav-filedListsPopup-update)', function (datas) {
+                                let field = datas.field;
+                                field.id = trData.id;
+                                field.hierarchyId = hierarchyId;
+                                field.hierarchyKey = hierarchyKey;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/dwdxxbjz/update.json}]]',
+                                    data: SavingFunction.filterParams(field),
+                                    done: function () {
+                                        SavingFunction.successMsg('修改成功！');
+                                        userTable.reload({
+                                            where: {
+                                                id: hierarchyId
+                                            }
+                                        });
+                                        top.layer.close(index);
+                                    }
+                                });
+                            });
+                            top.layui.$('#sav-filedListsPopup-update').click();
+                        }
+                    });
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

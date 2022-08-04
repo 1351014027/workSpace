@@ -1,0 +1,66 @@
+package com.saving.metadata.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.dao.ApiPermissionMapper;
+import com.saving.metadata.param.ApiPermissionParam;
+import com.saving.metadata.pojo.ApiPermission;
+import com.saving.metadata.service.ApiPermissionService;
+import com.saving.metadata.utils.BeanValidator;
+import com.saving.metadata.utils.IpUtils;
+import com.saving.metadata.utils.UUID64Utils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * <p>
+ * 服务实现类
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2020-04-09
+ */
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class ApiPermissionServiceImpl extends ServiceImpl<ApiPermissionMapper, ApiPermission> implements ApiPermissionService {
+
+    private final ApiPermissionMapper apiPermissionMapper;
+
+    @Autowired
+    public ApiPermissionServiceImpl(ApiPermissionMapper apiPermissionMapper) {
+        this.apiPermissionMapper = apiPermissionMapper;
+    }
+
+    @Override
+    public void saveCheck(ApiPermissionParam param) {
+        BeanValidator.check(param);
+        ApiPermission permission = getOne(new QueryWrapper<ApiPermission>().lambda()
+                .eq(ApiPermission::getApiTableId, param.getApiTableId())
+                .eq(ApiPermission::getTableId, param.getTableId()));
+        if (permission == null) {
+            permission = ApiPermission.builder().build();
+            BeanUtils.copyProperties(param, permission);
+            permission.setId(UUID64Utils.get64UUIDString());
+            permission.setCreatorIp(IpUtils.getIpAddr(RequestHolder.getCurrenRequest()));
+            save(permission);
+        } else {
+            String id = permission.getId();
+            BeanUtils.copyProperties(param, permission);
+            permission.setUpdateIp(IpUtils.getIpAddr(RequestHolder.getCurrenRequest()));
+            permission.setId(id);
+            updateById(permission);
+        }
+    }
+
+    @Override
+    public Page<ApiPermission> getApiPermission(Page<ApiPermission> objectPage, String sysName, String schoolCode, String tableId) {
+
+        return apiPermissionMapper.getApiPermission(objectPage, sysName, schoolCode, tableId);
+    }
+
+
+}

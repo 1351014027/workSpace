@@ -1,0 +1,22 @@
+package com.saving.metadata.dao;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.saving.metadata.pojo.Option;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
+
+/**
+ * <p>
+ * Mapper 接口
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2019-12-18
+ */
+@Mapper
+@Repository
+public interface OptionMapper extends BaseMapper<Option> {
+
+    Option checkOptionValue(@Param("typeKey") String typeKey, @Param("key") String key);
+}

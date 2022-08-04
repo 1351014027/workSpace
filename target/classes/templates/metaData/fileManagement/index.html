@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">文件管理</div>
+        <div class="layui-form layui-card-heade layuiadmin-card-header-auto">
+            <div class="layui-form-item" style="margin: 15px;">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="fileName" placeholder="文件名称(模糊查询)" type="text">
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input class="layui-input" id="metadata-date" placeholder="开始时间-结束时间" type="text">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                            lay-filter="hup-file-search"
+                            lay-submit="">查找
+                    </button>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-warm layui-btn-sm" id="syncUpdate" th:if="${!isStandard}">
+                        同步云端标准
+                    </button>
+                </div>
+                <span>云端标准版本:<span id="gbgxbb" th:text="${maxVersion}">无法获取</span>-->校本版本:<span id="xbbb"
+                                                                                                th:text="${loaclVersion}">无法获取</span></span>
+            </div>
+
+        </div>
+        <div class="layui-card-body">
+            <table id="metadata-file-table" lay-filter="metadata-file-table"></table>
+            <script id="TableToolbar" type="text/html">
+                <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="findById">查看</button>
+
+                <a th:href="|${isStandard?'/metadata/upload/download/':syncUrl}{{d.id}}.json|"
+                   href=""
+                   target="view_window"
+                   class="layui-btn  layui-btn-xs"><i class="layui-icon layui-icon-download-circle"></i>下载</a>
+            </script>
+            <script id="TableTopToolbar" type="text/html">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="metadataUpload"
+                            th:if="${isStandard}">上传
+                    </button>
+                    <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="metadataDel"
+                            th:if="${isStandard}">删除
+                    </button>
+
+                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="DownList">
+                        下载选中
+                    </button>
+                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Export">
+                        导出选中
+                    </button>
+                </div>
+            </script>
+        </div>
+    </div>
+</div>
+<script id="findByData" type="text/html">
+    <style>
+        .layui-form-pane .layui-input-block {
+            margin-left: 125px;
+            left: 0px;
+            line-height: 35px;
+        }
+    </style>
+    <form class="layui-form layui-form-pane" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">文件名称:</label>
+            <div class="layui-input-block">
+                {{d.fileName}}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">上传时间:</label>
+            <div class="layui-input-block">
+                卡号:{{ d.creator}} 时间: {{layui.util.toDateString(d.createTime)}}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">存储文件名:</label>
+            <div class="layui-input-block">
+                {{d.saveFileName}}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">版本号:</label>
+            <div class="layui-input-block">
+                {{d.versions}}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">存储路径:</label>
+            <div class="layui-input-block">
+                {{d.filePath}}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">文件大小:</label>
+            <div class="layui-input-block">
+                {{layui.SavingFunction.renderSize(d.fileSize)}}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">文件类型:</label>
+            <div class="layui-input-block">
+                {{ d.fileType}}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">下载次数:</label>
+            <div class="layui-input-block">
+                {{ d.downNumber}}
+            </div>
+        </div>
+        {{#if(d.lastDownCreator&&d.lastDownTime){}}
+        <div class="layui-form-item">
+            <label class="layui-form-label">最后下载人:</label>
+            <div class="layui-input-block">
+                卡号:{{ d.lastDownCreator}} 时间: {{layui.util.toDateString(d.lastDownTime)}}
+            </div>
+        </div>
+        {{#}}}
+        {{#if(d.remark){}}
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注:</label>
+            <div class="layui-input-block">
+                {{ d.remark}}
+            </div>
+        </div>
+        {{#}}}
+    </form>
+</script>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'layUploader', 'util', 'laydate', 'laytpl'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , table = layui.table
+            , laytpl = layui.laytpl
+            , util = layui.util
+            , laydate = layui.laydate
+            , SavingFunction = layui.SavingFunction
+            , layUploader = layui.layUploader;
+        laydate.render({
+            elem: '#metadata-date'
+            , range: true
+        });
+
+        let field = [
+            {type: 'checkbox', align: 'center'}
+            , {type: 'numbers', title: '序号', align: 'center'}
+            , {field: 'fileName', title: '文件名', minWidth: 210}
+            , {field: 'versions', title: '版本号', width: 110, edit: [[${isStandard}]]}
+            , {
+                field: 'btn',
+                title: '表结构', width: 100, align: 'center', templet: function () {
+                    return '<button class="layui-btn layui-btn-xs" lay-event="findTableList">明细</button>';
+                }
+            }
+            , {title: '操作', width: 230, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+        ];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-file-table'
+            ,
+            url: [[${isStandard}]] ? '[[@{/metadata/fileStore/listPage.json}]]' : '[[${syncUrl}]]metadata/fileStore/listPage.json'
+            ,
+            filter: true
+            ,
+            toolbar: '#TableTopToolbar'
+            ,
+            height: 'full-170'
+            ,
+            cols: [field]
+        });
+        table.on('edit(metadata-file-table)', function (obj) {
+            let filed = {
+                id: obj.data.id,
+                versions: obj.value
+            };
+            SavingFunction.req({
+                url: '[[@{/metadata/fileStore/update.json}]]',
+                data: filed,
+                done: function () {
+                    SavingFunction.successMsg('修改版本号成功！');
+                }
+            });
+        });
+        table.on('toolbar(metadata-file-table)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-file-table');
+            let datas = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < datas.length; i++) {
+                ids[i] = datas[i].id;
+            }
+            switch (obj.event) {
+                case 'metadataUpload':
+                    layUploader.render({
+                        url: '[[@{/metadata/upload/uploadFile.json}]]',
+                        size: 1024 * 1024 * 1000,
+                        success: function () {
+                            userTable.reload({page: {curr: 1}});
+                        }
+                    });
+                    break;
+                case 'DownList':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认导出勾选的文件?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.exportExcel('[[@{/metadata/upload/download/getZipFile.json}]]', {ids: ids});
+                        layer.close(index);
+                    });
+                    break;
+                case 'metadataDel':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/upload/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'Export':
+                    if (datas.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认导出勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.exportExcel('[[@{/metadata/upload/export.json}]]', {
+                            ids: ids,
+                            pojoName: 'FileStore',
+                            pojoChineseName: "文件管理"
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+
+        });
+
+        $('input[name="fileName"]').keyup(function () {
+
+            userTable.reload({
+                where: {
+                    fileName: $('input[name="fileName"]').val()
+                }, page: {curr: 1}
+            });
+        });
+
+        form.on('submit(hup-file-search)', function () {
+            userTable.reload({
+                where: {
+                    fileName: $('input[name="fileName"]').val(),
+                    startDate: $('#metadata-date').val().split(' - ')[0],
+                    endDate: $('#metadata-date').val().split(' - ')[1]
+                }, page: {curr: 1}
+            });
+        });
+
+        table.on('tool(metadata-file-table)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'lift') {
+                if (!table.cache['metadata-file-table'][obj.tr[0].rowIndex - 1]) {
+                    return SavingFunction.warnMsg("已经是当前页置顶的记录了！")
+                }
+                SavingFunction.req({
+                    url: '[[@{/metadata/fileStore/updateSort.json}]]'
+                    , data: {
+                        oneId: table.cache['metadata-file-table'][obj.tr[0].rowIndex - 1].id,
+                        twoId: data.id
+                    },
+                    done: function () {
+                        userTable.reload();
+                    }
+                });
+            } else if (obj.event === 'decline') {
+                if (!table.cache['metadata-file-table'][obj.tr[0].rowIndex + 1]) {
+                    return SavingFunction.warnMsg("已经是当前页最下的记录了！")
+                }
+                SavingFunction.req({
+                    url: '[[@{/metadata/fileStore/updateSort.json}]]'
+                    , data: {
+                        oneId: data.id,
+                        twoId: table.cache['metadata-file-table'][obj.tr[0].rowIndex + 1].id
+                    },
+                    done: function () {
+                        userTable.reload();
+                    }
+                });
+            } else if (obj.event === 'findById') {
+                laytpl(findByData.innerHTML).render(data, function (html) {
+                    admin.popup({
+                        title: '查看'
+                        , area: '80%'
+                        , id: 'meta-file-find'
+                        , type: 1
+                        , content: html
+                        , btn: ['关闭']
+                        , success: function (layero, index) {
+                            form.render();
+                        }
+                        , yes: function (index, layero) {
+                            layer.close(index);
+                        }
+                    });
+                });
+            }
+        });
+        $(document).on('click', 'button[lay-event="findTableList"]', function () {
+            top.layui.index.openTabsPage("[[@{/chartDisplayOne.page}]]", "校本数据列表");
+        });
+
+        $(document).on('click', '#syncUpdate', function () {
+            layer.confirm('是否确认更新到最新版本?', {icon: 3, title: '提示'}, function (index) {
+                top.layui.index.openTabsPage("[[@{/metaData/updatePlan.page}]]", "更新同步");
+                layer.close(index);
+            });
+
+        });
+    });
+</script>
+</body>
+</html>

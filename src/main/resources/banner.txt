@@ -1,0 +1,11 @@
+     _    ___ ____    ____ ____  __  __ ____
+    / \  |_ _/ ___|  / ___|  _ \|  \/  |  _ \
+   / _ \  | | |     | |   | | | | |\/| | |_) |
+  / ___ \ | | |___  | |___| |_| | |  | |  __/
+ /_/   \_\___\____|  \____|____/|_|  |_|_|
+
+应用名称:${application.title}
+应用英文名称:${application.enTitle}
+作者: ${application.author}
+应用版本号: ${application.version}${application.formatted-version}
+Spring Boot版本号: ${spring-boot.version}${spring-boot.formatted-version}

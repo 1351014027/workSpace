@@ -1,0 +1,1558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.MetaDataTablesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.MetaDataTables">
+        <result column="ID_" property="id"/>
+        <result column="Catalog_" property="catalog"/>
+        <result column="TableName_" property="tableName"/>
+        <result column="ChineseTableName_" property="chineseTableName"/>
+        <result column="FieldSize_" property="fieldSize"/>
+        <result column="IsDelete_" property="isDelete"/>
+        <result column="SchoolCode_" property="schoolCode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createTime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updateTime"/>
+        <result column="Remark_" property="remark"/>
+        <result column="CanYouEdit_" property="canYouEdit"/>
+        <result column="CanYouDelete_" property="canYouDelete"/>
+        <result column="TableStatus_" property="tableStatus"/>
+        <result column="IsStandard_" property="isStandard"/>
+        <result column="Sort_" property="sort"/>
+        <result column="Nature_" property="nature"/>
+        <result column="SortId_" property="sortId"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, Catalog_, TableName_, ChineseTableName_, FieldSize_, IsDelete_, SchoolCode_, Creator_, CreateTime_, Updateor_, UpdateTime_, Remark_, CanYouEdit_, CanYouDelete_, TableStatus_, IsStandard_, MetadataTypeID_,Sort_,SortId_,Nature_
+    </sql>
+    <insert id="createDataTable">
+        if exists(SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'${id}') AND type in (N'U'))
+        DROP TABLE [${id}]
+        SET ANSI_NULLS ON
+        SET QUOTED_IDENTIFIER ON
+        SET ANSI_PADDING ON
+        CREATE TABLE [${id}](
+        <foreach collection="list" item="list" separator=",">[${list.filedName}] [${list.storageType}]
+            <if test="list.storageType!='BINARY' and list.storageType!='TEXT'">(${list.filedLength}<if
+                    test="list.isDecimals==1">,${list.decimalLength}</if>)
+            </if>
+            ${list.constraints}
+        </foreach>
+        ,
+        METADATA_F_IS_CREATE_ DATETIME,
+        METADATA_F_IS_CREATE_IP_ varchar(16),
+        METADATA_F_IS_CREATE_API_UUID_ VARCHAR(64),
+        METADATA_F_IS_UPDATE_ DATETIME,
+        METADATA_F_IS_UPDATE_IP_ varchar(16),
+        METADATA_F_IS_UPDATE_API_UUID_ VARCHAR(64),
+        METADATA_F_IS_DELETE_ DATETIME,
+        METADATA_F_IS_DELETE_IP_ varchar(16),
+        METADATA_F_IS_DELETE_API_UUID_ VARCHAR(64),
+        <foreach collection="list" item="list" separator=",">
+            <if test="list.isPrimary ==1 ">
+                CONSTRAINT PK_${id} PRIMARY KEY CLUSTERED ( [${list.filedName}] ASC)WITH (PAD_INDEX = OFF,
+                STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON,ALLOW_PAGE_LOCKS = ON) ON
+                [PRIMARY]
+            </if>
+        </foreach>
+        )
+        SET ANSI_PADDING OFF
+        <foreach collection="list" item="list" separator=",">
+            <if test="list.defaultValue != null ">
+                ALTER TABLE [${id}] ADD CONSTRAINT DF_${id}_${list.filedName} DEFAULT ((${list.defaultValue}))
+                FOR [${list.filedName}]
+            </if>
+        </foreach>
+    </insert>
+    <insert id="createTempTable">
+CREATE TABLE ##METADATA_B_OPTION_TEMP(
+	[ID_] [varchar](64) NOT NULL,
+	[Key_] [varchar](255) NULL,
+	[Name_] [varchar](255) NULL,
+	[Hierarchy_ID_] [varchar](64) NULL,
+	[Hierarchy_Key_] [varchar](255) NULL,
+	[Parent_] [int] NULL,
+	[Depth_] [int] NULL,
+	[Level_] [varchar](500) NULL,
+	[Sort_] [varchar](255) NULL,
+	[Status_] [int] NULL,
+	[IsDelete_] [int] NULL,
+	[SchoolCode_] [varchar](255) NULL,
+	[Creator_] [varchar](50) NULL,
+	[CreateTime_] [datetime] NULL,
+	[Updateor_] [varchar](50) NULL,
+	[UpdateTime_] [datetime] NULL,
+	[Remark_] [varchar](500) NULL,
+	[CanYouEdit_] [int] NULL,
+	[CanYouDelete_] [int] NULL,
+	[SortId_] [int] IDENTITY(1,1) NOT NULL,
+	[IsStandard_] [int] NULL,
+	[CdmpVersion_] [varchar](50) NULL
+)
+
+
+CREATE TABLE  ##METADATA_B_HIERARCHY_TEMP (
+	[ID_] [varchar](64) NOT NULL,
+	[TypeKey_] [varchar](255) NULL,
+	[TypeName_] [varchar](255) NULL,
+	[Parent_] [int] NULL,
+	[Depth_] [int] NULL,
+	[Level_] [varchar](555) NULL,
+	[Sort_] [varchar](255) NULL,
+	[Status_] [int] NULL,
+	[IsDelete_] [int] NULL,
+	[SchoolCode_] [varchar](50) NULL,
+	[Creator_] [varchar](50) NULL,
+	[CreateTime_] [datetime] NULL,
+	[Updateor_] [varchar](50) NULL,
+	[UpdateTime_] [datetime] NULL,
+	[Remark_] [varchar](500) NULL,
+	[CanYouEdit_] [int] NULL,
+	[CanYouDelete_] [int] NULL,
+	[SortId_] [int] IDENTITY(1,1) NOT NULL,
+	[CdmpVersion_] [varchar](50) NULL,
+	[IsStandard_] [int] NULL,
+	)
+
+
+
+CREATE TABLE ##METADATA_B_METADATAFIELDS_TEMP(
+	[ID_] [varchar](64) NOT NULL,
+	[TableID_] [varchar](64) NULL,
+	[TableName_] [varchar](255) NULL,
+	[FiledNumber_] [varchar](255) NULL,
+	[FiledName_] [varchar](255) NULL,
+	[ChineseFiledName_] [varchar](255) NULL,
+	[StorageType_] [varchar](500) NULL,
+	[FiledLength_] [int] NULL,
+	[Constraints_] [varchar](255) NULL,
+	[ValueSpace_] [varchar](255) NULL,
+	[DataItemDescription_] [varchar](500) NULL,
+	[ReferenceNumber_] [varchar](255) NULL,
+	[TheStandardSource_] [varchar](500) NULL,
+	[FiledFormat_] [varchar](255) NULL,
+	[DecimalLength_] [int] NULL,
+	[IsNotNull_] [int] NULL,
+	[IsDecimals_] [int] NULL,
+	[IsPrimary_] [int] NULL,
+	[Annotation_] [varchar](500) NULL,
+	[DefaultValue_] [varchar](500) NULL,
+	[FieldIndex_] [varchar](500) NULL,
+	[FieldStatus_] [int] NULL,
+	[SchoolCode_] [varchar](50) NULL,
+	[Remark_] [varchar](500) NULL,
+	[IsDelete_] [int] NULL,
+	[Creator_] [varchar](50) NULL,
+	[CreateTime_] [datetime] NULL,
+	[Updateor_] [varchar](50) NULL,
+	[UpdateTime_] [datetime] NULL,
+	[CanYouEdit_] [int] NULL,
+	[CanYouDelete_] [int] NULL,
+	[Sort_] [varchar](255) NULL,
+	[SortId_] [int] IDENTITY(1,1) NOT NULL,
+	[IsStandard_] [int] NULL,
+	[CdmpVersion_] [varchar](50) NULL,
+	)
+	CREATE TABLE ##METADATA_B_METADATATABLES_TEMP(
+	[ID_] [varchar](64) NOT NULL,
+	[Catalog_] [varchar](255) NULL,
+	[TableName_] [varchar](255) NULL,
+	[ChineseTableName_] [varchar](255) NULL,
+	[FieldSize_] [int] NULL,
+	[IsDelete_] [int] NULL,
+	[SchoolCode_] [varchar](255) NULL,
+	[Creator_] [varchar](50) NULL,
+	[CreateTime_] [datetime] NULL,
+	[Updateor_] [varchar](50) NULL,
+	[UpdateTime_] [datetime] NULL,
+	[Remark_] [varchar](500) NULL,
+	[CanYouEdit_] [int] NULL,
+	[CanYouDelete_] [int] NULL,
+	[TableStatus_] [int] NULL,
+	[IsStandard_] [int] NULL,
+	[MetadataTypeID_] [varchar](64) NULL,
+	[Sort_] [varchar](50) NULL,
+	[SortId_] [int] IDENTITY(1,1) NOT NULL,
+	[Nature_] [int]   NULL,
+	[CdmpVersion_] [varchar](50) NULL
+	)
+
+	CREATE TABLE ##METADATA_B_DWDXXBJZ_TEMP(
+	[ID_] [varchar](64) NULL,
+	[Hierarchy_ID_] [varchar](64) NULL,
+	[Hierarchy_Key_] [varchar](500) NULL,
+	[FILED_1_KEY_] [varchar](500) NULL,
+	[FILED_1_VALUE_] [varchar](500) NULL,
+	[FILED_2_KEY_] [varchar](500) NULL,
+	[FILED_2_VALUE_] [varchar](500) NULL,
+	[FILED_3_KEY_] [varchar](500) NULL,
+	[FILED_3_VALUE_] [varchar](500) NULL,
+	[FILED_4_KEY_] [varchar](500) NULL,
+	[FILED_4_VALUE_] [varchar](500) NULL,
+	[FILED_5_KEY_] [varchar](500) NULL,
+	[FILED_5_VALUE_] [varchar](500) NULL,
+	[FILED_6_KEY_] [varchar](500) NULL,
+	[FILED_6_VALUE_] [varchar](500) NULL,
+	[FILED_7_KEY_] [varchar](500) NULL,
+	[FILED_7_VALUE_] [varchar](500) NULL,
+	[FILED_8_KEY_] [varchar](500) NULL,
+	[FILED_8_VALUE_] [varchar](500) NULL,
+	[FILED_9_KEY_] [varchar](500) NULL,
+	[FILED_9_VALUE_] [varchar](500) NULL,
+	[FILED_10_KEY_] [varchar](500) NULL,
+	[FILED_10_VALUE_] [varchar](500) NULL,
+	[Sort_] [varchar](255) NULL,
+	[Status_] [int] NULL,
+	[IsDelete_] [int] NULL,
+	[SchoolCode_] [varchar](50) NULL,
+	[Creator_] [varchar](50) NULL,
+	[CreateTime_] [datetime] NULL,
+	[Updateor_] [varchar](50) NULL,
+	[UpdateTime_] [datetime] NULL,
+	[Remark_] [varchar](500) NULL,
+	[CanYouEdit_] [int] NULL,
+	[CanYouDelete_] [int] NULL,
+	[SortId_] [int] IDENTITY(1,1) NOT NULL,
+	[IsStandard_] [int] NULL,
+	[CdmpVersion_] [varchar](50) NULL
+)
+CREATE TABLE ##METADATA_B_DWDXXBZDMYS_TEMP(
+	[ID_] [varchar](64) NOT NULL,
+	[DYL_] [varchar](500) NULL,
+	[DYLMC_] [varchar](500) NULL,
+	[Hierarchy_ID_] [varchar](64) NULL,
+	[Hierarchy_Key_] [varchar](500) NULL,
+	[Sort_] [varchar](255) NULL,
+	[Status_] [int] NULL,
+	[IsDelete_] [int] NULL,
+	[SchoolCode_] [varchar](50) NULL,
+	[Creator_] [varchar](50) NULL,
+	[CreateTime_] [datetime] NULL,
+	[Updateor_] [varchar](50) NULL,
+	[UpdateTime_] [datetime] NULL,
+	[Remark_] [varchar](500) NULL,
+	[CanYouEdit_] [int] NULL,
+	[CanYouDelete_] [int] NULL,
+	[SortId_] [int] IDENTITY(1,1) NOT NULL,
+	[IsStandard_] [int] NULL,
+	[CdmpVersion_] [varchar](50) NULL
+	)
+    </insert>
+    <insert id="insertTempMetaDataTables">
+        INSERT INTO ##METADATA_B_METADATATABLES_TEMP
+        ([ID_]
+        ,[Catalog_]
+        ,[TableName_]
+        ,[ChineseTableName_]
+        ,[FieldSize_]
+        ,[IsDelete_]
+        ,[SchoolCode_]
+        ,[Creator_]
+        ,[CreateTime_]
+        ,[Updateor_]
+        ,[UpdateTime_]
+        ,[Remark_]
+        ,[CanYouEdit_]
+        ,[CanYouDelete_]
+        ,[IsStandard_]
+        ,[MetadataTypeID_]
+        ,[Sort_]
+        ,[Nature_]
+        ,[CdmpVersion_])
+        values
+        <foreach collection="metaDataTablesList" item="list" separator="," index="index">
+            (#{list.id},
+            #{list.catalog},
+            #{list.tableName},
+            #{list.chineseTableName},
+            #{list.fieldSize},
+            #{list.isDelete},
+            (select top 1 学校代码 from EIC.DBO.DB_VB_常量信息),
+            #{list.creator},
+            CONVERT(datetime,#{list.createTime},21),
+            #{list.updateor},
+            CONVERT(datetime,#{list.updateTime},21),
+            #{list.remark},
+            #{list.canYouEdit},
+            #{list.canYouDelete},
+            #{list.isStandard},
+            #{list.metadataTypeId},
+            #{list.sort},
+            #{list.nature},
+            #{list.cdmpVersion}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertTempMetaDataFileds">
+        INSERT INTO ##METADATA_B_METADATAFIELDS_TEMP
+        ([ID_]
+        ,[TableID_]
+        ,[TableName_]
+        ,[FiledNumber_]
+        ,[FiledName_]
+        ,[ChineseFiledName_]
+        ,[StorageType_]
+        ,[FiledLength_]
+        ,[Constraints_]
+        ,[ValueSpace_]
+        ,[DataItemDescription_]
+        ,[ReferenceNumber_]
+        ,[TheStandardSource_]
+        ,[FiledFormat_]
+        ,[DecimalLength_]
+        ,[IsNotNull_]
+        ,[IsDecimals_]
+        ,[IsPrimary_]
+        ,[Annotation_]
+        ,[DefaultValue_]
+        ,[FieldIndex_]
+        ,[FieldStatus_]
+        ,[SchoolCode_]
+        ,[Remark_]
+        ,[IsDelete_]
+        ,[Creator_]
+        ,[CreateTime_]
+        ,[Updateor_]
+        ,[UpdateTime_]
+        ,[CanYouEdit_]
+        ,[CanYouDelete_]
+        ,[Sort_]
+        ,[IsStandard_]
+        ,[CdmpVersion_])
+        values
+        <foreach collection="metaDataFiledsList" item="list" separator="," index="index">
+            (#{list.id},
+            #{list.tableId},
+            #{list.tableName},
+            #{list.filedNumber},
+            #{list.filedName},
+            #{list.chineseFiledName},
+            #{list.storageType},
+            #{list.filedLength},
+            #{list.constraints},
+            #{list.valueSpace},
+            #{list.dataItemDescription},
+            #{list.referenceNumber},
+            #{list.theStandardSource},
+            #{list.filedFormat},
+            #{list.decimalLength},
+            #{list.isNotNull},
+            #{list.isDecimals},
+            #{list.isPrimary},
+            #{list.annotation},
+            #{list.defaultValue},
+            #{list.fieldIndex},
+            #{list.fieldStatus},
+            (select top 1 学校代码 from EIC.DBO.DB_VB_常量信息),
+            #{list.remark},
+            #{list.isDelete},
+            #{list.creator},
+            CONVERT(datetime,#{list.createTime},21),
+            #{list.updateor},
+            CONVERT(datetime,#{list.updateTime},21),
+            #{list.canYouEdit},
+            #{list.canYouDelete},
+            #{list.sort},
+            #{list.isStandard},
+            #{list.cdmpVersion}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertTempOption">
+        INSERT INTO ##METADATA_B_OPTION_TEMP
+        ([ID_]
+        ,[Key_]
+        ,[Name_]
+        ,[Hierarchy_ID_]
+        ,[Hierarchy_Key_]
+        ,[Parent_]
+        ,[Depth_]
+        ,[Level_]
+        ,[Sort_]
+        ,[Status_]
+        ,[IsDelete_]
+        ,[SchoolCode_]
+        ,[Creator_]
+        ,[CreateTime_]
+        ,[Updateor_]
+        ,[UpdateTime_]
+        ,[Remark_]
+        ,[CanYouEdit_]
+        ,[CanYouDelete_]
+        ,[IsStandard_]
+        ,[CdmpVersion_])
+        values
+        <foreach collection="optionList" item="list" separator="," index="index">
+            (#{list.id},
+            #{list.key},
+            #{list.name},
+            #{list.hierarchyId},
+            #{list.hierarchyKey},
+            #{list.parent},
+            #{list.depth},
+            #{list.level},
+            #{list.sort},
+            #{list.status},
+            #{list.isDelete},
+            (select top 1 学校代码 from EIC.DBO.DB_VB_常量信息),
+            #{list.creator},
+            CONVERT(datetime,#{list.createTime},21),
+            #{list.updateor},
+            CONVERT(datetime,#{list.updateTime},21),
+            #{list.remark},
+            #{list.canYouEdit},
+            #{list.canYouDelete},
+            #{list.isStandard},
+            #{list.cdmpVersion}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertTempHierarchy">
+        INSERT INTO ##METADATA_B_HIERARCHY_TEMP
+        ([ID_]
+        ,[TypeKey_]
+        ,[TypeName_]
+        ,[Parent_]
+        ,[Level_]
+        ,[Sort_]
+        ,[Status_]
+        ,[IsDelete_]
+        ,[SchoolCode_]
+        ,[Creator_]
+        ,[CreateTime_]
+        ,[Updateor_]
+        ,[UpdateTime_]
+        ,[Remark_]
+        ,[CanYouEdit_]
+        ,[CanYouDelete_]
+        ,[IsStandard_]
+        ,[CdmpVersion_]
+        )
+        values
+        <foreach collection="hierarchyList" item="list" separator="," index="index">
+            (#{list.id},
+            #{list.typeKey},
+            #{list.typeName},
+            #{list.parent},
+            #{list.level},
+            #{list.sort},
+            #{list.status},
+            #{list.isDelete},
+            (select top 1 学校代码 from EIC.DBO.DB_VB_常量信息),
+            #{list.creator},
+            CONVERT(datetime,#{list.createTime},21),
+            #{list.updateor},
+            CONVERT(datetime,#{list.updateTime},21),
+            #{list.remark},
+            #{list.canYouEdit},
+            #{list.canYouDelete},
+            #{list.isStandard},
+            #{list.cdmpVersion}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertSyncDataMetaTable">
+        INSERT INTO METADATA_B_METADATATABLES
+           ([ID_]
+           ,[Catalog_]
+           ,[TableName_]
+           ,[ChineseTableName_]
+           ,[FieldSize_]
+           ,[IsDelete_]
+           ,[SchoolCode_]
+           ,[Creator_]
+           ,[CreateTime_]
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[TableStatus_]
+           ,[IsStandard_]
+           ,[MetadataTypeID_]
+           ,[Sort_]
+           ,[Nature_]
+           ,[CdmpVersion_])
+select		[ID_]
+           ,[Catalog_]
+           ,[TableName_]
+           ,[ChineseTableName_]
+           ,[FieldSize_]
+           ,[IsDelete_]
+           , (select TOP 1  学校代码 from EIC.DBO.DB_VB_常量信息)
+           ,#{userName}
+           ,getdate()
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[TableStatus_]
+           ,[IsStandard_]
+           ,[MetadataTypeID_]
+           ,[Sort_]
+           ,[Nature_]
+           ,[CdmpVersion_] from ##METADATA_B_METADATATABLES_TEMP where IsStandard_ = 1 AND IsDelete_= 0 AND  ID_ NOT IN (select ID_ from METADATA_B_METADATATABLES where IsStandard_ = 1 )
+    </insert>
+    <insert id="insertSyncDataMetaFiled">
+        INSERT INTO [METADATA_B_METADATAFIELDS]
+           ([ID_]
+           ,[TableID_]
+           ,[TableName_]
+           ,[FiledNumber_]
+           ,[FiledName_]
+           ,[ChineseFiledName_]
+           ,[StorageType_]
+           ,[FiledLength_]
+           ,[Constraints_]
+           ,[ValueSpace_]
+           ,[DataItemDescription_]
+           ,[ReferenceNumber_]
+           ,[TheStandardSource_]
+           ,[FiledFormat_]
+           ,[DecimalLength_]
+           ,[IsNotNull_]
+           ,[IsDecimals_]
+           ,[IsPrimary_]
+           ,[Annotation_]
+           ,[DefaultValue_]
+           ,[FieldIndex_]
+           ,[FieldStatus_]
+           ,[SchoolCode_]
+           ,[Remark_]
+           ,[IsDelete_]
+           ,[Creator_]
+           ,[CreateTime_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[Sort_]
+           ,[IsStandard_]
+           ,[CdmpVersion_])
+   select		[ID_]
+           ,[TableID_]
+           ,[TableName_]
+           ,[FiledNumber_]
+           ,[FiledName_]
+           ,[ChineseFiledName_]
+           ,[StorageType_]
+           ,[FiledLength_]
+           ,[Constraints_]
+           ,[ValueSpace_]
+           ,[DataItemDescription_]
+           ,[ReferenceNumber_]
+           ,[TheStandardSource_]
+           ,[FiledFormat_]
+           ,[DecimalLength_]
+           ,[IsNotNull_]
+           ,[IsDecimals_]
+           ,[IsPrimary_]
+           ,[Annotation_]
+           ,[DefaultValue_]
+           ,[FieldIndex_]
+           ,[FieldStatus_]
+           , (select TOP 1  学校代码 from EIC.DBO.DB_VB_常量信息)
+           ,[Remark_]
+           ,[IsDelete_]
+           ,#{userName}
+           ,getdate()
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[Sort_]
+           ,[IsStandard_]
+           ,[CdmpVersion_] from ##METADATA_B_METADATAFIELDS_TEMP where IsStandard_ = 1 AND IsDelete_= 0 AND  ID_ NOT IN (select ID_ from METADATA_B_METADATAFIELDS where IsStandard_ = 1 )
+    </insert>
+    <insert id="insertSyncDataOption">
+        INSERT INTO [dbo].[METADATA_B_OPTION]
+           ([ID_]
+           ,[Key_]
+           ,[Name_]
+           ,[Hierarchy_ID_]
+           ,[Hierarchy_Key_]
+           ,[Parent_]
+           ,[Depth_]
+           ,[Level_]
+           ,[Sort_]
+           ,[Status_]
+           ,[IsDelete_]
+           ,[SchoolCode_]
+           ,[Creator_]
+           ,[CreateTime_]
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[IsStandard_]
+           ,[CdmpVersion_])
+select [ID_]
+           ,[Key_]
+           ,[Name_]
+           ,[Hierarchy_ID_]
+           ,[Hierarchy_Key_]
+           ,[Parent_]
+           ,[Depth_]
+           ,[Level_]
+           ,[Sort_]
+           ,[Status_]
+           ,[IsDelete_]
+           , (select TOP 1  学校代码 from EIC.DBO.DB_VB_常量信息)
+           ,#{userName}
+           ,getdate()
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[IsStandard_]
+           ,[CdmpVersion_] from ##METADATA_B_OPTION_TEMP where IsStandard_ = 1 AND IsDelete_= 0 AND  ID_ NOT IN (select ID_ from METADATA_B_OPTION where IsStandard_ = 1  )
+    </insert>
+    <insert id="insertSyncDataHierarchyList">
+
+INSERT INTO METADATA_B_HIERARCHY
+           ([ID_]
+           ,[TypeKey_]
+           ,[TypeName_]
+           ,[Parent_]
+           ,[Depth_]
+           ,[Level_]
+           ,[Sort_]
+           ,[Status_]
+           ,[IsDelete_]
+           ,[SchoolCode_]
+           ,[Creator_]
+           ,[CreateTime_]
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[CdmpVersion_]
+           ,[IsStandard_])
+   select		[ID_]
+           ,[TypeKey_]
+           ,[TypeName_]
+           ,[Parent_]
+           ,[Depth_]
+           ,[Level_]
+           ,[Sort_]
+           ,[Status_]
+           ,[IsDelete_]
+           , (select TOP 1  学校代码 from EIC.DBO.DB_VB_常量信息)
+           ,#{userName}
+           ,getdate()
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[CdmpVersion_]
+           ,[IsStandard_] from ##METADATA_B_HIERARCHY_TEMP where IsStandard_ = 1 AND IsDelete_= 0 AND  ID_ NOT IN (select ID_ from [METADATA_B_HIERARCHY] where IsStandard_ = 1 )
+    </insert>
+    <insert id="insertTempDwdxxbjz">
+        INSERT INTO ##METADATA_B_DWDXXBJZ_TEMP
+        ([ID_]
+        ,[Hierarchy_ID_]
+        ,[Hierarchy_Key_]
+        ,[FILED_1_KEY_]
+        ,[FILED_1_VALUE_]
+        ,[FILED_2_KEY_]
+        ,[FILED_2_VALUE_]
+        ,[FILED_3_KEY_]
+        ,[FILED_3_VALUE_]
+        ,[FILED_4_KEY_]
+        ,[FILED_4_VALUE_]
+        ,[FILED_5_KEY_]
+        ,[FILED_5_VALUE_]
+        ,[FILED_6_KEY_]
+        ,[FILED_6_VALUE_]
+        ,[FILED_7_KEY_]
+        ,[FILED_7_VALUE_]
+        ,[FILED_8_KEY_]
+        ,[FILED_8_VALUE_]
+        ,[FILED_9_KEY_]
+        ,[FILED_9_VALUE_]
+        ,[FILED_10_KEY_]
+        ,[FILED_10_VALUE_]
+        ,[Sort_]
+        ,[Status_]
+        ,[IsDelete_]
+        ,[SchoolCode_]
+        ,[Creator_]
+        ,[CreateTime_]
+        ,[Remark_]
+        ,[CanYouEdit_]
+        ,[CanYouDelete_]
+        ,[IsStandard_]
+        ,[CdmpVersion_])
+        VALUES
+        <foreach collection="dwdxxbjzs" item="list" separator="," index="index">
+            (#{list.id},
+            #{list.hierarchyId},
+            #{list.hierarchyKey},
+            #{list.filed1Key},
+            #{list.filed1Value},
+            #{list.filed2Key},
+            #{list.filed2Value},
+            #{list.filed3Key},
+            #{list.filed3Value},
+            #{list.filed4Key},
+            #{list.filed4Value},
+            #{list.filed5Key},
+            #{list.filed5Value},
+            #{list.filed6Key},
+            #{list.filed6Value},
+            #{list.filed7Key},
+            #{list.filed7Value},
+            #{list.filed8Key},
+            #{list.filed8Value},
+            #{list.filed9Key},
+            #{list.filed9Value},
+            #{list.filed10Key},
+            #{list.filed10Value},
+            #{list.sort},
+            #{list.status},
+            #{list.isDelete},
+            (select top 1 学校代码 from EIC.DBO.DB_VB_常量信息),
+            #{list.creator},
+            getdate(),
+            #{list.remark},
+            #{list.canYouEdit},
+            #{list.canYouDelete},
+            #{list.isStandard},
+            #{list.cdmpVersion}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertTempDwdxxbzdmys">
+        INSERT INTO ##METADATA_B_DWDXXBZDMYS_TEMP
+        ([ID_]
+        ,[DYL_]
+        ,[DYLMC_]
+        ,[Hierarchy_ID_]
+        ,[Hierarchy_Key_]
+        ,[Sort_]
+        ,[Status_]
+        ,[IsDelete_]
+        ,[SchoolCode_]
+        ,[Creator_]
+        ,[CreateTime_]
+        ,[Updateor_]
+        ,[UpdateTime_]
+        ,[Remark_]
+        ,[CanYouEdit_]
+        ,[CanYouDelete_]
+        ,[IsStandard_]
+        ,[CdmpVersion_])
+        VALUES
+        <foreach collection="dwdxxbzdmys" item="list" separator="," index="index">
+            ( #{list.id},
+            #{list.dyl},
+            #{list.dylmc},
+            #{list.hierarchyId},
+            #{list.hierarchyKey},
+            #{list.sort},
+            #{list.status},
+            #{list.isDelete},
+            (select top 1 学校代码 from EIC.DBO.DB_VB_常量信息),
+            #{list.creator},
+            getdate(),
+            #{list.updateor},
+            CONVERT(datetime,#{list.updateTime},21),
+            #{list.remark},
+            #{list.canYouEdit},
+            #{list.canYouDelete},
+            #{list.isStandard},
+            #{list.cdmpVersion})
+        </foreach>
+    </insert>
+    <insert id="insertSyncDwdxxbjz">
+          INSERT INTO METADATA_B_DWDXXBJZ
+           ([ID_]
+           ,[Hierarchy_ID_]
+           ,[Hierarchy_Key_]
+           ,[FILED_1_KEY_]
+           ,[FILED_1_VALUE_]
+           ,[FILED_2_KEY_]
+           ,[FILED_2_VALUE_]
+           ,[FILED_3_KEY_]
+           ,[FILED_3_VALUE_]
+           ,[FILED_4_KEY_]
+           ,[FILED_4_VALUE_]
+           ,[FILED_5_KEY_]
+           ,[FILED_5_VALUE_]
+           ,[FILED_6_KEY_]
+           ,[FILED_6_VALUE_]
+           ,[FILED_7_KEY_]
+           ,[FILED_7_VALUE_]
+           ,[FILED_8_KEY_]
+           ,[FILED_8_VALUE_]
+           ,[FILED_9_KEY_]
+           ,[FILED_9_VALUE_]
+           ,[FILED_10_KEY_]
+           ,[FILED_10_VALUE_]
+           ,[Sort_]
+           ,[Status_]
+           ,[IsDelete_]
+           ,[SchoolCode_]
+           ,[Creator_]
+           ,[CreateTime_]
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[IsStandard_]
+           ,[CdmpVersion_])
+           select [ID_]
+           ,[Hierarchy_ID_]
+           ,[Hierarchy_Key_]
+           ,[FILED_1_KEY_]
+           ,[FILED_1_VALUE_]
+           ,[FILED_2_KEY_]
+           ,[FILED_2_VALUE_]
+           ,[FILED_3_KEY_]
+           ,[FILED_3_VALUE_]
+           ,[FILED_4_KEY_]
+           ,[FILED_4_VALUE_]
+           ,[FILED_5_KEY_]
+           ,[FILED_5_VALUE_]
+           ,[FILED_6_KEY_]
+           ,[FILED_6_VALUE_]
+           ,[FILED_7_KEY_]
+           ,[FILED_7_VALUE_]
+           ,[FILED_8_KEY_]
+           ,[FILED_8_VALUE_]
+           ,[FILED_9_KEY_]
+           ,[FILED_9_VALUE_]
+           ,[FILED_10_KEY_]
+           ,[FILED_10_VALUE_]
+           ,[Sort_]
+           ,[Status_]
+           ,[IsDelete_]
+           , (select top 1 学校代码 from EIC.DBO.DB_VB_常量信息)
+           ,#{userName}
+           ,getdate()
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[IsStandard_]
+           ,[CdmpVersion_] from ##METADATA_B_DWDXXBJZ_TEMP where IsStandard_ = 1 AND IsDelete_= 0 AND  ID_ NOT IN (select ID_ from [METADATA_B_DWDXXBJZ] where IsStandard_ = 1 )
+    </insert>
+    <insert id="insertSyncDwdxxbzdmys">
+         INSERT INTO METADATA_B_DWDXXBZDMYS
+           ([ID_]
+           ,[DYL_]
+           ,[DYLMC_]
+           ,[Hierarchy_ID_]
+           ,[Hierarchy_Key_]
+           ,[Sort_]
+           ,[Status_]
+           ,[IsDelete_]
+           ,[SchoolCode_]
+           ,[Creator_]
+           ,[CreateTime_]
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[IsStandard_]
+           ,[CdmpVersion_])
+        select
+        [ID_]
+           ,[DYL_]
+           ,[DYLMC_]
+           ,[Hierarchy_ID_]
+           ,[Hierarchy_Key_]
+           ,[Sort_]
+           ,[Status_]
+           ,[IsDelete_]
+  , (select top 1 学校代码 from EIC.DBO.DB_VB_常量信息)
+           ,#{userName}
+           ,getdate()
+           ,[Remark_]
+           ,[CanYouEdit_]
+           ,[CanYouDelete_]
+           ,[IsStandard_]
+           ,[CdmpVersion_] from ##METADATA_B_DWDXXBZDMYS_TEMP where IsStandard_ = 1 AND IsDelete_= 0 AND  ID_ NOT IN (select ID_ from [METADATA_B_DWDXXBZDMYS] where IsStandard_ = 1 )
+    </insert>
+    <insert id="apiInsertData">
+        INSERT INTO ${tableName}
+        ( <foreach collection="updateField" item="list" separator=",">
+        ${list.fieldName}
+    </foreach>)
+        VALUES
+        ( <foreach collection="updateField" item="list" separator=",">
+        #{list.values}
+    </foreach>)
+    </insert>
+    <insert id="insertListMaps">
+        insert into [${tableName}]
+        ( <foreach collection="fields.entrySet()" index="key" item="value" separator=",">
+        ${value.filedName}
+    </foreach>)
+        VALUES
+        <foreach collection="list" item="list" separator=",">
+            ( <foreach collection="list.entrySet()" index="key" item="value" separator=",">
+            #{value}
+        </foreach>)
+        </foreach>
+    </insert>
+    <update id="syncDataBase">
+update  METADATA_B_METADATATABLES  set  METADATA_B_METADATATABLES.TableStatus_=(case when A.name is null then 0 else 1 end)
+FROM  METADATA_B_METADATATABLES JOIN   ..SYSOBJECTS A ON   A.NAME = METADATA_B_METADATATABLES.TableName_  where XTYPE = 'U';
+        update METADATA_B_METADATATABLES set METADATA_B_METADATATABLES.TableStatus_=a.status   from
+ (select A.ID_,A.TableStatus_,case when b.NTABLE IS not null then 1 else 0 end as status from  METADATA_B_METADATATABLES A left join (SELECT NTABLE = A.NAME, OTABLE = B.TableName_
+FROM (select NAME from  ..SYSOBJECTS where XTYPE = 'U') A
+  right  JOIN (select   TableName_ from METADATA_B_METADATATABLES where IsDelete_= 0 ) B
+    ON A.NAME = B.TableName_) b on a.TableName_ = b.OTABLE) a WHERE METADATA_B_METADATATABLES.ID_=A.ID_;;
+    update METADATA_B_METADATATABLES set FieldSize_ = A.FieldSize from
+(select TableID_,COUNT(1) as FieldSize from METADATA_B_METADATAFIELDS WHERE IsDelete_ = 0  GROUP BY  TableID_) A  where METADATA_B_METADATATABLES.ID_ = a.TableID_
+    </update>
+    <update id="updateSyncDataMetaTable">
+update METADATA_B_METADATATABLES
+   SET [Catalog_] = B.Catalog_
+      ,[TableName_] = B.[TableName_]
+      ,[ChineseTableName_] =B.ChineseTableName_
+      ,[FieldSize_] =B.FieldSize_
+      ,[IsDelete_] =B.IsDelete_
+      ,[Updateor_] = #{userName}
+      ,[UpdateTime_] =getdate()
+      ,[Remark_] =B.Remark_
+      ,[CanYouEdit_] =B.CanYouEdit_
+      ,[CanYouDelete_] =B.CanYouDelete_
+      ,[TableStatus_] = B.TableStatus_
+      ,[IsStandard_] = B.IsStandard_
+      ,[MetadataTypeID_] =B.MetadataTypeID_
+      ,[Sort_] =B.Sort_
+      ,[Nature_]=B.Nature_
+      ,[CdmpVersion_] =B.CdmpVersion_
+	   from   (select 	 b.[ID_]
+      ,b.[Catalog_]
+      ,b.[TableName_]
+      ,b.[ChineseTableName_]
+      ,b.[FieldSize_]
+      ,b.[IsDelete_]
+      ,b.[SchoolCode_]
+      ,b.[Creator_]
+      ,b.[CreateTime_]
+      ,b.[Updateor_]
+      ,b.[UpdateTime_]
+      ,b.[Remark_]
+      ,b.[CanYouEdit_]
+      ,b.[CanYouDelete_]
+      ,b.[TableStatus_]
+      ,b.[IsStandard_]
+      ,b.[MetadataTypeID_]
+      ,b.[Sort_]
+      ,B.Nature_
+      ,b.[CdmpVersion_]  from ##METADATA_B_METADATATABLES_TEMP B join METADATA_B_METADATATABLES A ON B.ID_=A.ID_ AND (
+	   A.[Catalog_]!=b.[Catalog_] or
+       A.[TableName_]!=b.[TableName_] or
+       A.[ChineseTableName_]!=b.[ChineseTableName_] or
+       A.[FieldSize_]!=b.[FieldSize_] or
+       A.[Remark_]!=b.[Remark_] or
+       A.[CanYouEdit_]!=b.[CanYouEdit_] or
+       A.[CanYouDelete_]!=b.[CanYouDelete_] or
+       A.[TableStatus_]!=b.[TableStatus_] or
+       A.[IsStandard_]!=b.[IsStandard_] or
+       A.[MetadataTypeID_]!=b.[MetadataTypeID_] or
+       A.[Sort_]!=b.[Sort_] or
+       A.Nature_!=b.Nature_ or
+       A.[CdmpVersion_]!=b.[CdmpVersion_]
+	  ) and B.IsStandard_=1 AND A.IsStandard_=1) b
+ WHERE   b.ID_=METADATA_B_METADATATABLES.ID_
+    </update>
+    <update id="updateSyncDataMetaFiled">
+update METADATA_B_METADATAFIELDS
+   SET [TableID_] = B.[TableID_]
+      ,[TableName_] = B.[TableName_]
+      ,[FiledNumber_] = B.[FiledNumber_]
+      ,[FiledName_] = B.[FiledName_]
+      ,[ChineseFiledName_] = B.[ChineseFiledName_]
+      ,[StorageType_] = B.[StorageType_]
+      ,[FiledLength_] = B.[FiledLength_]
+      ,[Constraints_] = B.[Constraints_]
+      ,[ValueSpace_] = B.[ValueSpace_]
+      ,[DataItemDescription_] =B.[DataItemDescription_]
+      ,[ReferenceNumber_] =B.[ReferenceNumber_]
+      ,[TheStandardSource_] = B.[TheStandardSource_]
+      ,[FiledFormat_] =B.[FiledFormat_]
+      ,[DecimalLength_] = B.[DecimalLength_]
+      ,[IsNotNull_] =B.[IsNotNull_]
+      ,[IsDecimals_] =B.[IsDecimals_]
+      ,[IsPrimary_] = B.[IsPrimary_]
+      ,[Annotation_] = B.[Annotation_]
+      ,[DefaultValue_] = B.[DefaultValue_]
+      ,[FieldIndex_] =B.[FieldIndex_]
+      ,[FieldStatus_] = B.[FieldStatus_]
+      ,[Remark_] = B.[Remark_]
+      ,[IsDelete_] = B.[IsDelete_]
+      ,[Updateor_] =#{userName}
+      ,[UpdateTime_] = getdate()
+      ,[CanYouEdit_] = B.[CanYouEdit_]
+      ,[CanYouDelete_] =B.[CanYouDelete_]
+      ,[Sort_] = B.[Sort_]
+      ,[IsStandard_] = B.[IsStandard_]
+      ,[CdmpVersion_] = B.[CdmpVersion_]
+      ,User_Operation_ = 0
+	   from   (select 	 b.[ID_],
+      B.[TableID_]
+      ,B.[TableName_]
+      ,B.[FiledNumber_]
+      ,B.[FiledName_]
+      ,B.[ChineseFiledName_]
+      ,B.[StorageType_]
+      ,B.[FiledLength_]
+      ,B.[Constraints_]
+      ,B.[ValueSpace_]
+      ,B.[DataItemDescription_]
+      ,B.[ReferenceNumber_]
+      ,B.[TheStandardSource_]
+      ,B.[FiledFormat_]
+      ,B.[DecimalLength_]
+      ,B.[IsNotNull_]
+      ,B.[IsDecimals_]
+      ,B.[IsPrimary_]
+      ,B.[Annotation_]
+      ,B.[DefaultValue_]
+      ,B.[FieldIndex_]
+      ,B.[FieldStatus_]
+      ,B.[SchoolCode_]
+      ,B.[Remark_]
+      ,B.[IsDelete_]
+      ,B.[CanYouEdit_]
+      ,B.[CanYouDelete_]
+      ,B.[Sort_]
+      ,B.[IsStandard_]
+      ,B.[CdmpVersion_]  from ##METADATA_B_METADATAFIELDS_TEMP B join METADATA_B_METADATAFIELDS A ON
+	  B.ID_=A.ID_ AND (
+	    B.[TableID_]!= a.[TableID_]
+      or B.[TableName_]!= a.[TableName_]
+      or B.[FiledNumber_]!= a.[FiledNumber_]
+      or B.[FiledName_]!= a.[FiledName_]
+      or B.[ChineseFiledName_]!= a.[ChineseFiledName_]
+      or B.[StorageType_]!= a.[StorageType_]
+      or B.[FiledLength_]!= a.[FiledLength_]
+      or B.[Constraints_]!= a.[Constraints_]
+      or B.[ValueSpace_]!= a.[ValueSpace_]
+      or B.[DataItemDescription_]!= a.[DataItemDescription_]
+      or B.[ReferenceNumber_]!= a.[ReferenceNumber_]
+      or B.[TheStandardSource_]!= a.[TheStandardSource_]
+      or B.[FiledFormat_]!= a.[FiledFormat_]
+      or B.[DecimalLength_]!= a.[DecimalLength_]
+      or B.[IsNotNull_]!= a.[IsNotNull_]
+      or B.[IsDecimals_]!= a.[IsDecimals_]
+      or B.[IsPrimary_]!= a.[IsPrimary_]
+      or B.[Annotation_]!= a.[Annotation_]
+      or B.[DefaultValue_]!= a.[DefaultValue_]
+      or B.[FieldIndex_]!= a.[FieldIndex_]
+      or B.[FieldStatus_]!= a.[FieldStatus_]
+      or B.[Remark_]!= a.[Remark_]
+      or B.[CanYouEdit_]!= a.[CanYouEdit_]
+      or B.[CanYouDelete_]!= a.[CanYouDelete_]
+      or B.[Sort_]!= a.[Sort_]
+      or B.[IsStandard_]!= a.[IsStandard_]
+	  or B.[CdmpVersion_]!= a.[CdmpVersion_]
+	  ) and B.IsStandard_=1 AND A.IsStandard_=1) b
+ WHERE   b.ID_=METADATA_B_METADATAFIELDS.ID_
+    </update>
+    <update id="updateSyncDataOption">
+        update METADATA_B_OPTION
+   SET
+		[Key_]=B.[Key_]
+      ,[Name_]=B.[Name_]
+      ,[Hierarchy_ID_]=B.[Hierarchy_ID_]
+      ,[Hierarchy_Key_]=B.[Hierarchy_Key_]
+      ,[Parent_]=B.[Parent_]
+      ,[Depth_]=B.[Depth_]
+      ,[Level_]=B.[Level_]
+      ,[Sort_]=B.[Sort_]
+      ,[Status_]=B.[Status_]
+      ,[IsDelete_]=B.[IsDelete_]
+      ,[Updateor_]=#{userName}
+      ,[UpdateTime_]=getdate()
+      ,[Remark_]=B.[Remark_]
+      ,[CanYouEdit_]=B.[CanYouEdit_]
+      ,[CanYouDelete_]=B.[CanYouDelete_]
+      ,[IsStandard_]=B.[IsStandard_]
+      ,[CdmpVersion_]=B.[CdmpVersion_]
+	   from   (select
+	   B.[ID_],
+	   B.[Key_],
+	   B.[Name_],
+	   B.[Hierarchy_ID_],
+	   B.[Hierarchy_Key_],
+	   B.[Parent_],
+	   B.[Depth_],
+	   B.[Level_],
+	   B.[Sort_],
+	  B.[Status_],
+	   B.[IsDelete_],
+	   B.[CanYouEdit_],
+	   B.[Remark_],
+	   B.[CanYouDelete_],
+	   B.[IsStandard_],
+	   B.[CdmpVersion_]
+	   	  from ##METADATA_B_OPTION_TEMP B join METADATA_B_OPTION A ON
+	  B.ID_=A.ID_ AND (
+	 A.[Key_]!=B.[Key_]
+      or A.[Name_]!=B.[Name_]
+      or A.[Hierarchy_ID_]!=B.[Hierarchy_ID_]
+      or A.[Hierarchy_Key_]!=B.[Hierarchy_Key_]
+      or A.[Parent_]!=B.[Parent_]
+      or A.[Depth_]!=B.[Depth_]
+      or A.[Level_]!=B.[Level_]
+      or A.[Sort_]!=B.[Sort_]
+      or A.[Status_]!=B.[Status_]
+      or A.[Remark_]!=B.[Remark_]
+      or A.[CanYouEdit_]!=B.[CanYouEdit_]
+      or A.[CanYouDelete_]!=B.[CanYouDelete_]
+      or A.[IsStandard_]!=B.[IsStandard_]
+      or A.[CdmpVersion_]!=B.[CdmpVersion_]
+	  ) and B.IsStandard_=1 AND A.IsStandard_=1) b
+ WHERE   b.ID_=METADATA_B_OPTION.ID_
+    </update>
+    <update id="updateSyncDataHierarchyList">
+update METADATA_B_HIERARCHY
+   SET     [TypeKey_]  =B.[TypeKey_]
+           ,[TypeName_]=B.[TypeName_]
+           ,[Parent_]=B.[Parent_]
+           ,[Depth_]=B.[Depth_]
+           ,[Level_]=B.[Level_]
+           ,[Sort_]=B.[Sort_]
+           ,[Status_]=B.[Status_]
+           ,[IsDelete_]=B.[IsDelete_]
+           ,[Updateor_]=#{userName}
+           ,[UpdateTime_]=getdate()
+           ,[Remark_]=B.[Remark_]
+           ,[CanYouEdit_]=B.[CanYouEdit_]
+           ,[CanYouDelete_]=B.[CanYouDelete_]
+           ,[CdmpVersion_]=B.[CdmpVersion_]
+           ,[IsStandard_]=B.[IsStandard_]
+	   from   (select
+	   B.ID_,
+	   B.TypeKey_,
+	   B.TypeName_,
+	   B.Parent_,
+	   B.Depth_,
+	   B.Level_,
+	   B.Sort_,
+	  B.Status_,
+	   B.IsDelete_,
+	   B.Remark_,
+	   B.CanYouEdit_,
+	   B.CanYouDelete_,
+	   B.CdmpVersion_,
+	   B.IsStandard_
+	     from ##METADATA_B_HIERARCHY_TEMP B join METADATA_B_HIERARCHY A ON
+	  B.ID_=A.ID_ AND (
+			A.[TypeKey_] ! =B.[TypeKey_]
+           OR A.[TypeName_]! =B.[TypeName_]
+            OR A.[Parent_]! =B.[Parent_]
+            OR A.[Depth_]! =B.[Depth_]
+            OR A.[Level_]! =B.[Level_]
+            OR A.[Sort_]! =B.[Sort_]
+            OR A.[Status_]! =B.[Status_]
+            OR A.[Remark_]! =B.[Remark_]
+           OR A.[CanYouEdit_]! =B.[CanYouEdit_]
+            OR A.[CanYouDelete_]! =B.[CanYouDelete_]
+            OR A.[CdmpVersion_]! =B.[CdmpVersion_]
+            OR A.[IsStandard_]! =B.[IsStandard_]
+	  ) and B.IsStandard_=1 AND A.IsStandard_=1) b
+ WHERE   b.ID_=METADATA_B_HIERARCHY.ID_
+    </update>
+    <delete id="delDataTable">
+    if exists(SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'${tableName}') AND type in (N'U'))
+    DROP TABLE [${tableName}]
+    </delete>
+    <delete id="deleteTempTable">
+        IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'##METADATA_B_OPTION_TEMP') AND type in (N'U'))
+        DROP TABLE ##METADATA_B_OPTION_TEMP
+        IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'##METADATA_B_HIERARCHY_TEMP') AND type in (N'U'))
+        DROP TABLE ##METADATA_B_HIERARCHY_TEMP
+        IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'##METADATA_B_METADATAFIELDS_TEMP') AND type in (N'U'))
+        DROP TABLE ##METADATA_B_METADATAFIELDS_TEMP
+        IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'##METADATA_B_METADATATABLES_TEMP') AND type in (N'U'))
+        DROP TABLE ##METADATA_B_METADATATABLES_TEMP
+         IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'##METADATA_B_DWDXXBJZ_TEMP') AND type in (N'U'))
+        DROP TABLE ##METADATA_B_DWDXXBJZ_TEMP
+         IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'##METADATA_B_DWDXXBZDMYS_TEMP') AND type in (N'U'))
+        DROP TABLE ##METADATA_B_DWDXXBZDMYS_TEMP
+    </delete>
+    <delete id="delSyncDwdxxbjz">
+                 UPDATE METADATA_B_DWDXXBJZ   SET IsDelete_= 1,Updateor_=#{userName},UpdateTime_=GETDATE()
+where   METADATA_B_DWDXXBJZ.IsDelete_!=1 and METADATA_B_DWDXXBJZ.IsStandard_=1
+and  METADATA_B_DWDXXBJZ.ID_ NOT IN (SELECT ID_ FROM ##METADATA_B_DWDXXBJZ_TEMP WHERE IsDelete_ =0  )
+    </delete>
+    <delete id="delSyncDwdxxbzdmys">
+                       UPDATE METADATA_B_DWDXXBZDMYS   SET IsDelete_= 1,Updateor_=#{userName},UpdateTime_=GETDATE()
+where   METADATA_B_DWDXXBZDMYS.IsDelete_!=1 and METADATA_B_DWDXXBZDMYS.IsStandard_=1
+and  METADATA_B_DWDXXBZDMYS.ID_ NOT IN (SELECT ID_ FROM ##METADATA_B_DWDXXBZDMYS_TEMP WHERE IsDelete_ =0  )
+    </delete>
+    <delete id="apiDeleteData">
+        delete ${tableName}
+        <where>
+            <foreach collection="filterField" item="list" separator=" and ">
+                ${list.fieldName} ${list.filterType} #{list.values}
+            </foreach>
+        </where>
+    </delete>
+    <update id="delSyncDataMetaTable">
+               UPDATE METADATA_B_METADATATABLES   SET IsDelete_= 1,Updateor_=#{userName},UpdateTime_=GETDATE()
+where   METADATA_B_METADATATABLES.IsDelete_!=1 and METADATA_B_METADATATABLES.IsStandard_=1
+and  METADATA_B_METADATATABLES.ID_ NOT IN (SELECT ID_ FROM ##METADATA_B_METADATATABLES_TEMP WHERE IsDelete_ =0  )
+    </update>
+    <update id="delSyncDataMetaFiled">
+               UPDATE METADATA_B_METADATAFIELDS   SET IsDelete_= 1,Updateor_=#{userName},UpdateTime_=GETDATE()
+where   METADATA_B_METADATAFIELDS.IsDelete_!=1 and METADATA_B_METADATAFIELDS.IsStandard_=1
+and  METADATA_B_METADATAFIELDS.ID_ NOT IN (SELECT ID_ FROM ##METADATA_B_METADATAFIELDS_TEMP WHERE IsDelete_ =0 )
+    </update>
+    <update id="delSyncDataOption">
+               UPDATE METADATA_B_OPTION   SET IsDelete_= 1  ,Updateor_=#{userName},UpdateTime_=GETDATE()
+where   METADATA_B_OPTION.IsDelete_!=1 and METADATA_B_OPTION.IsStandard_=1
+and  METADATA_B_OPTION.ID_ NOT IN (SELECT ID_ FROM ##METADATA_B_OPTION_TEMP WHERE IsDelete_ =0  )
+    </update>
+    <update id="delSyncDataHierarchyList">
+        UPDATE METADATA_B_HIERARCHY   SET IsDelete_= 1,Updateor_=#{userName},UpdateTime_=GETDATE()
+where   METADATA_B_HIERARCHY.IsDelete_!=1 and METADATA_B_HIERARCHY.IsStandard_=1
+and  METADATA_B_HIERARCHY.ID_ NOT IN (SELECT ID_ FROM ##METADATA_B_HIERARCHY_TEMP WHERE IsDelete_ =0  )
+    </update>
+    <update id="updateSyncDwdxxbjz">
+ update METADATA_B_DWDXXBJZ
+   SET [Hierarchy_ID_]=B.[Hierarchy_ID_]
+      ,[Hierarchy_Key_]=B.[Hierarchy_Key_]
+      ,[FILED_1_KEY_]=B.[FILED_1_KEY_]
+      ,[FILED_1_VALUE_]=B.[FILED_1_VALUE_]
+      ,[FILED_2_KEY_]=B.[FILED_2_KEY_]
+      ,[FILED_2_VALUE_]=B.[FILED_2_VALUE_]
+      ,[FILED_3_KEY_]=B.[FILED_3_KEY_]
+      ,[FILED_3_VALUE_]=B.[FILED_3_VALUE_]
+      ,[FILED_4_KEY_]=B.[FILED_4_KEY_]
+      ,[FILED_4_VALUE_]=b.[FILED_4_VALUE_]
+      ,[FILED_5_KEY_]=b.[FILED_5_KEY_]
+      ,[FILED_5_VALUE_]=B.[FILED_5_VALUE_]
+      ,[FILED_6_KEY_]=B.[FILED_6_KEY_]
+      ,[FILED_6_VALUE_]=B.[FILED_6_VALUE_]
+      ,[FILED_7_KEY_]=B.[FILED_7_KEY_]
+      ,[FILED_7_VALUE_]=B.[FILED_7_VALUE_]
+	    ,[FILED_8_KEY_]=B.[FILED_8_KEY_]
+      ,[FILED_8_VALUE_]=B.[FILED_8_VALUE_]
+      ,[FILED_9_KEY_]=B.[FILED_9_KEY_]
+      ,[FILED_9_VALUE_]=B.[FILED_9_VALUE_]
+	    ,[FILED_10_KEY_]=B.[FILED_10_KEY_]
+      ,[FILED_10_VALUE_]=B.[FILED_10_VALUE_]
+      ,[Sort_]=B.[Sort_]
+      ,[Status_]=B.[Status_]
+	    ,[IsDelete_]=B.[IsDelete_]
+	    ,[Updateor_]=#{userName}
+		,[UpdateTime_]=getdate()
+      ,[IsStandard_]=B.[IsStandard_]
+      ,[CdmpVersion_]=B.[CdmpVersion_]
+	   from   (select
+	   B.[ID_],
+	   B.[Hierarchy_ID_],
+	   B.[Hierarchy_Key_],
+	   B.[FILED_1_KEY_],
+	   B.[FILED_1_VALUE_],
+	   B.[FILED_2_KEY_],
+	   B.[FILED_2_VALUE_],
+	   B.[FILED_3_KEY_],
+	   B.[FILED_3_VALUE_],
+	  B.[FILED_4_KEY_],
+	   B.[FILED_4_VALUE_],
+	   B.[FILED_5_KEY_],
+	   B.[FILED_5_VALUE_],
+	   B.[FILED_6_KEY_],
+	   B.[FILED_6_VALUE_],
+	   B.[FILED_7_KEY_],
+	   B.[FILED_7_VALUE_],
+	   B.[FILED_8_KEY_],
+	   B.[FILED_8_VALUE_],
+	   B.[FILED_9_KEY_],
+	   B.[FILED_9_VALUE_],
+	   B.[FILED_10_KEY_],
+	   B.[FILED_10_VALUE_],
+	     B.[Sort_],
+	   B.[Status_],
+	   B.[IsDelete_],
+	   B.[SchoolCode_],
+	   B.[IsStandard_],
+	   B.[CdmpVersion_]
+	   	  from ##METADATA_B_DWDXXBJZ_TEMP B join METADATA_B_DWDXXBJZ A ON
+	  B.ID_=A.ID_ AND (
+      A.[Hierarchy_ID_]!=B.[Hierarchy_ID_]
+      or A.[Hierarchy_Key_]!=B.[Hierarchy_Key_]
+      or A.[FILED_1_KEY_]!=B.[FILED_1_KEY_]
+      or A.[FILED_1_VALUE_]!=B.[FILED_1_VALUE_]
+      or A.[FILED_2_KEY_]!=B.[FILED_2_KEY_]
+      or A.[FILED_2_VALUE_]!=B.[FILED_2_VALUE_]
+      or A.[FILED_3_KEY_]!=B.[FILED_3_KEY_]
+      or A.[FILED_3_VALUE_]!=B.[FILED_3_VALUE_]
+      or A.[FILED_4_KEY_]!=B.[FILED_4_KEY_]
+      or A.[FILED_4_VALUE_]!=b.[FILED_4_VALUE_]
+      or A.[FILED_5_KEY_]!=b.[FILED_5_KEY_]
+      or A.[FILED_5_VALUE_]!=B.[FILED_5_VALUE_]
+      or A.[FILED_6_KEY_]!=B.[FILED_6_KEY_]
+      or A.[FILED_6_VALUE_]!=B.[FILED_6_VALUE_]
+      or A.[FILED_7_KEY_]!=B.[FILED_7_KEY_]
+      or A.[FILED_7_VALUE_]!=B.[FILED_7_VALUE_]
+	  or A.[FILED_8_KEY_]!=B.[FILED_8_KEY_]
+      or A.[FILED_8_VALUE_]!=B.[FILED_8_VALUE_]
+      or A.[FILED_9_KEY_]!=B.[FILED_9_KEY_]
+      or A.[FILED_9_VALUE_]!=B.[FILED_9_VALUE_]
+	  or A.[FILED_10_KEY_]!=B.[FILED_10_KEY_]
+      or A.[FILED_10_VALUE_]!=B.[FILED_10_VALUE_]
+      or A.[Sort_]!=B.[Sort_]
+      or A.[Status_]!=B.[Status_]
+	  or A.[IsDelete_]!=B.[IsDelete_]
+      or A.[SchoolCode_]!=B.[SchoolCode_]
+      or A.[IsStandard_]!=B.[IsStandard_]
+      or A.[CdmpVersion_]!=B.[CdmpVersion_]
+	  ) and B.IsStandard_=1 AND A.IsStandard_=1) b
+ WHERE   b.ID_=METADATA_B_DWDXXBJZ.ID_
+    </update>
+    <update id="updateSyncDwdxxbzdmys">
+
+  update   [METADATA_B_DWDXXBZDMYS]  set
+		[DYL_] = B.[DYL_]
+      ,[DYLMC_] = B.[DYLMC_]
+      ,[Hierarchy_ID_] = B.[Hierarchy_ID_]
+      ,[Hierarchy_Key_] = B.[Hierarchy_Key_]
+      ,[Sort_] = B.[Sort_]
+      ,[Status_] = B.[Status_]
+      ,[IsDelete_] = B.[IsDelete_]
+      ,[Updateor_]=#{userName}
+	  ,[UpdateTime_]=getdate()
+      ,[Remark_] = B.[Remark_]
+      ,[CanYouEdit_] = B.[CanYouEdit_]
+      ,[CanYouDelete_] = B.[CanYouDelete_]
+      ,[IsStandard_] = B.[IsStandard_]
+      ,[CdmpVersion_] = B.[CdmpVersion_]
+	  FRoM
+	    (select
+	   B.[ID_],
+	    B.[DYL_],
+	    B.[DYLMC_],
+		B.[Hierarchy_ID_],
+		B.[Hierarchy_Key_],
+		B.[Sort_],
+		B.[Status_],
+		B.[IsDelete_],
+		B.[Remark_],
+		B.[CanYouEdit_],
+		B.[CanYouDelete_],
+		B.[IsStandard_],
+		B.[CdmpVersion_]
+	   	  from ##METADATA_B_DWDXXBZDMYS_TEMP B join METADATA_B_DWDXXBZDMYS A ON
+	  B.ID_=A.ID_ AND (
+      A.[DYL_]!=B.[DYL_]
+	  OR A.[DYLMC_]!=B.[DYLMC_]
+	  OR A.[Hierarchy_ID_]!=B.[Hierarchy_ID_]
+	  OR A.[Hierarchy_Key_]!=B.[Hierarchy_Key_]
+	  OR A.[Sort_]!=B.[Sort_]
+	  OR A.[Status_]!=B.[Status_]
+	  OR A.[IsDelete_]!=B.[IsDelete_]
+	  OR A.[Remark_]!=B.[Remark_]
+	  OR A.[CanYouEdit_]!=B.[CanYouEdit_]
+	   OR A.[CanYouDelete_]!=B.[CanYouDelete_]
+		 OR A.[IsStandard_]!=B.[IsStandard_]
+	   OR A.[CdmpVersion_]!=B.[CdmpVersion_]
+	  ) and B.IsStandard_=1 AND A.IsStandard_=1) b
+ WHERE   b.ID_=METADATA_B_DWDXXBZDMYS.ID_
+    </update>
+    <select id="getMetaDataTablesVo" resultType="com.saving.metadata.vo.MetaDataTablesVo">
+        select A.*,B.TypeName_ FROM METADATA_B_METADATATABLES A LEFT JOIN METADATA_B_HIERARCHY B ON A.MetadataTypeID_=
+        B.Id_
+        <where>
+            A.IsDelete_=0
+            <if test="name!=null and name!=''">
+                and (A.TableName_ like '%'+#{name}+'%' or A.ChineseTableName_ like '%'+#{name}+'%')
+            </if>
+            <if test="startTime!=null and startTime!='' and endTime!=null and endTime!=''">
+                and A.CreateTime_ between #{startTime} and #{endTime}
+            </if>
+            <if test="metadataTypeId!=null and metadataTypeId!='' ">
+                and A.MetadataTypeID_= #{metadataTypeId}
+            </if>
+            <if test="schoolCode!=null and schoolCode!='' ">
+                and A.SchoolCode_= #{schoolCode}
+            </if>
+            <if test="isStandard!=null">
+                and A.IsStandard_= #{isStandard}
+            </if>
+            <if test="tableStatus!=null">
+                and A.TableStatus_= #{tableStatus}
+            </if>
+            <if test="nature!=null">
+                and A.Nature_= #{nature}
+            </if>
+            order by A.MetadataTypeID_,cast(A.Sort_ as int),A.SortId_,A.CreateTime_ desc
+        </where>
+    </select>
+    <select id="syncMaxVersion" resultType="java.lang.String">
+        SELECT  MAX(VERSION) FROM (
+        select MAX(CdmpVersion_) AS VERSION from [dbo].[METADATA_B_METADATAFIELDS]
+        UNION ALL
+        select MAX(CdmpVersion_) AS VERSION from [dbo].[METADATA_B_METADATATABLES]
+        UNION ALL
+        select MAX(CdmpVersion_) AS VERSION from [dbo].[METADATA_B_OPTION]
+        UNION ALL
+        select MAX(CdmpVersion_) AS VERSION from [dbo].[METADATA_B_HIERARCHY] ) A
+    </select>
+    <select id="getDataLabelVo" resultType="com.saving.metadata.vo.DataLabelVo">
+        select * from ( SELECT '学校通用' AS yjlm
+        , CASE
+        WHEN name IN (
+        'DB_V_班主任',
+        'DB_V_场地信息',
+        'DB_V_调停补情况',
+        'DB_V_教学任务书',
+        'DB_V_场地信息',
+        'DB_V_课程信息',
+        'DB_V_培养计划',
+        'DB_V_系部教学秘书',
+        'DB_V_学生成绩',
+        'DB_V_周排课明细_教师',
+        'DB_V_周排课明细_学生',
+        'DB_V_周排课明细_学生名单',
+        'DB_VB_专业负责人'
+        ) THEN '教务类'
+        ELSE '通用数据集'
+        END AS ejlm
+        , CASE
+        WHEN name IN (
+        'DB_V_调停补情况',
+        'DB_V_教学任务书',
+        'DB_V_课程信息',
+        'DB_V_培养计划',
+        'DB_V_周排课明细_教师',
+        'DB_V_周排课明细_学生',
+        'DB_V_周排课明细_学生名单'
+        ) THEN '排课类'
+        WHEN name IN ('DB_V_学生成绩') THEN '成绩类'
+        ELSE '通用类'
+        END AS sjlm, name AS bqm
+        FROM EIC.DBO.SYSOBJECTS
+        WHERE NAME LIKE 'db_v%'
+        AND XType = 'v'
+        <if test="bqm!=null and bqm!=''">
+            and name like '%'+#{bqm}+'%'
+        </if>
+        ) a
+        ORDER BY yjlm, ejlm, sjlm
+    </select>
+    <select id="getCheckTableCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM sys.objects WHERE object_id = OBJECT_ID(#{tableName})
+    </select>
+    <select id="findCountList" resultType="com.saving.metadata.vo.WelcomeVo">
+        select (select count(1) from METADATA_B_METADATATABLES  where IsDelete_  =0)   AS sjb,
+(select count(1)  from METADATA_B_METADATATABLES  where Nature_  =1  AND IsDelete_  =0  and IsStandard_ =1) as jcbsl,
+(select count(1) from METADATA_B_METADATAFIELDS where TableID_ in(select ID_ from METADATA_B_METADATATABLES  where Nature_  =1  AND IsDelete_  =0  and IsStandard_ =1) AND IsDelete_  =0)   as jcbzdsl,
+(select count(1)  from METADATA_B_METADATATABLES  where Nature_  =1  AND IsDelete_  =0  and IsStandard_ =1 and TableStatus_ =1 )as jcysybsl,
+(select count(1)  from METADATA_B_METADATATABLES  where Nature_  =2  AND IsDelete_  =0  and IsStandard_ =1) as kzbsl,
+(select count(1)  from METADATA_B_METADATAFIELDS where TableID_ in(select ID_ from METADATA_B_METADATATABLES  where Nature_  =2  AND IsDelete_  =0  and IsStandard_ =1) AND IsDelete_  =0 )as kzzdsl,
+(select count(1) from METADATA_B_METADATATABLES  where Nature_  =2  AND IsDelete_  =0  and IsStandard_ =1 and TableStatus_ =1 ) as kzysybsl,
+(select count(1)  from METADATA_B_METADATAFIELDS where TableID_ in(select ID_ from METADATA_B_METADATATABLES  where Nature_  =2  AND IsDelete_  =0  and IsStandard_ =1 and TableStatus_ =1 ) AND IsDelete_  =0 )as kzysybzd,
+(select count(1)  from METADATA_B_API_TABLE where IsDelete_=0 and Is_sjyxt_=1)as sjyxtsl ,
+(select count(1)  from METADATA_B_API_TABLE where IsDelete_=0 and Is_sjmbxt_=1)as sjmbxtsl
+
+    </select>
+    <select id="findChartsData" resultType="org.apache.commons.collections4.map.LinkedMap">
+
+        select '校本数据中台' AS name, '校本数据中台' AS showName, count(1) value,30 symbolSize,'' as category from
+        METADATA_B_METADATATABLES WHERE IsDelete_ = 0
+        UNION ALL
+        SELECT ID_,TypeName_,(select count(1) from METADATA_B_METADATATABLES WHERE IsDelete_ = 0 AND MetadataTypeID_ =
+        A.ID_) value ,15 symbolSize,ID_ as category FROM METADATA_B_HIERARCHY A
+        WHERE
+        Parent_ IN (SELECT SortId_ FROM METADATA_B_HIERARCHY WHERE TypeKey_ ='SJBZJ' AND Parent_ = 0 AND IsDelete_ =0)
+        AND
+        IsDelete_ =0
+        UNION ALL
+        select ID_,ChineseTableName_+'('+TableName_+')',(select count(1) from METADATA_B_METADATAFIELDS WHERE IsDelete_
+        = 0 AND TableID_ = A.ID_) value ,8 symbolSize,ID_ as category from METADATA_B_METADATATABLES A WHERE IsDelete_ =
+        0
+        <!--UNION ALL
+        select   FiledNumber_,ChineseFiledName_+'('+FiledName_+')',(select count(1) from METADATA_B_METADATAFIELDS WHERE IsDelete_ = 0 AND FiledNumber_ = A.ReferenceNumber_) value,3 symbolSize,TableID_ as category  from METADATA_B_METADATAFIELDS A WHERE IsDelete_ = 0-->
+    </select>
+    <select id="findChartsLinks" resultType="org.apache.commons.collections4.map.LinkedMap">
+SELECT    '校本数据中台' AS source,ID_ as target,  '校本数据中台->'+ TypeName_ as showName  FROM METADATA_B_HIERARCHY  A
+WHERE
+Parent_ IN (SELECT SortId_ FROM METADATA_B_HIERARCHY  WHERE TypeKey_ ='SJBZJ' AND Parent_  = 0   AND IsDelete_ =0)
+AND
+IsDelete_ =0
+UNION ALL
+select   A.MetadataTypeID_ ,A.ID_,B.TypeName_+'->'+A.ChineseTableName_+'('+A.TableName_+')' from METADATA_B_METADATATABLES A left join METADATA_B_HIERARCHY B  ON A.MetadataTypeID_ = B.ID_ WHERE A.IsDelete_ = 0
+UNION ALL
+select   TableID_ ,FiledNumber_,A.TableName_+'->'+A.ChineseFiledName_+'('+A.FiledName_+')' from METADATA_B_METADATAFIELDS A WHERE IsDelete_ = 0
+UNION ALL
+select  B.TableID_,A.TableID_, b.TableName_+'->'+A.TableName_  from METADATA_B_METADATAFIELDS A
+join METADATA_B_METADATAFIELDS B ON A.ReferenceNumber_ = B.FiledNumber_
+WHERE A.IsDelete_ = 0 and A.ReferenceNumber_ is not null and A.ReferenceNumber_!=''
+and B.IsDelete_=0  GROUP BY  B.TableID_,A.TableID_, b.TableName_+'->'+A.TableName_
+    </select>
+    <select id="findChartsCategories" resultType="org.apache.commons.collections4.map.LinkedMap">
+SELECT   ID_ as name FROM METADATA_B_HIERARCHY  A
+WHERE
+Parent_ IN (SELECT SortId_ FROM METADATA_B_HIERARCHY  WHERE TypeKey_ ='SJBZJ' AND Parent_  = 0   AND IsDelete_ =0)
+AND
+IsDelete_ =0
+UNION ALL
+select ID_ from METADATA_B_METADATATABLES A WHERE IsDelete_ = 0
+    </select>
+    <select id="mapperListPage" resultType="com.saving.metadata.vo.MetaDataTablesVo">
+        select A.*,B.TypeName_ FROM METADATA_B_METADATATABLES A LEFT JOIN METADATA_B_HIERARCHY B ON A.MetadataTypeID_=
+        B.Id_
+        <where>
+            A.IsDelete_=0
+            <if test="schoolCode!=null and schoolCode!='' ">
+                and A.SchoolCode_= #{schoolCode}
+            </if>
+            <if test="list != null and list.size()>0">
+                and a.id_ in (
+                <foreach collection="list" item="list" separator=",">
+                    #{list}
+                </foreach>
+                )
+            </if>
+        </where>
+        order by A.MetadataTypeID_,cast(A.Sort_ as int),A.SortId_,A.CreateTime_ desc
+    </select>
+    <select id="findApiParamDto" resultType="org.apache.commons.collections4.map.LinkedMap">
+        select
+        <if test="selectField.size()>0">
+            <foreach collection="selectField" item="list" separator=",">
+                ${list}
+            </foreach>
+        </if>
+        <if test="selectField.size()==0">
+            *
+        </if>
+        from ${tableName}
+        <where>
+            <foreach collection="filterField" item="list" separator=" and ">
+                ${list.fieldName} ${list.filterType} #{list.values}
+            </foreach>
+        </where>
+    </select>
+    <select id="findApiParamDtoNoPage" resultType="org.apache.commons.collections4.map.LinkedMap">
+        select
+        <if test="selectField.size()>0">
+            <foreach collection="selectField" item="list" separator=",">
+                ${list}
+            </foreach>
+        </if>
+        <if test="selectField.size()==0">
+            *
+        </if>
+        from ${tableName}
+        <where>
+            <foreach collection="filterField" item="list" separator=" and ">
+                ${list.fieldName} ${list.filterType} #{list.values}
+            </foreach>
+        </where>
+    </select>
+    <update id="apiUpdateData">
+        update ${tableName}
+        SET
+        <foreach collection="updateField" item="list" separator=",">
+            ${list.fieldName} = #{list.values}
+        </foreach>
+        <where>
+            <foreach collection="filterField" item="list" separator=" and ">
+                ${list.fieldName} ${list.filterType} #{list.values}
+            </foreach>
+        </where>
+    </update>
+
+
+</mapper>

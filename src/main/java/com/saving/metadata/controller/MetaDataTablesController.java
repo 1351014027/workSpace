@@ -1,0 +1,354 @@
+package com.saving.metadata.controller;
+
+
+import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.common.ServerResponse;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.pojo.MetaDataFileds;
+import com.saving.metadata.pojo.MetaDataTables;
+import com.saving.metadata.service.MetaDataFiledsService;
+import com.saving.metadata.service.MetaDataTablesService;
+import com.saving.metadata.service.OperationTableLogService;
+import com.saving.metadata.utils.DateUtil;
+import com.saving.metadata.utils.UUID64Utils;
+import com.saving.metadata.vo.AicTablesVo;
+import com.saving.metadata.vo.DataLabelVo;
+import com.saving.metadata.vo.MetaDataTablesVo;
+import com.saving.metadata.vo.ProgressSingleton;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 前端控制器
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2019-12-18
+ */
+@RestController
+@RequestMapping("/metadata/metaDataTables")
+@Slf4j
+@Api(tags = "元数据表控制器")
+public class MetaDataTablesController {
+
+    private final MetaDataTablesService metaDataTablesService;
+    private final MetaDataFiledsService metaDataFiledsService;
+    private final OperationTableLogService operationTableLogService;
+
+    @Autowired
+    public MetaDataTablesController(MetaDataTablesService metaDataTablesService, MetaDataFiledsService metaDataFiledsService, OperationTableLogService operationTableLogService) {
+        this.metaDataTablesService = metaDataTablesService;
+        this.metaDataFiledsService = metaDataFiledsService;
+        this.operationTableLogService = operationTableLogService;
+    }
+
+    @PostMapping(value = "deletes.json")
+    @ApiOperation(value = "批量删除接口", notes = "字段删除")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "ids", value = "对象主键组", required = true, paramType = "query")
+    })
+    public ServerResponse del(@RequestBody List<String> ids) {
+        if (!ids.isEmpty()) {
+            ArrayList<MetaDataTables> lists = new ArrayList<>(metaDataTablesService.listByIds(ids));
+            if (lists.isEmpty()) {
+                throw new ParamException("删除的记录不存在！");
+            }
+            metaDataTablesService.removeByIds(ids);
+            metaDataFiledsService.remove(new QueryWrapper<MetaDataFileds>().lambda().in(MetaDataFileds::getTableId, ids));
+            //删除后进行字段记录版本号的更新操作
+            metaDataFiledsService.update(MetaDataFileds.builder().cdmpVersion(DateUtil.getYyyyMmDd()).build(), new QueryWrapper<MetaDataFileds>().lambda().in(MetaDataFileds::getTableId, ids));
+            //删除后进行表格记录版本号的更新操作
+            metaDataTablesService.update(MetaDataTables.builder().cdmpVersion(DateUtil.getYyyyMmDd()).build(), new QueryWrapper<MetaDataTables>().lambda().in(MetaDataTables::getId, ids));
+            delDataBase(ids);
+            StringBuilder tableName = new StringBuilder();
+            lists.forEach(obj -> tableName.append(obj.getTableName()).append("(").append(obj.getChineseTableName()).append("),"));
+            if (tableName.length() > 0) {
+                operationTableLogService.saveLog(tableName.substring(0, tableName.toString().length() - 1), "批量删除表-记录删除", "删除表-记录批量删除成功!");
+            }
+        }
+
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "update.json")
+    @ApiOperation(value = "更新接口", notes = "更新类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "metaDataTables", value = "对象，用于更新", required = true, paramType = "query")
+    })
+    public ServerResponse update(MetaDataTables metaDataTables) {
+        MetaDataTables byId = metaDataTablesService.getById(metaDataTables.getId());
+        if (byId == null) {
+            throw new ParamException("待更新的对象不存在!");
+        }
+        if (StringUtils.isEmpty(metaDataTables.getTableName()) || StringUtils.isEmpty(metaDataTables.getChineseTableName())) {
+            throw new ParamException("英文表名和中文表名不能为空!");
+        }
+        if (checkExist(metaDataTables.getTableName(), metaDataTables.getId())) {
+            throw new ParamException("存在相同的英文表名");
+        }
+        if (StringUtils.isEmpty(metaDataTables.getMetadataTypeId())) {
+            throw new ParamException("元数据类型不能为空!");
+        }
+        if (StringUtils.isEmpty(metaDataTables.getCatalog())) {
+            throw new ParamException("目录不能为空!");
+        }
+        if ((!byId.getTableName().equals(metaDataTables.getTableName())) && StringUtils.isNotEmpty(metaDataTables.getTableName())) {
+            metaDataFiledsService.update(MetaDataFileds.builder().tableId(byId.getId()).tableName(metaDataTables.getTableName() + "(" + metaDataTables.getChineseTableName() + ")")
+                    .cdmpVersion(DateUtil.getYyyyMmDd())
+                    .build(), new UpdateWrapper<MetaDataFileds>().lambda()
+                    .eq(MetaDataFileds::getTableId, byId.getId())
+                    .eq(MetaDataFileds::getIsDelete, 0)
+                    .eq(MetaDataFileds::getSchoolCode, RequestHolder.getCurrenSysUser().getSchoolCode()));
+        }
+        //进行表格记录版本号的更新操作
+        metaDataTables.setCdmpVersion(DateUtil.getYyyyMmDd());
+        metaDataTablesService.updateById(metaDataTables);
+        operationTableLogService.saveLog(metaDataTables.getTableName(), metaDataTables.getChineseTableName(), "更新表记录", "更新前:" + JSONObject.fromObject(byId).toString() + "<br/>更新后:" + JSONObject.fromObject(metaDataTables).toString());
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "save.json")
+    @ApiOperation(value = "新增接口", notes = "新增类型")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "metaDataTables", value = "对象，用于新增", required = true, paramType = "query")
+    })
+    public ServerResponse save(MetaDataTables metaDataTables) {
+        if (StringUtils.isEmpty(metaDataTables.getTableName()) || StringUtils.isEmpty(metaDataTables.getChineseTableName())) {
+            throw new ParamException("英文表名和中文表名不能为空!");
+        }
+        if (StringUtils.isEmpty(metaDataTables.getMetadataTypeId())) {
+            throw new ParamException("元数据类型不能为空!");
+        }
+        if (checkExist(metaDataTables.getTableName(), null)) {
+            throw new ParamException("存在相同的英文表名");
+        }
+        if (StringUtils.isEmpty(metaDataTables.getCatalog())) {
+            throw new ParamException("目录不能为空!");
+        }
+        metaDataTables.setId(UUID64Utils.get64UUIDString());
+        metaDataTables.setTableName(metaDataTables.getTableName().replaceAll(" ", ""));
+        //进行表格记录版本号的更新操作
+        metaDataTables.setCdmpVersion(DateUtil.getYyyyMmDd());
+        metaDataTablesService.save(metaDataTables);
+        operationTableLogService.saveLog(metaDataTables.getTableName(), metaDataTables.getChineseTableName(), "新增表记录", "新增记录:" + JSONObject.fromObject(metaDataTables).toString() + "<br/>");
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping("listPage.json")
+    @ApiOperation(value = "选项分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "startDate", value = "过滤上传日期开始时间"),
+            @ApiImplicitParam(name = "endDate", value = "过滤上传日期结束时间"),
+            @ApiImplicitParam(name = "metaDataTables", value = "对象，用于过滤")
+    })
+    public ServerResponse<Page<MetaDataTablesVo>> listPage(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize
+            , MetaDataTables metaDataTables
+            , String startDate
+            , String endDate) {
+        Page<MetaDataTablesVo> page = metaDataTablesService.getMetaDataTablesVo(new Page<>(pageNum, pageSize),
+                metaDataTables.getTableName(), metaDataTables.getIsStandard()
+                , metaDataTables.getTableStatus(), startDate, endDate, metaDataTables.getMetadataTypeId(), metaDataTables.getNature());
+        return ServerResponse.createBySuccess(page);
+    }
+
+    @PostMapping("updateSort.json")
+    @ApiOperation(value = "更新排序接口", notes = "两个排序对象ID必须传")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "oneId", value = "第一个交换sort值的对象", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "twoId", value = "第二个交换sort值的对象", required = true, paramType = "query")
+    })
+    public ServerResponse updateSort(String oneId, String twoId) {
+        if (StringUtils.isBlank(oneId) || StringUtils.isBlank(twoId)) {
+            return ServerResponse.createByErrorMessage(ResponseCode.ERRORPARAM);
+        }
+        MetaDataTables fileStore1 = metaDataTablesService.getById(oneId), fileStore2 = metaDataTablesService.getById(twoId);
+        String store1Sort = fileStore1.getSort(), store2Sort = fileStore2.getSort();
+        MetaDataTables fileStoreOne = MetaDataTables.builder().id(fileStore1.getId()).cdmpVersion(DateUtil.getYyyyMmDd())
+                .sort(store2Sort).build(),
+                fileStoreTwo = MetaDataTables.builder().id(fileStore2.getId()).cdmpVersion(DateUtil.getYyyyMmDd())
+                        .sort(store1Sort).build();
+        metaDataTablesService.updateById(fileStoreOne);
+        metaDataTablesService.updateById(fileStoreTwo);
+        operationTableLogService.saveLog(fileStoreOne.getTableName(), fileStoreOne.getChineseTableName(), "表更换排序", "[" + fileStoreOne.getChineseTableName() + "]和[" + fileStoreTwo.getChineseTableName() + "]互相交换排序");
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping("updateSortUser.json")
+    @ApiOperation(value = "更新排序接口", notes = "两个排序对象ID必须传")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "oneId", value = "第一个交换sort值的对象", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "twoId", value = "第二个交换sort值的对象", required = true, paramType = "query")
+    })
+    public ServerResponse updateSortUser(String oneId, String twoId) {
+        if (StringUtils.isBlank(oneId) || StringUtils.isBlank(twoId)) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        MetaDataTables fileStore1 = metaDataTablesService.getById(oneId), fileStore2 = metaDataTablesService.getById(twoId);
+        if (fileStore1 == null || fileStore2 == null) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        String store1Sort = String.valueOf(Integer.parseInt(fileStore2.getSort()) - 1);
+        MetaDataTables fileStoreOne = MetaDataTables.builder().id(fileStore1.getId()).sort(store1Sort).cdmpVersion(DateUtil.getYyyyMmDd()).build();
+        metaDataTablesService.updateById(fileStoreOne);
+        operationTableLogService.saveLog(fileStoreOne.getTableName(), fileStoreOne.getChineseTableName(), "表更换排序", "[" + fileStoreOne.getChineseTableName() + "]更换排序到[" + fileStore2.getChineseTableName() + "]之前");
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping("import.json")
+    @ResponseBody
+    @ApiOperation(value = "批量导入", notes = "批量导入")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "file", value = "文件流", required = true, paramType = "query"),
+    })
+    public ServerResponse<? extends Object> importExcel(@RequestParam(value = "file", required = false) MultipartFile file, String metadataTypeId, Integer isStandard) throws IOException {
+        metaDataTablesService.importExcel(EasyExcel.read(file.getInputStream()).sheet().doReadSync(), metadataTypeId, isStandard);
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping(value = "createDataBase.json")
+    @ApiOperation(value = "生成表接口", notes = "生成表")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "ids", value = "对象主键组", required = true, paramType = "query")
+    })
+    public ServerResponse createDataBase(@RequestBody List<String> ids) {
+        if (!ids.isEmpty()) {
+            metaDataTablesService.createDataBase(ids);
+        }
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "createDataBaseBZ.json")
+    @ApiOperation(value = "生成未创建云端标准表接口", notes = "生成未创建云端标准表接口")
+    public ServerResponse createDataBaseBZ() {
+        List ids = metaDataTablesService.listObjs(new QueryWrapper<MetaDataTables>().lambda()
+                .select(MetaDataTables::getId).eq(MetaDataTables::getIsStandard, 1).eq(MetaDataTables::getTableStatus, 0));
+        if (CollectionUtils.isNotEmpty(ids)) {
+            metaDataTablesService.createDataBase(ids);
+        }
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping(value = "delDataBase.json")
+    @ApiOperation(value = "删除表接口", notes = "删除表")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "ids", value = "对象主键组", required = true, paramType = "query")
+    })
+    public ServerResponse delDataBase(@RequestBody List<String> ids) {
+        if (!ids.isEmpty()) {
+            metaDataTablesService.delDataBase(ids);
+        }
+        return ServerResponse.createBySuccess();
+    }
+
+    @PostMapping(value = "syncDataBase.json")
+    @ApiOperation(value = "批量更新表状态，字段数量接口", notes = "批量更新表状态，字段数量")
+    public ServerResponse syncDataBase() {
+        metaDataTablesService.syncDataBase();
+        return ServerResponse.createBySuccess();
+    }
+
+
+    @PostMapping("ztptListPage.json")
+    @ApiOperation(value = "选项分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query")
+    })
+    public ServerResponse<Page<AicTablesVo>> ztptListPage(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize) {
+        Page<AicTablesVo> page = metaDataTablesService.getZtptListPage(new Page<>(pageNum, pageSize));
+        return ServerResponse.createBySuccess(page);
+    }
+
+    private Boolean checkExist(String tableName, String id) {
+        return metaDataTablesService.count(new QueryWrapper<MetaDataTables>().lambda().eq(MetaDataTables::getTableName, tableName).ne(StringUtils.isNotEmpty(id), MetaDataTables::getId, id)) > 0;
+    }
+
+    @CrossOrigin
+    @PostMapping(value = "syncAllData.json")
+    @ApiOperation(value = "同步获取接口", notes = "同步获取")
+    public ServerResponse syncAllData() {
+        return metaDataTablesService.syncAllData();
+    }
+
+    @CrossOrigin
+    @PostMapping(value = "syncMaxVersion.json")
+    @ApiOperation(value = "获取最大版本号接口", notes = "获取最大版本号")
+    public ServerResponse syncMaxVersion() {
+        return metaDataTablesService.syncMaxVersion();
+    }
+
+    @PostMapping("updateSync.json")
+    @ApiOperation(value = "内部访问接口进行更新操作", notes = "内部访问接口进行更新操作")
+    public ServerResponse updateSync(String str) {
+        return ServerResponse.createBySuccess(metaDataTablesService.updateSync(str));
+    }
+
+    @PostMapping("updateSyncSingleton.json")
+    @ApiOperation(value = "内部访问接口更新进度操作", notes = "内部访问接口更新进度操作")
+    public ServerResponse updateSyncSingleton(String str) {
+        Object progress = ProgressSingleton.get(str + RequestHolder.getCurrenSysUser().getUsername());
+        progress = progress == null ? 0 : progress;
+        return ServerResponse.createBySuccess(progress);
+    }
+
+    @PostMapping("dataLabelVoList.json")
+    @ApiOperation(value = "数据标签分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "第几页", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "每页几条", required = true, paramType = "query")
+    })
+    public ServerResponse<Page<DataLabelVo>> dataLabelVoList(
+            @RequestParam(defaultValue = ResponseCode.PAGENUM) int pageNum
+            , @RequestParam(defaultValue = ResponseCode.PAGESIZE) int pageSize
+            , DataLabelVo dataLabelVo) {
+        Page<DataLabelVo> page = metaDataTablesService.getDataLabelVo(new Page<>(pageNum, pageSize),
+                dataLabelVo.getBqm());
+        return ServerResponse.createBySuccess(page);
+    }
+
+    @PostMapping("theDataMap.json")
+    @ApiOperation(value = "数据地图查询接口", notes = "关系图表渲染")
+    public ServerResponse<List<List<Map<String, String>>>> theDataMap() {
+        return ServerResponse.createBySuccess(metaDataTablesService.findTheDataMap());
+    }
+
+    @PostMapping("mapperListPage.json")
+    @ApiOperation(value = "选项分页查询接口", notes = "物理分页")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "list", value = "过滤的表格ID")
+    })
+    public ServerResponse<List<MetaDataTablesVo>> mapperListPage(@RequestBody(required = false) List<String> ids) {
+        List<MetaDataTablesVo> page = metaDataTablesService.mapperListPage(ids);
+        return ServerResponse.createBySuccess(page);
+    }
+}
+

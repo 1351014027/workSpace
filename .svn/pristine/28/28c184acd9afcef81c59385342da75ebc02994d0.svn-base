@@ -1,0 +1,65 @@
+package com.saving.metadata.dto;
+
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.saving.metadata.param.ApiTableParam;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+
+import java.util.List;
+
+/**
+ * @author: 朱柯辉
+ * @date: 2020/7/6 10:55
+ * @Description: Api网关参数类
+ */
+@Data
+@Builder
+@EqualsAndHashCode(callSuper = false)
+public class ApiParamDto extends Model<ApiTableParam> {
+
+    private static final long serialVersionUID = 1L;
+
+    private String operationType;
+
+    private String tableName;
+
+    private List<String> selectField;
+
+    private List<FilterField> filterField;
+
+    private List<FilterField> updateField;
+
+    private Boolean isPage;
+
+    private Integer pageNum;
+
+    private Integer pageSize;
+
+    private String apiKey;
+
+    private String schoolCode;
+
+    private String softwareNumber;
+
+
+    @Tolerate
+    public ApiParamDto() {
+    }
+
+    @Data
+    @Builder
+    @EqualsAndHashCode(callSuper = false)
+    public static class FilterField {
+        private String fieldName;
+        private String filterType;
+        private String values;
+
+        @Tolerate
+        public FilterField() {
+        }
+    }
+
+
+}

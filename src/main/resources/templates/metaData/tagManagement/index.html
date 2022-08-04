@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">标签管理</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <div class="xm-select-demo" id="hierarchy" style="width: 200px"></div>
+                </div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="labelName" placeholder="标签名称(模糊查询)"
+                           type="text">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" id="sav-find-submit"
+                            lay-filter="sav-find-submit" lay-submit="">查找
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-card-body">
+            <table id="metadata-tagManagement" lay-filter="metadata-tagManagement"></table>
+        </div>
+    </div>
+</div>
+<script id="TableTopToolbar" type="text/html">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm " lay-event="DataBaseLabelCreate">引用业务视图并新增标签</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="UserLabelCreate">创建业务视图并新增标签</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+<script id="TableToolbar" type="text/html">
+    <button class="layui-btn layui-btn-xs" lay-event="LabelUpdate">标签编辑</button>
+    <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="FiledUpdate">字段编辑</button>
+</script>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+
+    .layui-table-cell {
+        white-space: normal;
+        height: auto !important;
+    }
+</style>
+<script id="labelTemplate" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">元数据类型:</label>
+            <div class="layui-input-block">
+                <div id="hierarchyId" class="xm-select-demo" style="width: 100%"></div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">英文名称:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="labelName"
+                       placeholder="请输入标签英文名称" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">中文名称:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="labelZnName"
+                       placeholder="请输入标签中文名称" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">数据来源:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input"
+                       name="databaseName"
+                       placeholder="请输入标签数据来源" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">标签描述:</label>
+            <div class="layui-input-block">
+                <textarea class="layui-textarea" name="labelNameDescribe" placeholder="标签描述"
+                          style="height: 150px"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-label-save" value="下一步并保存">
+            <input type="button" lay-submit lay-filter="sav-label-update" value="编辑保存">
+        </div>
+    </div>
+</script>
+<script id="labelFieldTemplate" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">英文名:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="labelFiledName"
+                       placeholder="请输入字段英文名称" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">中文名:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="labelFiledZnName"
+                       placeholder="请输入字段中文名称" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">数据来源:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="labelFiledSource"
+                       placeholder="请输入字段数据来源" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">字段描述:</label>
+            <div class="layui-input-block">
+                <textarea class="layui-textarea" name="labelFiledDescribe" placeholder="字段描述"
+                          style="height: 150px"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-label-save" value="下一步并保存">
+            <input type="button" lay-submit lay-filter="sav-label-update" value="编辑保存">
+        </div>
+    </div>
+</script>
+<script id="labelFiledRowTemplate" type="text/html">
+    <div class="layui-form-item labelFiledRow" style="box-shadow: 0 1px 2px 0 rgba(0,0,0,0.22);">
+        <div class="layui-col-md10">
+            <div class="layui-col-md6">
+                <label class="layui-form-label">字段英文名:</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                           name="labelFiledName"
+                           placeholder="请输入标签数据来源" type="text">
+                </div>
+            </div>
+            <div class="layui-col-md6">
+                <label class="layui-form-label">字段中文名:</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                           name="labelFiledZnName"
+                           placeholder="请输入标签数据来源" type="text">
+                </div>
+            </div>
+            <div class="layui-col-md12" style="margin: 15px 0 15px 0;">
+                <label class="layui-form-label">字段描述:</label>
+                <div class="layui-input-block">
+                <textarea class="layui-textarea" name="labelFiledDescribe" placeholder="标签描述"
+                          style="height: 100px"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md2">
+            <button class="layui-btn layui-btn-xs layui-btn-normal labelFiledCreateRow"><i class="layui-icon"
+                                                                                           style="font-size: 36px !important">&#xe654;</i>
+            </button>
+            <button class="layui-btn layui-btn-xs layui-btn-danger labelFiledDeleteRow"><i class="layui-icon"
+                                                                                           style="font-size: 36px !important">&#xe640;</i>
+            </button>
+        </div>
+    </div>
+</script>
+<script id="labelFiledTemplate" type="text/html">
+    <style>
+        .layui-btn + .layui-btn {
+            margin-left: 0px;
+        }
+
+        #sav-layer-labelFiledTemplate div.layui-form-item button.layui-btn {
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+        }
+
+        #sav-layer-labelFiledTemplate div.layui-form-item div.layui-col-md2 {
+            line-height: 153px;
+            text-align: center;
+        }
+
+    </style>
+    <div class="layui-form" lay-filter="labelFiledForm" style="padding: 20px 30px 0  30px;">
+
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-labelFiled-save" value="保存">
+            <input type="button" lay-submit lay-filter="sav-labelFiled-update" value="编辑保存">
+        </div>
+    </div>
+</script>
+<script id="labelFiledTableTemplate" type="text/html">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="labelFiledName" placeholder="字段(中英文模糊查询)"
+                           type="text">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm"
+                            lay-filter="sav-findFiled-submit" lay-submit="">查找
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-card-body">
+            <table id="{{d.tableName}}" lay-filter="{{d.tableName}}"></table>
+            <div class="layui-hide" id="FieldTableToolbar">
+                <button class="layui-btn layui-btn-xs" lay-event="Update">编辑</button>
+                <button class="layui-btn layui-btn-xs layui-btn-warm" lay-event="updateSort">排序</button>
+            </div>
+            <div id="FieldTableTopToolbar" class="layui-hide">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="Create">创建</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="Del">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script id="DataBaseLabelCreateTableTemplate" type="text/html">
+    <div class="layui-form" lay-filter="DataBaseLabelCreateTable" style="margin: 0 15px">
+        <div class="layui-col-md6">
+            <div class="layui-card-header" style="margin:10px 10px">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <input autocomplete="off" class="layui-input" name="tableName" placeholder="表名称(中英文模糊查询)"
+                               type="text">
+                    </div>
+                </div>
+            </div>
+            <blockquote class="layui-elem-quote" style="margin-bottom: 0;">
+                <strong>注意：</strong>主表与关联表的关系必须是一对一关系方可建立，否则会造成记录重复
+            </blockquote>
+            <div class="layui-card-body">
+                <table id="DataBaseLabelCreateTable" lay-filter="DataBaseLabelCreateTable"></table>
+            </div>
+        </div>
+        <div class="layui-col-md6">
+            <div class="layui-col-md2" id="btnGroup" style="text-align: center">
+                <div id="btnOne">
+                    <button class="layui-btn layui-btn-sm layui-btn-danger removePitchOn" style="margin:0;">移除选中
+                    </button>
+                </div>
+                <div id="btnTwo" style="margin-top: 20px">
+                    <button class="layui-btn layui-btn-sm layui-btn-primary setPrimaryTable" style="margin:0;">设置主表
+                    </button>
+                </div>
+                <div id="btnThere" style="margin-top: 20px">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal setMapperTable" style="margin:0;">设置关联表
+                    </button>
+                </div>
+            </div>
+            <div class="layui-col-md10">
+                <div class="layui-card">
+                    <div class="layui-card-header" style="font-size: 24px">选中的主表</div>
+                    <div class="layui-card-body">
+                        <table id="checkPrimaryTable" lay-filter="checkPrimaryTable"></table>
+                    </div>
+                </div>
+                <div class="layui-card">
+                    <div class="layui-card-header" style="font-size: 24px">选中的关联表</div>
+                    <div class="layui-card-body">
+                        <table id="checkMapperTable" lay-filter="checkMapperTable"></table>
+                    </div>
+                </div>
+                <div class="layui-row">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" style="margin-left: 70%" id="nextBtn">下一步
+                    </button>
+                    <button class="layui-btn layui-btn-sm layui-btn-primary" id="closeOpenOne">关闭</button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="sav-DataBaseLabelCreateTable-save" value="保存">
+            <input type="button" lay-submit lay-filter="sav-DataBaseLabelCreateTable-update" value="编辑保存">
+        </div>
+    </div>
+</script>
+<script id="DataBaseLabelCreateMapperTemplate" type="text/html">
+    <div class="layui-form" lay-filter="DataBaseLabelCreateTable" style="margin: 0 15px">
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header" style="margin:10px 10px">
+                    <span style="font-size: 24px">关联关系</span>
+                </div>
+                <div class="layui-card-body">
+                    <table id="setMapperTable" lay-filter="setMapperTable"></table>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header" style="margin:10px 10px">
+                    <span style="font-size: 24px">显示字段</span>
+                    <span style="float: right">
+                <button class="layui-btn layui-btn-sm " id="showField">新增</button>
+            </span>
+                </div>
+                <div class="layui-card-body">
+                    <table id="showFieldTable" lay-filter="showFieldTable"></table>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row">
+            <button class="layui-btn layui-btn-sm layui-btn-normal" style="margin-left: 80%;margin-top: 20px"
+                    id="createView">提交
+            </button>
+            <button class="layui-btn layui-btn-sm layui-btn-primary" id="closeOpenTwo" style=";margin-top: 20px">关闭
+            </button>
+        </div>
+    </div>
+    <div id="DataBaseLabelCreateMapperTemplateTopToolbar" class="layui-hide">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="Del">删除</button>
+        </div>
+    </div>
+</script>
+<script id="DataBaseLabelCreateFieldTemplate" type="text/html">
+
+</script>
+<script id="tableTemplate" type="text/html">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table id="TemplateTable" lay-filter="TemplateTable"></table>
+        </div>
+    </div>
+</script>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'xmSelect', 'laytpl'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , xmSelect = layui.xmSelect
+            , table = layui.table
+            , laytpl = layui.laytpl
+            , SavingFunction = layui.SavingFunction
+            , treeData = []
+            , mapData = new Map()
+            , field = [
+                {type: 'checkbox'},
+                {type: 'numbers', title: '序号', align: 'center'}
+                , {
+                    field: 'hierarchyName', title: '所属类型', align: 'center', templet: function (d) {
+                        return d.hierarchyName ? d.hierarchyName : '<span class="layui-badge layui-bg-gray">未设置</span>';
+                    }
+                }
+                , {field: 'labelName', title: '标签英文名称', align: 'center'}
+                , {field: 'labelZnName', title: '标签中文名称', align: 'center'}
+                , {field: 'labelNameDescribe', title: '标签释义'}
+                , {title: '操作', width: 200, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+            ],
+            labelField = [{type: 'checkbox'},
+                {type: 'numbers', title: '序号', align: 'center'}
+                , {field: 'labelFiledSource', title: '字段来源', align: 'center'}
+                , {field: 'labelFiledName', title: '字段英文名', align: 'center'}
+                , {field: 'labelFiledZnName', title: '字段中文名', align: 'center'}
+                , {field: 'labelFiledDescribe', title: '字段释义'}
+                , {title: '操作', width: 200, align: 'center', fixed: 'right', toolbar: '#FieldTableToolbar'}];
+        SavingFunction.req({
+            url: '[[@{/metadata/hierarchy/list.json}]]',
+            async: false,
+            data: {
+                level: '0.963'
+            },
+            done: function (res) {
+                mapData = SavingFunction.getListToMaps(res, 'id');
+                treeData = SavingFunction.toTree(res, 'sortId', true);
+            }
+        });
+        let delFunnction = (ids, url, tableObj) => {
+            if (ids.length < 1) {
+                return top.layer.msg('请选择一条记录后进行操作！');
+            }
+            top.layer.confirm('是否确认删除选中的记录（此操作不可逆，再次确认是否删除）?', {icon: 3, title: '提示'}, function (index) {
+                let loadingIndex = SavingFunction.loading();
+                SavingFunction.req({
+                    url: url
+                    , data: JSON.stringify(ids)
+                    , dataType: "json"
+                    , contentType: "application/json"
+                    , done: function () {
+                        top.layer.close(loadingIndex);
+                        SavingFunction.successMsg('删除成功！');
+                        tableObj.reload({page: {curr: 1}});
+                    }
+                });
+                top.layer.close(index);
+            });
+        }
+        let hierarchyOption = (el, data, name, on) => {
+            return {
+                el: el,
+                model: {label: {type: 'text'}},
+                radio: true,
+                clickClose: true,
+                name: name || '',
+                tree: {
+                    show: true,
+                    strict: false,
+                    expandedKeys: [-1]
+                },
+                height: 'auto',
+                data() {
+                    return data
+                },
+                on: on
+            }
+        }
+            , userTable = SavingFunction.intoTable({
+            id: 'metadata-tagManagement'
+            , url: '[[@{/metadata/label/list.json}]]'
+            , cols: [field]
+            , toolbar: '#TableTopToolbar'
+        })
+            , hierarchy = xmSelect.render(hierarchyOption('#hierarchy', treeData, 'hierarchy', (event) => {
+            userTable.reload({
+                where: {
+                    hierarchyId: $('input[name="hierarchy"]').val(),
+                    labelName: $('input[name="labelName"]').val()
+                }, page: {curr: 1}
+            });
+        }));
+        let searchTableData = () => {
+            userTable.reload({
+                where: {
+                    hierarchyId: $('input[name="hierarchy"]').val()
+                    , labelName: $('input[name="labelName"]').val()
+                }, page: {curr: 1}
+            });
+        };
+        $('input[name="labelName"]').keyup(() => searchTableData());
+        $('#sav-find-submit').click(() => searchTableData());
+        let createLabelFiled = (event) => {
+            top.layer.open({
+                title: '创建业务视图字段'
+                , type: 1
+                , id: 'sav-layer-labelFiledTemplate'
+                , content: labelFiledTemplate.innerHTML
+                , maxmin: true
+                , area: admin.screen() === 3 ? ['80%', '80%'] : ['95%', '95%']
+                , btn: ['下一步', '关闭']
+                , success(layero, index) {
+                    let rowHtml = labelFiledRowTemplate.innerHTML;
+                    $(layero).find('div.layui-form').append(rowHtml);
+                    $(layero).on('click', 'button.labelFiledCreateRow', () => {
+                        if ($(layero).find('div.labelFiledRow').length > 19) {
+                            SavingFunction.warnMsg('一次最多批量添加20条字段记录!');
+                        } else {
+                            $(layero).find('div.layui-form').append(rowHtml);
+                        }
+                    })
+                    $(layero).on('click', 'button.labelFiledDeleteRow', (e) => {
+                        if ($(layero).find('div.labelFiledRow').length > 1) {
+                            $(e.target).parents('div.labelFiledRow').remove();
+                        } else {
+                            SavingFunction.warnMsg('至少保留一条记录进行添加!');
+                        }
+                    })
+                }
+                , yes(index, layero) {
+                    top.layui.form.on('submit(sav-labelFiled-save)', () => {
+                        let rowData = [];
+                        if (!event.id) {
+                            return SavingFunction.errorMsg("标签暂未创建，请重新添加后尝试!");
+                        }
+                        $(layero).find('div.labelFiledRow').each((index, obj) => {
+                            rowData.push({
+                                labelFiledName: $(obj).find('input[name="labelFiledName"]').val(),
+                                labelFiledZnName: $(obj).find('input[name="labelFiledName"]').val(),
+                                labelFiledDescribe: $(obj).find('textarea[name="labelFiledDescribe"]').val(),
+                                labelParentId: event.id,
+                                labelFiledSource: event.databaseName
+                            })
+                        })
+                        SavingFunction.req({
+                            url: '[[@{/metadata/labelFiled/saves.json}]]'
+                            , data: JSON.stringify(rowData)
+                            , dataType: "json"
+                            , contentType: "application/json"
+                            , done: function (result) {
+                                SavingFunction.successMsg("添加成功!")
+                                top.layer.close(index);
+                            }
+                        });
+
+                    });
+                    $(layero).find('input[lay-filter="sav-labelFiled-save"]').click();
+                }
+            });
+        }
+        let labelLayerOpens = (isLabUpdate, curRowData, isCheckView) => {
+            let loadIndex = SavingFunction.loading(), btnName = isLabUpdate ? '保存' : '下一步';
+            top.layer.open({
+                title: isLabUpdate ? '创建业务视图' : '编辑业务视图'
+                , type: 1
+                , id: 'sav-layer-labelTemplate'
+                , content: labelTemplate.innerHTML
+                , maxmin: true
+                , area: admin.screen() === 3 ? ['60%', '65%'] : ['75%', '85%']
+                , btn: [btnName, '关闭']
+                , success(layero, index) {
+                    top.layui.use(['form', 'xmSelect'], function () {
+                        let hierarchyId = top.layui.xmSelect.render(hierarchyOption('#hierarchyId', treeData, 'hierarchyId'));
+                        if (isLabUpdate && curRowData) {
+                            if (curRowData.hierarchyId) {
+                                hierarchyId.setValue([curRowData.hierarchyId]);
+                            }
+                            $(layero).find('input[name="labelName"]').val(curRowData.labelName);
+                            $(layero).find('input[name="labelZnName"]').val(curRowData.labelZnName);
+                            $(layero).find('input[name="databaseName"]').val(curRowData.databaseName);
+                            $(layero).find('textarea[name="labelNameDescribe"]').text(curRowData.labelNameDescribe);
+                        }
+                        top.layui.form.render();
+                        top.layer.close(loadIndex);
+                    });
+                }
+                , yes(index, layero) {
+                    top.layui.form.on('submit(sav-label-' + (isLabUpdate ? 'update' : 'save') + ')', (formData) => {
+                        let field = formData.field;
+                        let hierarchy = mapData.get(field.hierarchyId);
+                        if (hierarchy) {
+                            field.hierarchyKey = hierarchy.typeKey;
+                            field.hierarchyName = hierarchy.typeName;
+                        }
+                        if (isLabUpdate && curRowData) {
+                            field.id = curRowData.id;
+                        }
+                        if (isCheckView) {
+                            field.isCheck = true
+                        }
+                        SavingFunction.req({
+                            url: '[[@{/metadata/label/}]]' + (isLabUpdate ? 'update' : 'save') + '.json',
+                            data: field,
+                            done: function (result) {
+                                if (!isLabUpdate) {
+                                    createLabelFiled(result);
+                                }
+                                if (isLabUpdate) {
+                                    SavingFunction.successMsg('修改成功!');
+                                }
+                                userTable.reload({page: {curr: 1}});
+                                top.layer.close(index);
+                            }
+                        });
+                    });
+                    $(layero).find('input[lay-filter="sav-label-' + (isLabUpdate ? 'update' : 'save') + '"]').click();
+                }
+            });
+        }
+        Object.values = (obj) => {
+            return Object.keys(obj).map(function (key) {
+                return obj[key];
+            });
+        }
+        table.on('toolbar(metadata-tagManagement)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-tagManagement');
+            let dabs = checkStatus.data;
+            let ids = [];
+            if (dabs.length > 0) {
+                dabs.forEach(obj => ids.push(obj.id));
+            }
+            switch (obj.event) {
+                case 'UserLabelCreate':
+                    labelLayerOpens(false, null, true);
+                    break;
+                case 'DataBaseLabelCreate':
+                    let tableCols = [
+                        {type: 'checkbox'}
+                        , {type: 'numbers', title: '序号', align: 'center'}
+                        , {
+                            field: 'tableName', title: '中文表名/表名', templet: function (d) {
+                                return d.chineseTableName
+                                    + '<span class="layui-badge layui-bg-orange" style="margin-left: 5px">' + d.tableName + '</span>';
+                            }
+                        }];
+                    let tableField = [
+                        {type: 'checkbox'}
+                        , {type: 'numbers', title: '序号', align: 'center'}
+                        , {
+                            field: 'tableName', title: '中文表名/表名', templet: function (d) {
+                                return d.chineseTableName
+                                    + '<span class="layui-badge layui-bg-orange" style="margin-left: 5px">' + d.tableName + '</span>';
+                            }
+                        }
+                    ];
+                    let loadIndex = SavingFunction.loading()
+                        , checkMapperMapTable = new Map()
+                        , checkPrimaryMapTable = new Map()
+                        , mapToObject = (map) => {
+                        let newObject = Object.create(null);
+                        map.forEach((obj, key, mapObj) => {
+                            newObject[key] = obj
+                        });
+                        return newObject;
+                    }
+                    layer.open({
+                        title: '选择表'
+                        , type: 1
+                        , id: 'sav-layer-DataBaseLabelCreateTableTemplate'
+                        , content: DataBaseLabelCreateTableTemplate.innerHTML
+                        , maxmin: true
+                        , area: ['95%', '95%']
+                        , success(layero, index) {
+                            top.layer.close(loadIndex);
+                            let checkMapperTable = SavingFunction.intoTable({
+                                id: 'checkMapperTable'
+                                , data: []
+                                , cols: [tableCols]
+                                , height: 'full-500'
+                                , page: false
+                                , limit: 100000
+                            })
+                                , checkPrimaryTable = SavingFunction.intoTable({
+                                id: 'checkPrimaryTable'
+                                , data: []
+                                , cols: [tableCols]
+                                , height: 200
+                                , page: false
+                                , limit: 100000
+                            })
+                                , DataBaseLabelCreateTable = SavingFunction.intoTable({
+                                id: 'DataBaseLabelCreateTable'
+                                , data: []
+                                , cols: [tableField]
+                                , height: 'full-245'
+                            });
+                            let TempBaseLabelCreate = {};
+                            let initDataBaseLabelCreateTable = (field) => {
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/metaDataTables/mapperListPage.json}]]'
+                                    , data: field ? JSON.stringify(field) : ''
+                                    , dataType: "json"
+                                    , contentType: "application/json"
+                                    , async: false
+                                    , done(res) {
+                                        TempBaseLabelCreate = res;
+                                        DataBaseLabelCreateTable.reload({
+                                            data: res
+                                        })
+                                    }
+                                })
+                            }
+                            initDataBaseLabelCreateTable('');
+                            let filtrationInitDataBaseLabelCreateTable = () => {
+                                let checkTableOne = table.cache['checkMapperTable']
+                                    , checkTableTwo = table.cache['checkPrimaryTable']
+                                    , ArrayData = [];
+                                [...checkTableOne, ...checkTableTwo].forEach((obj, index) => {
+                                    ArrayData.push(obj.id)
+                                })
+                                initDataBaseLabelCreateTable(ArrayData.length > 0 ? ArrayData : '');
+                            };
+                            $(layero).on('click', '#closeOpenOne', () => {
+                                layer.close(index);
+                            })
+                            $(layero).on('click', 'button.removePitchOn', () => {
+                                let checkTableOne = table.checkStatus('checkMapperTable').data
+                                    , checkTableTwo = table.checkStatus('checkPrimaryTable').data;
+                                $.each(checkTableOne, (i, k) => {
+                                    checkMapperMapTable.delete(k.id);
+                                });
+                                $.each(checkTableTwo, (i, k) => {
+                                    checkPrimaryMapTable.delete(k.id);
+                                });
+                                checkMapperTable.reload({
+                                    data: Object.values(mapToObject(checkMapperMapTable))
+                                })
+                                checkPrimaryTable.reload({
+                                    data: Object.values(mapToObject(checkPrimaryMapTable))
+                                })
+                                filtrationInitDataBaseLabelCreateTable();
+                            });
+                            $(layero).on('click', 'button.setPrimaryTable', () => {
+                                let DataBaseLabelCreateTableData = table.checkStatus('DataBaseLabelCreateTable').data;
+                                if (DataBaseLabelCreateTableData.length === 1 && table.cache['checkPrimaryTable'].length === 0) {
+                                    checkPrimaryMapTable.set(DataBaseLabelCreateTableData[0].id, DataBaseLabelCreateTableData[0]);
+                                    checkPrimaryTable.reload({
+                                        data: DataBaseLabelCreateTableData
+                                    })
+                                    filtrationInitDataBaseLabelCreateTable();
+                                } else {
+                                    return SavingFunction.warnMsg('设置主表只允许设置一条记录!');
+                                }
+                            });
+                            $(layero).on('click', 'button.setMapperTable', () => {
+                                let DataBaseLabelCreateTableData = table.checkStatus('DataBaseLabelCreateTable').data;
+                                if (checkPrimaryMapTable.size < 1) {
+                                    return SavingFunction.warnMsg('先设置主表后再设置关联表!');
+                                }
+                                $.each(DataBaseLabelCreateTableData, (i, k) => {
+                                    if (!checkPrimaryMapTable.get(k.id)) {
+                                        checkMapperMapTable.set(k.id, k);
+                                    }
+                                })
+                                checkMapperTable.reload({
+                                    data: Object.values(mapToObject(checkMapperMapTable))
+                                })
+                                filtrationInitDataBaseLabelCreateTable();
+                            });
+                            $(layero).on('keyup', 'input[name="tableName"]', () => {
+                                let str = $('input[name="tableName"]').val();
+                                if (str) {
+                                    let newTableData = TempBaseLabelCreate.filter(obj => {
+                                        if (obj.chineseTableName.indexOf(str) > -1 || obj.tableName.indexOf(str) > -1) {
+                                            return obj;
+                                        }
+                                    })
+                                    DataBaseLabelCreateTable.reload({
+                                        data: newTableData
+                                    })
+                                } else {
+                                    DataBaseLabelCreateTable.reload({
+                                        data: TempBaseLabelCreate
+                                    })
+                                }
+
+                            });
+                            let divHeight = $(layero).find('#sav-layer-DataBaseLabelCreateTableTemplate').height() - 43;
+                            $(layero).find('#btnGroup').css('height', divHeight);
+                            $(layero).find('#btnOne').css('margin-top', (divHeight / 3) + 'px');
+                            form.render('select');
+                            $(layero).on('click', '#nextBtn', () => {
+                                let checkTableOne = table.cache['checkMapperTable']
+                                    , checkTableTwo = table.cache['checkPrimaryTable'];
+                                if (checkTableOne.length < 1 && checkTableTwo.length < 1) {
+                                    return SavingFunction.warnMsg("主表和关联表必须设置后才可以进入下一步!");
+                                }
+                                layer.close(index);
+                                layer.open({
+                                    title: '设置关联关系以及字段'
+                                    , type: 1
+                                    , id: 'sav-layer-DataBaseLabelCreateMapperTemplate '
+                                    , content: DataBaseLabelCreateMapperTemplate.innerHTML
+                                    , maxmin: true
+                                    , area: ['95%', '95%']
+                                    , success(layero, index) {
+                                        let ArrayData = [];
+                                        [...checkTableOne, ...checkTableTwo].forEach((obj, index) => {
+                                            ArrayData.push(obj.id)
+                                        })
+                                        SavingFunction.req({
+                                            url: '[[@{/metadata/metaDataFileds/getMapperByTableId.json}]]'
+                                            , data: JSON.stringify(ArrayData)
+                                            , dataType: "json"
+                                            , contentType: "application/json"
+                                            , done: function (result) {
+                                                let setMapper = [
+                                                        {field: 'oneTableName', title: '表名'}
+                                                        , {
+                                                            field: 'oneTableFieldName',
+                                                            title: '被关联字段',
+                                                            templet: function (d) {
+                                                                return d.oneTableChineseFiledName
+                                                                    + '<span class="layui-badge layui-bg-orange" style="margin-left: 5px">' + d.oneTableFieldName + '</span>'
+                                                            }
+                                                        }
+                                                        , {field: 'twoTableName', title: '关联表名'}
+                                                        , {
+                                                            field: 'twoTableFieldName',
+                                                            title: '关联字段',
+                                                            templet: function (d) {
+                                                                return d.twoTableChineseFiledName
+                                                                    + '<span class="layui-badge layui-bg-orange" style="margin-left: 5px">' + d.twoTableFieldName + '</span>'
+                                                            }
+                                                        }
+                                                        , {
+                                                            field: 'states',
+                                                            title: '联合条件',
+                                                            width: 110,
+                                                            align: 'center',
+                                                            templet: function (d) {
+                                                                return d.states ? '<select id="' + d.oneTableFieldId + d.twoTableFieldId + '"><option value="1">是</option><option value="0">否</option></select>' : '否'
+                                                            }
+                                                        }
+                                                        , {
+                                                            title: '操作',
+                                                            width: 80,
+                                                            align: 'center',
+                                                            fixed: 'right',
+                                                            toolbar: '#DataBaseLabelCreateMapperTemplateTopToolbar'
+                                                        }
+                                                    ], showField = [
+                                                        {field: 'tableName', title: '表名'}
+                                                        , {field: 'tableId', title: '表别名'}
+                                                        , {field: 'filedName', title: '字段'}
+                                                        , {field: 'chineseFiledName', title: '中文字段名'}
+                                                        , {
+                                                            title: '操作',
+                                                            width: 105,
+                                                            align: 'center',
+                                                            fixed: 'right',
+                                                            toolbar: '#DataBaseLabelCreateMapperTemplateTopToolbar'
+                                                        }
+                                                    ],
+                                                    setMapperTable = SavingFunction.intoTable({
+                                                        id: 'setMapperTable'
+                                                        , data: result
+                                                        , cols: [setMapper]
+                                                        , height: 'full-230'
+                                                        , page: false
+                                                        , limit: 100000
+                                                    })
+                                                    , showFieldTable = SavingFunction.intoTable({
+                                                        id: 'showFieldTable'
+                                                        , data: []
+                                                        , cols: [showField]
+                                                        , height: 'full-230'
+                                                        , page: false
+                                                        , limit: 100000
+                                                    });
+
+                                                table.on('tool(setMapperTable)', function (obj) {
+                                                    tableDelDom(obj);
+                                                });
+                                                table.on('tool(showFieldTable)', function (obj) {
+                                                    tableDelDom(obj);
+                                                });
+
+                                                let tableDelDom = (obj) => {
+                                                    if (obj.event === 'Del') {
+                                                        layer.confirm('真的删除行么', function (index) {
+                                                            obj.del();
+                                                            layer.close(index);
+                                                        });
+                                                    }
+                                                }, checkLegalMapper = () => {
+                                                    let setMapperTableData = $.extend(true, [], table.cache['setMapperTable']);
+                                                    setMapperTableData = setMapperTableData.filter(s => $.trim(s).length > 0 && s !== [])
+                                                    let TableIdMap = new Map();
+                                                    setMapperTableData.forEach((obj) => {
+                                                        obj.states = $(layero).find('#' + obj.twoTableId + obj.twoTableFieldId).val();
+                                                        TableIdMap.get(obj.oneTableId) ? TableIdMap.set(obj.oneTableId, [...TableIdMap.get(obj.oneTableId), obj]) : TableIdMap.set(obj.oneTableId, [obj]);
+                                                    })
+                                                    let getMapKey = checkTableTwo[0].id;
+                                                    let getTreeTable = (map) => {
+                                                        if (!map) {
+                                                            return SavingFunction.warmMsg('主表关系不存在!');
+                                                        }
+                                                        map.forEach((obj) => {
+                                                            let childrenObj = $.extend(true, [], TableIdMap.get(obj.twoTableId));
+                                                            if (childrenObj && childrenObj.length > 0) {
+                                                                (obj.children || (obj.children = [])).push(childrenObj);
+                                                                TableIdMap.delete(obj.twoTableId);
+                                                                getTreeTable(childrenObj)
+                                                            }
+                                                        })
+                                                    }
+
+                                                    let parentData = TableIdMap.get(getMapKey);
+                                                    getTreeTable(parentData);
+                                                    TableIdMap.delete(getMapKey);
+                                                    let status = true;
+                                                    if (TableIdMap.size > 0) {
+                                                        let errorMsg = '';
+                                                        TableIdMap.forEach(
+                                                            obj => {
+                                                                if (obj) {
+                                                                    obj.forEach(
+                                                                        obj => errorMsg += '被关联表名为:' + obj.oneTableName + '和关联表为:' + obj.twoTableName + '的关系缺少中间关系，被关联表需要作为关联表，关系方可成立!</br>'
+                                                                    )
+                                                                }
+                                                            });
+                                                        status = false;
+                                                        return layer.open({
+                                                            title: '错误提示'
+                                                            ,
+                                                            type: 1
+                                                            ,
+                                                            shadeClose: true
+                                                            ,
+                                                            area: ['80%', '80%']
+                                                            ,
+                                                            content: '<div style="padding: 20px;">' + errorMsg + '</div>'
+                                                        });
+                                                    }
+                                                    return status;
+                                                };
+                                                $(layero).on('click', '#createView', () => {
+                                                    let objectTempData = checkLegalMapper(),
+                                                        showFiledTempData = table.cache['showFieldTable'];
+                                                    if (1 > showFiledTempData.length) {
+                                                        return SavingFunction.warnMsg('关联关系和显示字段不能为空!');
+                                                    }
+                                                    if (!objectTempData) {
+                                                        return;
+                                                    }
+                                                    let mapperTempData = table.cache['setMapperTable']
+                                                        , mapperMap = {}
+                                                        , sendData = [];
+                                                    mapperTempData = mapperTempData.filter(s => $.trim(s).length > 0 && s !== [])
+                                                    mapperTempData.forEach((obj, index) => {
+                                                        let tempId = obj.oneTableFieldId + obj.twoTableFieldId;
+                                                        let tempTableId = obj.oneTableId + obj.twoTableId;
+                                                        let currData = $('#' + tempId).val();
+                                                        let currObj = $.extend(true, {}, obj);
+                                                        if (index === 0) {
+                                                            currObj.fields = showFiledTempData
+                                                        }
+                                                        currObj.states = parseInt(currData ? currData : currObj.states);
+                                                        if (currData && currData !== '0') {
+                                                            if (mapperMap[tempTableId]) {
+                                                                mapperMap[tempTableId].children.push($.extend(true, {}, currObj));
+                                                            } else {
+                                                                mapperMap[tempTableId] = $.extend(true, {}, currObj);
+                                                                (mapperMap[tempTableId].children || (mapperMap[tempTableId].children = [])).push($.extend(true, {}, currObj));
+                                                            }
+                                                        } else {
+                                                            sendData.push(currObj);
+                                                        }
+                                                    })
+                                                    let ajaxData = Object.values(mapperMap).concat(sendData);
+                                                    let TempPrimaryKeyTable;
+                                                    for (let i = 0; i < ajaxData.length; i++) {
+                                                        if (ajaxData[i].oneTableId === checkTableTwo[0].id && !TempPrimaryKeyTable) {
+                                                            TempPrimaryKeyTable = ajaxData.splice(i, 1);
+                                                        }
+                                                    }
+                                                    ajaxData.unshift(TempPrimaryKeyTable[0]);
+                                                    let loadIndex = SavingFunction.loading(), btnName = '保存'
+                                                    layer.close(index);
+                                                    top.layer.open({
+                                                        title: '创建业务视图'
+                                                        , type: 1
+                                                        , id: 'sav-layer-labelTemplate'
+                                                        , content: labelTemplate.innerHTML
+                                                        , maxmin: true
+                                                        , area: admin.screen() === 3 ? ['60%', '65%'] : ['75%', '85%']
+                                                        , btn: [btnName, '关闭']
+                                                        , success(layero, index) {
+                                                            top.layui.use(['form', 'xmSelect'], function () {
+                                                                top.layui.xmSelect.render(hierarchyOption('#hierarchyId', treeData, 'hierarchyId'));
+                                                                top.layui.form.render();
+                                                                top.layer.close(loadIndex);
+                                                            });
+                                                        }
+                                                        , yes(index, layero) {
+                                                            top.layui.form.on('submit(sav-label-save)', (formData) => {
+                                                                let field = formData.field;
+                                                                let hierarchy = mapData.get(field.hierarchyId);
+                                                                if (hierarchy) {
+                                                                    field.hierarchyKey = hierarchy.typeKey;
+                                                                    field.hierarchyName = hierarchy.typeName;
+                                                                }
+                                                                ajaxData[0].label = field;
+                                                                SavingFunction.req({
+                                                                    url: '[[@{/metadata/metaDataFileds/createView.json}]]'
+                                                                    ,
+                                                                    data: JSON.stringify(ajaxData.filter(s => $.trim(s).length > 0 && s !== []))
+                                                                    ,
+                                                                    dataType: "json"
+                                                                    ,
+                                                                    contentType: "application/json"
+                                                                    ,
+                                                                    done(res) {
+                                                                        top.layer.close(index);
+                                                                        userTable.reload({page: {curr: 1}});
+                                                                        SavingFunction.successMsg("创建成功!");
+
+                                                                    }
+                                                                });
+                                                            });
+                                                            $(layero).find('input[lay-filter="sav-label-save"]').click();
+                                                        }
+                                                    });
+                                                });
+                                                $(layero).on('click', '#showField', () => {
+                                                    let objectTempData = checkLegalMapper();
+                                                    if (!objectTempData) {
+                                                        return;
+                                                    }
+                                                    let mapperTempData = table.cache['setMapperTable']
+                                                        , mapperMap = {}
+                                                        , sendData = [];
+                                                    mapperTempData = mapperTempData.filter(s => $.trim(s).length > 0 && s !== [])
+                                                    mapperTempData.forEach(obj => {
+                                                        let tempId = obj.oneTableFieldId + obj.twoTableFieldId;
+                                                        let tempTableId = obj.oneTableId + obj.twoTableId;
+                                                        let currData = $('#' + tempId).val();
+                                                        let currObj = $.extend(true, {}, obj);
+                                                        currObj.states = parseInt(currData ? currData : currObj.states);
+                                                        if (currData && currData !== '0') {
+                                                            if (mapperMap[tempTableId]) {
+                                                                mapperMap[tempTableId].children.push($.extend(true, {}, currObj));
+                                                            } else {
+                                                                mapperMap[tempTableId] = $.extend(true, {}, currObj);
+                                                                (mapperMap[tempTableId].children || (mapperMap[tempTableId].children = [])).push($.extend(true, {}, currObj));
+                                                            }
+                                                        } else {
+                                                            sendData.push(currObj);
+                                                        }
+                                                    })
+                                                    let ajaxData = Object.values(mapperMap).concat(sendData);
+                                                    let TempPrimaryKeyTable;
+                                                    for (let i = 0; i < ajaxData.length; i++) {
+                                                        if (ajaxData[i].oneTableId === checkTableTwo[0].id && !TempPrimaryKeyTable) {
+                                                            TempPrimaryKeyTable = ajaxData.splice(i, 1);
+                                                        }
+                                                    }
+                                                    ajaxData.unshift(TempPrimaryKeyTable[0]);
+                                                    let topWindowsIndex = SavingFunction.loading();
+                                                    SavingFunction.req({
+                                                        url: '[[@{/metadata/metaDataFileds/getShowFieldList.json}]]'
+                                                        ,
+                                                        data: JSON.stringify(ajaxData.filter(s => $.trim(s).length > 0 && s !== []))
+                                                        ,
+                                                        dataType: "json"
+                                                        ,
+                                                        contentType: "application/json"
+                                                        ,
+                                                        done(res) {
+                                                            layer.open({
+                                                                title: '选择显示字段'
+                                                                , type: 1
+                                                                , id: 'sav-layer-showField '
+                                                                , content: tableTemplate.innerHTML
+                                                                , maxmin: true
+                                                                , area: ['95%', '95%']
+                                                                , btn: ['选择']
+                                                                , success(layero, index) {
+                                                                    top.layer.close(topWindowsIndex);
+                                                                    let TemplateTableField = [
+                                                                        {type: 'checkbox'}
+                                                                        , {field: 'tableName', title: '表名'}
+                                                                        , {field: 'tableId', title: '表别名'}
+                                                                        , {field: 'filedName', title: '字段'}
+                                                                        , {
+                                                                            field: 'chineseFiledName',
+                                                                            title: '中文字段名(可编辑)',
+                                                                            edit: true
+                                                                        }
+                                                                    ];
+                                                                    let TemplateTable = SavingFunction.intoTable({
+                                                                        id: 'TemplateTable'
+                                                                        , data: res
+                                                                        , cols: [TemplateTableField]
+                                                                        , height: 'full-190'
+                                                                        , page: false
+                                                                        , limit: 10000
+                                                                    });
+                                                                    table.on('edit(TemplateTable)', function (obj) {
+                                                                        let field = obj.field, value = obj.value;
+                                                                        if (field === 'chineseFiledName') {
+                                                                            if (value.trim() === '') {
+                                                                                userTable.reload();
+                                                                                return SavingFunction.warnMsg("中文字段名不能为空！");
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                }, yes(index, layero) {
+                                                                    let checkData = table.checkStatus('TemplateTable').data;
+                                                                    if (checkData.length > 0) {
+                                                                        showFieldTable.reload({data: checkData})
+                                                                        layer.close(index);
+                                                                    } else {
+                                                                        return SavingFunction.warnMsg("请选择显示字段!");
+                                                                    }
+                                                                }
+                                                            })
+                                                        }
+                                                    });
+
+                                                });
+
+                                            }
+                                        });
+                                        $(layero).on('click', '#closeOpenTwo', () => {
+                                            layer.close(index);
+                                        })
+                                    }
+                                });
+                            })
+                        }
+                    });
+                    break;
+                case 'del':
+                    delFunnction(ids, '[[@{/metadata/label/del.json}]]', userTable);
+                    break;
+            }
+        });
+        table.on('tool(metadata-tagManagement)', function (obj) {
+            let rowData = obj.data;
+            if (obj.event === 'LabelUpdate') {
+                labelLayerOpens(true, rowData, true);
+            } else if (obj.event === 'FiledUpdate') {
+                let loadIndex = SavingFunction.loading(), userFiledTable = {};
+                laytpl(labelFiledTableTemplate.innerHTML).render({tableName: 'metadata-tagFieldManagement'}, function (html) {
+                    top.layer.open({
+                        title: '字段编辑'
+                        , type: 1
+                        , id: 'sav-layer-labelTemplate-update'
+                        , content: html
+                        , maxmin: true
+                        , area: ['95%', '95%']
+                        , btn: ['关闭']
+                        , success: (layero, index) => {
+                            top.layui.use(['table', 'SavingFunction'], function () {
+                                userFiledTable = top.layui.SavingFunction.intoTable({
+                                    id: 'metadata-tagFieldManagement'
+                                    , url: '[[@{/metadata/labelFiled/list.json}]]'
+                                    , cols: [labelField]
+                                    , where: {
+                                        labelParentId: rowData.id
+                                    }
+                                    , toolbar: '#FieldTableTopToolbar'
+                                });
+                                let searchFiledTableData = () => {
+                                    userFiledTable.reload({
+                                        where: {
+                                            labelParentId: rowData.id
+                                            , labelFiledName: $(layero).find('input[name="labelFiledName"]').val()
+                                        }, page: {curr: 1}
+                                    });
+                                };
+                                $(layero).find('input[name="labelFiledName"]').keyup(() => searchFiledTableData());
+                                $(layero).find('button[lay-filter="sav-findFiled-submit"]').click(() => searchFiledTableData());
+                                let layerOpen = (isUpdate, curRowData) => {
+                                    top.layer.open({
+                                        title: isUpdate ? '编辑标签字段' : '新增标签字段'
+                                        , type: 1
+                                        , id: 'sav-layer-labelFieldTemplate'
+                                        , content: labelFieldTemplate.innerHTML
+                                        , maxmin: true
+                                        , area: admin.screen() === 3 ? ['60%', '65%'] : ['75%', '85%']
+                                        , btn: ['提交', '关闭']
+                                        , success: (layero, index) => {
+                                            if (isUpdate && curRowData) {
+                                                $(layero).find('input[name="labelFiledName"]').val(curRowData.labelFiledName);
+                                                $(layero).find('input[name="labelFiledZnName"]').val(curRowData.labelFiledZnName);
+                                                $(layero).find('input[name="labelFiledSource"]').val(curRowData.labelFiledSource);
+                                                $(layero).find('textarea[name="labelFiledDescribe"]').text(curRowData.labelFiledDescribe);
+                                            }
+                                            top.layer.close(loadIndex);
+                                        }
+                                        , yes: (index, layero) => {
+                                            top.layui.form.on('submit(sav-label-' + (isUpdate ? 'update' : 'save') + ')', (formData) => {
+                                                let field = formData.field;
+                                                if (isUpdate && curRowData) {
+                                                    field.id = curRowData.id
+                                                }
+                                                field.labelParentId = rowData.id;
+                                                SavingFunction.req({
+                                                    url: '[[@{/metadata/labelFiled/}]]'
+                                                        + (isUpdate ? 'update' : 'save') + '.json',
+                                                    data: field,
+                                                    done: function (result) {
+                                                        SavingFunction.successMsg(isUpdate ? '修改成功！' : '新增成功！')
+                                                        userFiledTable.reload({page: {curr: 1}});
+                                                        top.layer.close(index);
+                                                    }
+                                                });
+                                            });
+                                            $(layero).find('input[lay-filter="sav-label-' + (isUpdate ? 'update' : 'save') + '"]').click();
+                                        }
+                                    });
+                                }
+                                top.layui.table.on('tool(metadata-tagFieldManagement)', function (obj) {
+                                    let rowFieldData = obj.data;
+                                    if (obj.event === 'Update') {
+                                        layerOpen(true, rowFieldData);
+                                    } else if (obj.event === 'updateSort') {
+                                        top.layui.use(['table', 'SavingFunction', 'laytpl'], function () {
+                                            let sortTable = {};
+                                            top.layui.laytpl(labelFiledTableTemplate.innerHTML).render({tableName: 'metadata-tagFieldSortManagement'}, function (html) {
+                                                top.layer.open({
+                                                    title: '排序'
+                                                    , type: 1
+                                                    , area: ['95%', '95%']
+                                                    , id: 'sav-layer-labelFieldTemplate-sort'
+                                                    , content: html
+                                                    , btn: ['提交', '关闭']
+                                                    , success: function (layero, index) {
+                                                        let tagFieldSortField = [
+                                                            {type: 'radio', title: '序号', align: 'center'},
+                                                            ...labelField.slice(1, -1)
+                                                        ];
+
+                                                        sortTable = top.layui.SavingFunction.intoTable({
+                                                            id: 'metadata-tagFieldSortManagement'
+                                                            , url: '[[@{/metadata/labelFiled/list.json}]]'
+                                                            , cols: [tagFieldSortField]
+                                                            , where: {
+                                                                labelParentId: rowData.id
+                                                            }
+                                                            , toolbar: false
+                                                        });
+                                                        let searchSortTableData = () => {
+                                                            sortTable.reload({
+                                                                where: {
+                                                                    labelParentId: rowData.id,
+                                                                    labelFiledName: $(layero).find('input[name="labelFiledName"]').val()
+                                                                }, page: {curr: 1}
+                                                            });
+                                                        };
+                                                        $(layero).find('input[name="labelFiledName"]').keyup(() => searchSortTableData());
+                                                        $(layero).find('button[lay-filter="sav-findFiled-submit"]').click(() => searchSortTableData());
+
+                                                    }
+                                                    , yes(index, layero) {
+                                                        let dabs = top.layui.table.checkStatus('metadata-tagFieldSortManagement').data;
+                                                        if (dabs.length < 1) {
+                                                            return SavingFunction.warnMsg('请选择需要置换当前记录到哪一行的上面！');
+                                                        }
+                                                        if (rowFieldData.id === dabs[0].id) {
+                                                            return SavingFunction.warnMsg('不能选择自身来进行排序调整！');
+                                                        }
+                                                        SavingFunction.req({
+                                                            url: '[[@{/metadata/labelFiled/updateSortUser.json}]]'
+                                                            , data: {
+                                                                oneId: rowFieldData.id,
+                                                                twoId: dabs[0].id
+                                                            },
+                                                            done: function () {
+                                                                top.layer.close(index);
+                                                                SavingFunction.successMsg('操作成功！');
+                                                                userFiledTable.reload();
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            });
+                                        });
+                                    }
+                                });
+                                top.layui.table.on('toolbar(metadata-tagFieldManagement)', function (obj) {
+                                    let checkStatus = top.layui.table.checkStatus('metadata-tagFieldManagement')
+                                        , dabs = checkStatus.data
+                                        , ids = [];
+                                    if (dabs.length > 0) {
+                                        dabs.forEach(obj => ids.push(obj.id));
+                                    }
+                                    switch (obj.event) {
+                                        case 'Create':
+                                            layerOpen(false);
+                                            break;
+                                        case 'Del':
+                                            delFunnction(ids, '[[@{/metadata/labelFiled/del.json}]]', userFiledTable);
+                                            break;
+                                    }
+
+                                });
+                                top.layer.close(loadIndex);
+                            });
+                        }
+                        , yes: (index, layero) => {
+                            top.layer.close(index);
+                        }
+                    })
+                });
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

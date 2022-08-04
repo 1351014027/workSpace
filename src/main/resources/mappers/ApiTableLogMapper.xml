@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.ApiTableLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.ApiTableLog">
+        <id column="ID_" property="id"/>
+        <result column="Table_Id_" property="tableId"/>
+        <result column="Table_Name_" property="tableName"/>
+        <result column="Type_" property="type"/>
+        <result column="Json_Data_" property="jsonData"/>
+        <result column="Data_Count_" property="dataCount"/>
+        <result column="Operation_Sys_Id_" property="operationSysId"/>
+        <result column="Operation_Sys_Name_" property="operationSysName"/>
+        <result column="Operation_Ip_" property="operationIp"/>
+        <result column="Operation_Time_" property="operationTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, Table_Id_, Table_Name_, Type_, Json_Data_, Data_Count_, Operation_Sys_Id_, Operation_Sys_Name_, Operation_Ip_, Operation_Time_
+    </sql>
+
+</mapper>

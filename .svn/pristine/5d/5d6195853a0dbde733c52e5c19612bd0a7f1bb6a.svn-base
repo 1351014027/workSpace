@@ -1,0 +1,21 @@
+package com.saving.metadata.service;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.saving.metadata.param.ApiPermissionParam;
+import com.saving.metadata.pojo.ApiPermission;
+
+/**
+ * <p>
+ * 服务类
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-04-09
+ */
+public interface ApiPermissionService extends IService<ApiPermission> {
+
+    void saveCheck(ApiPermissionParam param);
+
+    Page<ApiPermission> getApiPermission(Page<ApiPermission> objectPage, String sysName, String schoolCode, String tableId);
+}

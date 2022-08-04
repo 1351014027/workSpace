@@ -1,0 +1,148 @@
+package com.saving.metadata.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
+import com.saving.metadata.common.RequestHolder;
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.dao.LabelFiledMapper;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.param.LabelFiledParam;
+import com.saving.metadata.pojo.LabelFiled;
+import com.saving.metadata.pojo.User;
+import com.saving.metadata.service.LabelFiledService;
+import com.saving.metadata.service.LabelService;
+import com.saving.metadata.utils.BeanValidator;
+import com.saving.metadata.utils.LambdaUtils;
+import com.saving.metadata.utils.UUID64Utils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * <p>
+ * 服务实现类
+ * </p>
+ *
+ * @author 朱柯辉
+ * @since 2020-06-08
+ */
+@Service
+@Transactional(rollbackFor = Exception.class)
+@Slf4j
+public class LabelFiledServiceImpl extends ServiceImpl<LabelFiledMapper, LabelFiled> implements LabelFiledService {
+
+
+    @Resource
+    private LabelFiledMapper labelFiledMapper;
+
+    @Resource
+    private LabelService labelService;
+
+    @Override
+    public void deleteByList(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        removeByIds(ids);
+    }
+
+    @Override
+    public Page<LabelFiled> listPage(int pageNum, int pageSize, LabelFiled labelFiled) {
+        if (StringUtils.isBlank(labelFiled.getLabelParentId())) {
+            throw new ParamException(ResponseCode.ERRORPARAM);
+        }
+        return page(new Page<>(pageNum, pageSize), new QueryWrapper<LabelFiled>()
+                .eq("Label_Parent_ID_", labelFiled.getLabelParentId())
+                .and(StringUtils.isNoneBlank(labelFiled.getLabelFiledName()), obj -> obj
+                        .eq("Label_Filed_Name_", labelFiled.getLabelFiledName())
+                        .or().eq("Label_Filed_ZN_Name_", labelFiled.getLabelFiledName())
+                ).orderByAsc("cast(Sort_ as int )").orderByAsc("SortId_")
+        );
+    }
+
+    @Override
+    public void updateParam(LabelFiledParam labelParam) {
+        BeanValidator.check(labelParam);
+        com.saving.metadata.utils.StringUtils.checkStringIsBlankThrowError(labelParam.getId());
+        checkExist(labelParam.getId(), labelParam.getLabelFiledName(), labelParam.getLabelFiledZnName(), labelParam.getLabelParentId());
+        LabelFiled labelFiled = LabelFiled.builder().build();
+        BeanUtils.copyProperties(labelParam, labelFiled);
+        User user = RequestHolder.getCurrenSysUser();
+        labelFiled.setUpdateor(user.getUsername());
+        labelFiled.setUpdatetime(new Date());
+        checkViewFieldAndSource(true, labelParam);
+        updateById(labelFiled);
+    }
+
+    @Override
+    public void saveParam(LabelFiledParam labelParam) {
+        BeanValidator.check(labelParam);
+        checkExist(null, labelParam.getLabelFiledName(), labelParam.getLabelFiledZnName(), labelParam.getLabelParentId());
+        LabelFiled labelFiled = LabelFiled.builder().build();
+        BeanUtils.copyProperties(labelParam, labelFiled);
+        User user = RequestHolder.getCurrenSysUser();
+        labelFiled.setId(UUID64Utils.get64UUIDString());
+        labelFiled.setSchoolcode(user.getSchoolCode());
+        labelFiled.setCreator(user.getUsername());
+        labelFiled.setSort(String.valueOf(count()));
+        checkViewFieldAndSource(true, labelParam);
+        save(labelFiled);
+    }
+
+    @Override
+    public void savesParam(List<LabelFiledParam> labelParam, Boolean isCheckSource) {
+        BeanValidator.getCheckListMsg(BeanValidator.validateList(labelParam));
+        List<LabelFiled> labelFields = Lists.newArrayList();
+        User user = RequestHolder.getCurrenSysUser();
+        int count = count();
+        labelParam.forEach(LambdaUtils.consumerWithIndex((labelFiledParam, index) -> {
+            checkExist(null, labelFiledParam.getLabelFiledName(), labelFiledParam.getLabelFiledZnName(), labelFiledParam.getLabelParentId());
+            LabelFiled labelFiled = LabelFiled.builder().build();
+            BeanUtils.copyProperties(labelFiledParam, labelFiled);
+            labelFiled.setId(UUID64Utils.get64UUIDString());
+            labelFiled.setSchoolcode(user.getSchoolCode());
+            labelFiled.setCreator(user.getUsername());
+            labelFiled.setSort(String.valueOf(count + index));
+            labelFields.add(labelFiled);
+        }));
+        if (isCheckSource) {
+            checkViewFieldAndSource(false, labelParam.toArray(new LabelFiledParam[labelParam.size()]));
+        }
+        saveBatch(labelFields, 50);
+    }
+
+    private void checkExist(String id, String labelFiledName, String labelFiledZnName, String labelParentId) {
+        if (count(new QueryWrapper<LabelFiled>().lambda().ne(StringUtils.isNoneBlank(id), LabelFiled::getId, id)
+                .eq(LabelFiled::getLabelParentId, labelParentId).and(obj -> obj.like(LabelFiled::getLabelFiledName, labelFiledName)
+                        .or().like(LabelFiled::getLabelFiledZnName, labelFiledZnName))) > 0) {
+            throw new ParamException("字段名为:" + labelFiledName + "或者中文字段名为:" + labelFiledZnName + "已存在！");
+        }
+    }
+
+    private List<String> checkViewFieldExist(List<LabelFiledParam> labelParam) {
+        return labelFiledMapper.checkViewFieldExist(labelParam);
+    }
+
+
+    private void checkViewFieldAndSource(Boolean isCheckSource, LabelFiledParam... labelParam) {
+        if (isCheckSource && labelParam.length == 1) {
+            labelService.checkViewSourceExist(labelParam[0].getLabelFiledSource());
+        }
+        List<String> strings = checkViewFieldExist(Lists.newArrayList(labelParam));
+        if (CollectionUtils.isNotEmpty(strings)) {
+            StringBuilder msg = new StringBuilder();
+            strings.forEach(obj -> msg.append(obj).append("</br>"));
+            throw new ParamException(msg.toString());
+        }
+    }
+
+}

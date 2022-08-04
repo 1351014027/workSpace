@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/style/template.css}">
+<body>
+<div class="layui-fluid layadmin-maillist-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <div class="layui-card-header" style="font-size: 23px"
+                 th:text="${metadataTable.tableName +'('+metadataTable.chineseTableName+')'}"></div>
+            <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                <div class="layui-form-item">
+                    <blockquote class=layui-elem-quote style="float:left" th:if="${metadataTable.remark}"
+                                th:text="${metadataTable.remark}"></blockquote>
+                </div>
+
+            </div>
+
+            <div class="layui-card-body">
+
+                <table id="metadata-table-table" lay-filter="metadata-table-table" width="100%">
+                    <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>数据项英文名称</th>
+                        <th>数据项中文名称</th>
+                        <th>存储类型</th>
+                        <th>长度</th>
+                        <th>约束</th>
+                        <th>值空间</th>
+                        <th>数据项说明</th>
+                        <th>引用编号</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-elem-field {
+        width: 300px;
+        text-align: center;
+        margin: 20px auto 20px;
+    }
+
+    #metadata-table-table {
+        text-align: center;
+        font-size: 16px;
+    }
+
+    #metadata-table-table td {
+        border: 1px solid #0C0C0C;
+        padding: 5px 15px 5px 15px;
+        min-width: 100px
+
+    }
+
+    #metadata-table-table th {
+        border: 1px solid #0C0C0C;
+        padding: 5px 15px 5px 15px;
+        background-color: #9F9F9F;
+        color: #0C0C0C;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'laydate'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , laydate = layui.laydate
+            , SavingFunction = layui.SavingFunction;
+        $(document).on('click', '#hup-file-retreat', function () {
+            history.back();
+        });
+        // let  field = [
+        //     {type: 'checkbox', title: '序号', align: 'center'}
+        //     ,{type: 'numbers', title: '序号', align: 'center'}
+        //     , {field: 'filedNumber', minWidth: 180, title: '编号'}
+        //     , {field: 'filedName', minWidth: 180, title: '数据项英文名称'}
+        //     , {field: 'chineseFiledName', minWidth: 180, title: '数据项中文名称'}
+        //
+        //     , {field: 'storageType', title: '存储类型'}
+        //     , {field: 'filedLength', title: '长度'}
+        //     , {field: 'constraints', title: '约束'}
+        //     , {field: 'valueSpace', title: '值空间'}
+        //     , {field: 'dataItemDescription', title: '数据项说明'}
+        //     , {field: 'referenceNumber', title: '引用编号'}
+        // ];
+        // let userTable = SavingFunction.intoTable({
+        //     id: 'metadata-table-table'
+        //     , url: '[[@{/metadata/metaDataFileds/listPage.json}]]'
+        //     , filter: true
+        //     , toolbar: '#TableTopToolbar'
+        //     , cols: [field]
+        //     , height: 'full-230'
+        //     , where: {
+        //         tableId: '[[${metadataTable.id}]]'
+        //     }
+        // });
+        // laydate.render({
+        //     elem: '#metadata-date'
+        //     , range: true
+        // });
+        // form.on('submit(hup-file-search)', function () {
+        //     userTable.reload({
+        //         where: {
+        //             filedName: $('input[name="tableName"]').val(),
+        //             startDate: $('#metadata-date').val().split(' - ')[0],
+        //             endDate: $('#metadata-date').val().split(' - ')[1]
+        //             ,  tableId: '[[${metadataTable.id}]]'
+        //         }, page: {curr: 1}
+        //     });
+        // });
+
+        SavingFunction.req({
+            url: '[[@{/metadata/metaDataFileds/listPage.json}]]',
+            async: false,
+            data: {
+                tableId: '[[${metadataTable.id}]]',
+                pageSize: 10000,
+                pageNum: 1
+            },
+            done: function (res) {
+                let tempData = res.records
+                    , tableBody = '';
+                tempData.forEach(d => {
+                    tableBody = tableBody
+                        + '<tr><td>' + (d.filedNumber ? d.filedNumber : '') + '</td>'
+                        + '<td >' + (d.filedName ? d.filedName : '') + '</td>'
+                        + '<td>' + (d.chineseFiledName ? d.chineseFiledName : '') + '</td>'
+                        + '<td>' + (d.storageType ? d.storageType : '') + '</td>'
+                        + '<td>' + (d.filedLength ? d.filedLength : '') + '</td>'
+                        + '<td>' + (d.constraints ? d.constraints : '') + '</td>'
+                        + '<td>' + (d.valueSpace ? d.valueSpace : '') + '</td>'
+                        + '<td>' + (d.dataItemDescription ? d.dataItemDescription : '') + '</td>'
+                        + '<td>' + (d.referenceNumber ? d.referenceNumber : '') + '</td></tr>'
+                });
+                $('#metadata-table-table tbody').html(tableBody);
+            }
+        });
+        form.render();
+    });
+</script>
+</body>
+</html>

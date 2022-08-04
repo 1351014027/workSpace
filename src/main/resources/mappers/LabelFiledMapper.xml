@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.LabelFiledMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.LabelFiled">
+        <id column="ID_" property="id"/>
+        <result column="Label_Filed_Name_" property="labelFiledName"/>
+        <result column="Label_Filed_ZN_Name_" property="labelFiledZnName"/>
+        <result column="Label_Filed_Describe_" property="labelFiledDescribe"/>
+        <result column="Label_Filed_Source_" property="labelFiledSource"/>
+        <result column="Label_Parent_ID_" property="labelParentId"/>
+        <result column="Sort_" property="sort"/>
+        <result column="Status_" property="status"/>
+        <result column="IsDelete_" property="isdelete"/>
+        <result column="SchoolCode_" property="schoolcode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createtime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updatetime"/>
+        <result column="SortId_" property="sortid"/>
+        <result column="IsStandard_" property="isstandard"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, Label_Filed_Name_, Label_Filed_ZN_Name_, Label_Filed_Describe_, Label_Filed_Source_, Label_Parent_ID_, Sort_, Status_, IsDelete_, SchoolCode_, Creator_, CreateTime_, Updateor_, UpdateTime_, SortId_, IsStandard_
+    </sql>
+    <select id="checkViewFieldExist" resultType="java.lang.String">
+        exec(<foreach collection="list" item="list" separator=" +'union all'+ ">'select CASE WHEN COUNT(1)=0
+        THEN ''标签字段'''+#{list.labelFiledName}+'''+''不存在'' end FROM '<if test="list.labelFiledSource!=null ">
+            +#{list.labelFiledSource}
+        </if>+'..SYSCOLUMNS A
+        JOIN '
+        <if test="list.labelFiledSource!=null ">
+            +#{list.labelFiledSource}
+        </if>+
+        '..SYSOBJECTS B
+        ON A.id =B.id WHERE B.name IN ( SELECT name FROM '<if test="list.labelFiledSource!=null ">
+            +#{list.labelFiledSource}
+        </if>+'..sysobjects where type= ''v'' and
+        name =( select top 1
+        Label_Name_ from METADATA_B_LABEL where ID_ ='''+#{list.labelParentId}+''')) and A.name =
+        '''+#{list.labelFiledName}+''' HAVING COUNT(1)=0'
+    </foreach>)
+    </select>
+
+</mapper>

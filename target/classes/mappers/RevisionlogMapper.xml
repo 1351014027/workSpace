@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.RevisionlogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.Revisionlog">
+        <result column="ID_" property="id"/>
+        <result column="TableID_" property="tableid"/>
+        <result column="Filed_ID_" property="filedId"/>
+        <result column="TableName_" property="tablename"/>
+        <result column="FiledNumber_" property="filednumber"/>
+        <result column="FiledName_" property="filedname"/>
+        <result column="ChineseFiledName_" property="chinesefiledname"/>
+        <result column="StorageType_" property="storagetype"/>
+        <result column="FiledLength_" property="filedlength"/>
+        <result column="Constraints_" property="constraints"/>
+        <result column="ValueSpace_" property="valuespace"/>
+        <result column="DataItemDescription_" property="dataitemdescription"/>
+        <result column="ReferenceNumber_" property="referencenumber"/>
+        <result column="TheStandardSource_" property="thestandardsource"/>
+        <result column="FiledFormat_" property="filedformat"/>
+        <result column="DecimalLength_" property="decimallength"/>
+        <result column="IsNotNull_" property="isnotnull"/>
+        <result column="IsDecimals_" property="isdecimals"/>
+        <result column="IsPrimary_" property="isprimary"/>
+        <result column="Annotation_" property="annotation"/>
+        <result column="DefaultValue_" property="defaultvalue"/>
+        <result column="FieldIndex_" property="fieldindex"/>
+        <result column="FieldStatus_" property="fieldstatus"/>
+        <result column="SchoolCode_" property="schoolcode"/>
+        <result column="SchoolName_" property="schoolname"/>
+        <result column="Operation_Type_" property="operationType"/>
+        <result column="Operation_Status_" property="operationStatus"/>
+        <result column="Remark_" property="remark"/>
+        <result column="IsDelete_" property="isdelete"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createtime"/>
+        <result column="Updateor_" property="updateor"/>
+        <result column="UpdateTime_" property="updatetime"/>
+        <result column="CanYouEdit_" property="canyouedit"/>
+        <result column="CanYouDelete_" property="canyoudelete"/>
+        <result column="Sort_" property="sort"/>
+        <result column="SortId_" property="sortid"/>
+        <result column="IsStandard_" property="isstandard"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, TableID_, TableName_, FiledNumber_, FiledName_, ChineseFiledName_, StorageType_, FiledLength_, Constraints_, ValueSpace_, DataItemDescription_, ReferenceNumber_, TheStandardSource_, FiledFormat_, DecimalLength_, IsNotNull_, IsDecimals_, IsPrimary_, Annotation_, DefaultValue_, FieldIndex_, FieldStatus_, SchoolCode_, SchoolName_, Operation_Type_, Operation_Status_, Remark_, IsDelete_, Creator_, CreateTime_, Updateor_, UpdateTime_, CanYouEdit_, CanYouDelete_, Sort_, SortId_, IsStandard_
+    </sql>
+
+</mapper>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+    <div class="layui-form-item" th:if="${schooleCode?.schoolcode eq null}">
+        <label class="layui-form-label">学校代码：</label>
+        <div class="layui-input-block">
+            <select lay-filter="dms-user-role" lay-search lay-verify="required" name="schoolcode"
+                    th:value="${schooleCode?.schoolcode}">
+                <option th:each="code:${schooleCodeList}" th:selected="${schooleCode?.schoolcode==code.schoolcode} "
+                        th:text="${code.schoolname}" th:value="${code.schoolcode}"></option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">API键:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                   name="apikey"
+                   placeholder="请输入API键"
+                   th:value="${schooleCode?.apikey}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">开始时间:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips"
+                   lay-verify="required" name="starttime"
+                   placeholder="yyyy-MM-dd HH:mm:ss"
+                   th:value="${#dates.format(schooleCode?.starttime,'yyyy-MM-dd HH:mm:ss')}" type="text">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">结束时间:</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required" name="endtime"
+                   placeholder="yyyy-MM-dd HH:mm:ss"
+                   th:value="${#dates.format(schooleCode?.endtime,'yyyy-MM-dd HH:mm:ss')}"
+                   type="text">
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <input id="sav-dms-typeCreates" lay-filter="sav-dms-typeCreates" lay-submit type="button" value="新增保存">
+        <input id="sav-dms-typeUpdates" lay-filter="sav-dms-typeUpdates" lay-submit type="button" value="编辑保存">
+    </div>
+</div>
+</body>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form', 'laydate'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , laydate = layui.laydate;
+        laydate.render({
+            elem: 'input[name="starttime"]'
+            , type: 'datetime'
+        });
+        laydate.render({
+            elem: 'input[name="endtime"]'
+            , type: 'datetime'
+        });
+    });
+</script>
+</html>

@@ -1,0 +1,99 @@
+package com.saving.metadata.listener;
+
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.collect.Lists;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.param.ApiTableParam;
+import com.saving.metadata.pojo.ApiTable;
+import com.saving.metadata.service.ApiTableService;
+import com.saving.metadata.utils.BeanValidator;
+import com.saving.metadata.utils.JsonMapperUtil;
+import com.saving.metadata.utils.LambdaUtils;
+import com.saving.metadata.utils.UUID64Utils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author: 朱柯辉
+ * @date: 2019/12/24 17:26
+ * @Description:
+ */
+@Slf4j
+public class UpdateApiTableFiledsListener extends AnalysisEventListener<ApiTable> {
+
+    private final ApiTableService apiTableService;
+    List<ApiTable> list = new ArrayList<ApiTable>();
+
+    @Autowired
+    public UpdateApiTableFiledsListener(ApiTableService apiTableService) {
+        this.apiTableService = apiTableService;
+    }
+
+
+    @Override
+    public void invoke(ApiTable data, AnalysisContext context) {
+        log.info("解析到一条数据:{}", JsonMapperUtil.object2String(data));
+        list.add(data);
+    }
+
+    /**
+     * 所有数据解析完成了 都会来调用
+     *
+     * @param context
+     */
+    @Override
+    public void doAfterAllAnalysed(AnalysisContext context) {
+        saveData();
+        log.info("所有数据解析完成！");
+    }
+
+    /**
+     * 加上存储数据库
+     */
+    private void saveData() {
+        List<ApiTableParam> paramLists = Lists.newArrayList();
+        List<String> lists = Lists.newArrayList();
+        int count = apiTableService.count();
+        list = apiTableService.transformOption(list);
+        list.forEach(LambdaUtils.consumerWithIndex((obj, index) -> {
+            obj.setId(UUID64Utils.get64UUIDString());
+            obj.setSort(String.valueOf(index + 1 + count));
+            ApiTableParam param = ApiTableParam.builder().build();
+            BeanUtils.copyProperties(obj, param);
+            paramLists.add(param);
+        }));
+
+        BeanValidator.getCheckListMsg(BeanValidator.validateList(paramLists));
+        StringBuilder errorMsgs = new StringBuilder();
+        list.forEach(LambdaUtils.consumerWithIndex((obj, index) -> {
+            String errorMsg = "第" + (index + 1) + "行错误:";
+            String s = apiTableService.checkObj(obj);
+            if (StringUtils.isNotEmpty(s)) {
+                errorMsgs.append("</br>").append(errorMsg).append(s);
+            }
+            lists.add(obj.getRjbh());
+        }));
+        if (StringUtils.isNotEmpty(errorMsgs.toString())) {
+            throw new ParamException(errorMsgs.toString());
+        }
+        List<ApiTable> list = apiTableService.list(new QueryWrapper<ApiTable>().lambda()
+                .in(ApiTable::getRjbh, lists));
+        list.forEach(obj -> errorMsgs.append(obj.getRjbh()));
+        if (StringUtils.isNotEmpty(errorMsgs.toString())) {
+            errorMsgs.append("存在同样的软件编号记录!");
+            throw new ParamException(errorMsgs.toString());
+        }
+        log.info("{}条数据，开始存储数据库！", this.list.size());
+        apiTableService.saveBatch(this.list, 200);
+        log.info("存储数据库成功！");
+    }
+
+
+}

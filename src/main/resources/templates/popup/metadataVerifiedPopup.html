@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/popupHeader::popupHeader"></head>
+<body>
+<div class="layui-card-body">
+    <table id="metadataVerifiedPopup-table-table" lay-filter="metadataVerifiedPopup-table-table"></table>
+    <pre class="layui-code" id="metadataFiledCode"></pre>
+    <form class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item layui-hide">
+            <input id="sav-metadataVerified-typeCreates" lay-filter="sav-metadataVerified-typeCreates" lay-submit
+                   type="button" value="新增保存">
+        </div>
+    </form>
+</div>
+</body>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script th:inline="none">
+    var fieldVerified = [[
+        {type: 'numbers', title: '序号', align: 'center', rowspan: 2},
+        {field: 'dataBaseTableName', title: '表名', rowspan: 2}
+        , {field: 'dataBaseFileName', title: '字段名', rowspan: 2}
+        , {field: 'FiledType', title: '字段类型', colspan: 2}
+        , {field: 'IsPrimary', title: '是否主键', colspan: 2}
+        , {field: 'FiledLength', title: '长度', colspan: 2}
+        , {field: 'FiledLensec', title: '小数位', colspan: 2}
+    ], [
+        {field: 'dataBaseFiledType', title: '变更前'}
+        , {field: 'metadataFiledType', title: '变更后'}
+        , {field: 'dataBaseIsPrimary', title: '变更前'}
+        , {field: 'metadataIsPrimary', title: '变更后'}
+        , {field: 'dataBaseFiledLength', title: '变更前'}
+        , {field: 'metadataFiledLength', title: '变更后'}
+        , {field: 'dataBaseFiledLensec', title: '变更前'}
+        , {field: 'metadataFiledLensec', title: '变更后'}
+    ]];
+</script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'code', 'form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , code = layui.code
+            , SavingFunction = layui.SavingFunction
+            , index = parent.layer.getFrameIndex(window.name);
+        let res = [(${lists})];
+        let CodeStr = '';
+        if (res) {
+            res.forEach(d => {
+                CodeStr = CodeStr + d.pendingStatement.replace(';', '; \n ');
+            });
+            $('#metadataFiledCode').text(CodeStr);
+            layui.code({
+                title: '预览变更语句（SQL）',
+                about: false
+            });
+            let metadataVerifiedTable = SavingFunction.intoTable({
+                id: 'metadataVerifiedPopup-table-table'
+                , cols: fieldVerified
+                , data: res
+                , height: 'full-200'
+            });
+
+        } else {
+            layer.msg('暂无数据!', {icon: 3}, function () {
+                parent.layer.close(index);
+            });
+
+        }
+        form.on('submit(sav-metadataVerified-typeCreates)', function (datas) {
+            let loadIndex = SavingFunction.loading();
+            SavingFunction.req({
+                url: '[[@{/metadata/metaDataFileds/executeUpdatedFiledCode.json}]]',
+                data: {id: '[[${id}]]'},
+                async: false,
+                done: function (res) {
+                    top.layer.close(loadIndex);
+                    SavingFunction.successMsg('执行成功！');
+                }
+            });
+        });
+
+
+        form.render();
+    });
+</script>
+</html>

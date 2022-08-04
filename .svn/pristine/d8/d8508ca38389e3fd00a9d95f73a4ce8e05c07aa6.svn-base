@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saving.metadata.dao.LabelMapperMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.saving.metadata.pojo.LabelMapper">
+        <id column="ID_" property="id"/>
+        <result column="Label_Parent_ID_" property="labelParentId"/>
+        <result column="Source_Table_Name_" property="sourceTableName"/>
+        <result column="Source_Table_ZN_Name_" property="sourceTableZnName"/>
+        <result column="Target_Table_Name_" property="targetTableName"/>
+        <result column="Target_Table_ZN_Name_" property="targetTableZnName"/>
+        <result column="Source_Filed_Name_" property="sourceFiledName"/>
+        <result column="Source_Filed_ZN_Name_" property="sourceFiledZnName"/>
+        <result column="Target_Filed_Name_" property="targetFiledName"/>
+        <result column="Target_Filed_ZN_Name_" property="targetFiledZnName"/>
+        <result column="SchoolCode_" property="schoolcode"/>
+        <result column="Creator_" property="creator"/>
+        <result column="CreateTime_" property="createtime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID_, Label_Parent_ID_, Source_Table_Name_, Source_Table_ZN_Name_, Target_Table_Name_, Target_Table_ZN_Name_, Source_Filed_Name_, Source_Filed_ZN_Name_, Target_Filed_Name_, Target_Filed_ZN_Name_, SchoolCode_, Creator_, CreateTime_
+    </sql>
+
+</mapper>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtree.css}">
+<link media="all" rel="stylesheet" th:href="@{/layuiAdmin/src/layuiadmin/layui/css/modules/dtree/dtreefont.css}">
+
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px" th:text="|${hierarchyKey}列名设置|">列名设置</div>
+
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <table id="metadata-table-table" lay-filter="metadata-table-table"></table>
+
+                    <script id="TableToolbar" type="text/html">
+                        <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="update">编辑</button>
+                    </script>
+                    <script id="TableTopToolbar" type="text/html">
+                        <div class="layui-btn-container">
+                            <button class="layui-btn layui-btn-sm" lay-event="save">新增</button>
+                            <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+                        </div>
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0;
+    }
+
+    .layui-form-item {
+        margin-bottom: 0;
+    }
+</style>
+<script id="saveTemplate" type="text/html">
+    <div class="layui-form" lay-filter="formType" style="padding: 20px 30px 0 0;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">映射字段名:</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-verType="tips" lay-verify="required"
+                       name="dylmc"
+                       placeholder="请输入映射字段名" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <input id="sav-filedListsPopup-save" lay-filter="sav-filedListsPopup-save" lay-submit type="button"
+                   value="新增保存">
+            <input id="sav-filedListsPopup-update" lay-filter="sav-filedListsPopup-update" lay-submit type="button"
+                   value="编辑保存">
+        </div>
+    </div>
+</script>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'table', 'form', 'laytpl'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , table = layui.table
+            , laytpl = layui.laytpl
+            , SavingFunction = layui.SavingFunction
+            , hierarchyId = '[[${hierarchyId}]]'
+            , hierarchyKey = '[[${hierarchyKey}]]'
+            , tableDateCount = 0;
+        let field = [
+            {type: 'checkbox'}
+            , {type: 'numbers', title: '序号'}
+            , {field: 'dyl', title: '存储列名', align: 'center'}
+            , {field: 'dylmc', title: '映射列名', align: 'center'}
+            , {title: '操作', width: 180, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+        ];
+
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-table-table'
+            , url: '[[@{/metadata/dwdxxbzdmys/listPage.json}]]'
+            , filter: true
+            , toolbar: '#TableTopToolbar'
+            , cols: [field]
+            , height: 'full-100'
+            , where: {
+                id: hierarchyId
+            }
+            , done: function (res, curr, cont) {
+                tableDateCount = cont;
+            }
+        });
+
+        table.on('toolbar(metadata-table-table)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-table-table');
+            let dabs = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < dabs.length; i++) {
+                ids[i] = dabs[i].id;
+            }
+            switch (obj.event) {
+                case 'save':
+                    if (tableDateCount >= 10) {
+                        return SavingFunction.warnMsg("最多设置十列对应列！");
+                    }
+                    laytpl(saveTemplate.innerHTML).render({}, function (html) {
+                        layer.open({
+                            title: '新增'
+                            , type: 1
+                            , maxmin: true
+                            , content: html
+                            , btn: ['保存', '关闭']
+                            , area: '500px'
+                            , yes: function (index, layero) {
+                                form.on('submit(sav-filedListsPopup-save)', function (datas) {
+                                    let field = datas.field;
+                                    tableDateCount++;
+                                    field.hierarchyId = hierarchyId;
+                                    field.hierarchyKey = hierarchyKey;
+                                    field.dyl = 'FILED_' + Math.ceil(tableDateCount / 2) + '_' + (tableDateCount % 2 == 0 ? 'VALUE' : 'KEY') + '_'
+                                    SavingFunction.req({
+                                        url: '[[@{/metadata/dwdxxbzdmys/save.json}]]',
+                                        data: SavingFunction.filterParams(field),
+                                        done: function () {
+                                            SavingFunction.successMsg('新增成功！');
+                                            userTable.reload({
+                                                where: {
+                                                    id: hierarchyId
+                                                }
+                                            });
+                                            layer.close(index);
+                                        }
+                                    });
+                                });
+                                $('#sav-filedListsPopup-save').click();
+                            }
+                        });
+                    });
+                    break;
+                case 'del':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/dwdxxbzdmys/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+
+
+        table.on('tool(metadata-table-table)', function (obj) {
+            let trData = obj.data;
+            if (obj.event === 'update') {
+                laytpl(saveTemplate.innerHTML).render({}, function (html) {
+                    layer.open({
+                        title: '修改'
+                        , type: 1
+                        , maxmin: true
+                        , content: html
+                        , btn: ['保存', '关闭']
+                        , area: '500px'
+                        , success: function (layero, index) {
+                            form.val("formType", {
+                                "dylmc": trData.dylmc
+                            })
+                            form.render();
+                        }
+                        , yes: function (index, layero) {
+                            form.on('submit(sav-filedListsPopup-update)', function (datas) {
+                                let field = datas.field;
+                                field.id = trData.id;
+                                field.dyl = trData.dyl;
+                                field.hierarchyId = hierarchyId;
+                                field.hierarchyKey = hierarchyKey;
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/dwdxxbzdmys/update.json}]]',
+                                    data: SavingFunction.filterParams(field),
+                                    done: function () {
+                                        SavingFunction.successMsg('修改成功！');
+                                        userTable.reload({
+                                            where: {
+                                                id: hierarchyId
+                                            }
+                                        });
+                                        layer.close(index);
+                                    }
+                                });
+                            });
+                            $('#sav-filedListsPopup-update').click();
+                        }
+                    });
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

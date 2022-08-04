@@ -1,0 +1,152 @@
+package com.saving.metadata.pojo;
+
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.ContentRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Tolerate;
+
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ *
+ * </p>
+ *
+ * @author 陈志强
+ * @since 2020-05-03
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@TableName("METADATA_B_TYSJGL")
+@ApiModel(value = "贴源数据管理对象", description = "贴源数据管理对象")
+@Builder
+@ContentRowHeight(15)
+@HeadRowHeight(20)
+@ColumnWidth(25)
+public class Tysjgl extends Model<Tysjgl> {
+
+    private static final long serialVersionUID = 1L;
+
+    @ExcelIgnore
+    @TableId("ID_")
+    private String id;
+
+    @ExcelProperty("应用名称")
+    @TableField("YYMC_")
+    @NotBlank(message = "应用名称不能为空!")
+    private String yymc;
+
+    @ExcelProperty("源头数据库类型")
+    @TableField("YT_SJKLX_")
+    @NotBlank(message = "源头数据库类型不能为空!")
+    private String ytSjklx;
+
+    @ExcelProperty("源头IP地址")
+    @TableField("YT_IPDZ_")
+    @NotBlank(message = "源头IP地址不能为空!")
+    private String ytIpdz;
+
+    @ExcelProperty("源头数据库名称")
+    @TableField("YT_SJKM_")
+    @NotBlank(message = "源头数据库名称不能为空!")
+    private String ytSjkm;
+
+    @ExcelProperty("源头用户名")
+    @TableField("YT_YHM_")
+    @NotBlank(message = "源头用户名不能为空!")
+    private String ytYhm;
+
+    @ExcelProperty("源头用户密码")
+    @TableField("YT_MM_")
+    @NotBlank(message = "源头用户密码不能为空!")
+    private String ytMm;
+
+    @ExcelProperty("目标数据库类型")
+    @TableField("MB_SJKLX_")
+    @NotBlank(message = "目标数据库类型不能为空!")
+    private String mbSjklx;
+
+    @ExcelProperty("目标IP地址")
+    @TableField("MB_IPDZ_")
+    @NotBlank(message = "目标IP地址不能为空!")
+    private String mbIpdz;
+
+    @ExcelProperty("目标数据库名")
+    @TableField("MB_SJKM_")
+    @NotBlank(message = "目标数据库名不能为空!")
+    private String mbSjkm;
+
+    @ExcelProperty("目标用户名")
+    @TableField("MB_YHM_")
+    @NotBlank(message = "目标用户名不能为空!")
+    private String mbYhm;
+
+    @ExcelProperty("目标用户密码")
+    @TableField("MB_MM_")
+    @NotBlank(message = "目标用户密码不能为空!")
+    private String mbMm;
+
+    @ExcelIgnore
+    @TableField("Sort_")
+    private String sort;
+
+    @ExcelIgnore
+    @TableField("IsDelete_")
+    private Integer isdelete;
+
+    @ExcelIgnore
+    @TableField(value = "School_Code_", fill = FieldFill.INSERT_UPDATE)
+    private String schoolCode;
+
+    @ExcelIgnore
+    @TableField(value = "Creator_", fill = FieldFill.INSERT)
+    private String creator;
+
+    @ExcelIgnore
+    @TableField("Create_Time_")
+    private Date createTime;
+
+    @ExcelIgnore
+    @TableField(value = "Updateor_", fill = FieldFill.UPDATE)
+    private String updateor;
+
+    @ExcelIgnore
+    @TableField(value = "Update_Time_", fill = FieldFill.UPDATE)
+    private Date updateTime;
+
+    @ExcelProperty("备注")
+    @TableField("Remark_")
+    private String remark;
+
+    @ExcelIgnore
+    @TableField("Sort_Id_")
+    private Integer sortId;
+
+
+    @ExcelIgnore
+    @TableField("Is_Create_Data_Base_")
+    private Integer isCreateDataBase;
+
+    @Tolerate
+    public Tysjgl() {
+    }
+
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
+
+}

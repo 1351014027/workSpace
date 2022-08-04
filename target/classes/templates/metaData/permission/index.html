@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="common/header::header"></head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header" style="font-size: 23px">权限分配</div>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">过滤查询：</div>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" name="userName" placeholder="名称/账号(模糊查询)"
+                           type="text">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-normal   layui-btn-sm" id="hup-file-search"
+                            lay-filter="hup-file-search" lay-submit="">查找
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-card-body">
+            <table id="metadata-permission" lay-filter="metadata-permission"></table>
+        </div>
+    </div>
+</div>
+<script id="TableTopToolbar" type="text/html">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm " lay-event="Create">新增</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="del">删除</button>
+    </div>
+</script>
+<script id="TableToolbar" type="text/html">
+    <button class="layui-btn layui-btn-xs layui-btn-normal" lay-event="update">编辑</button>
+</script>
+<style>
+    .layui-btn + .layui-btn {
+        margin-left: 0px;
+    }
+</style>
+<script th:src="@{/layuiAdmin/src/layuiadmin/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '[[@{/layuiAdmin/src/layuiadmin/}]]'
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'SavingFunction', 'form'], function () {
+        let $ = layui.$
+            , form = layui.form
+            , admin = layui.admin
+            , table = layui.table
+            , SavingFunction = layui.SavingFunction;
+        let field = [
+            {type: 'checkbox'},
+            {type: 'numbers', title: '序号', align: 'center'}
+            , {
+                field: 'username', title: '名称(账号)', align: 'center', templet: function (d) {
+                    return d.name + '(' + d.userName + ')';
+                }
+            }
+            , {field: 'authority', title: '权限组', width: 200, align: 'center'}
+            , {title: '操作', width: 130, align: 'center', fixed: 'right', toolbar: '#TableToolbar'}
+        ];
+        let userTable = SavingFunction.intoTable({
+            id: 'metadata-permission'
+            , url: '[[@{/metadata/permission/listPage.json}]]'
+            , cols: [field]
+            , toolbar: '#TableTopToolbar'
+        });
+
+
+        $('input[name="userName"]').keyup(function () {
+            userTable.reload({
+                where: {
+                    str: $('input[name="userName"]').val()
+                }, page: {curr: 1}
+            });
+        });
+        table.on('toolbar(metadata-permission)', function (obj) {
+            let checkStatus = table.checkStatus('metadata-permission');
+            let dabs = checkStatus.data;
+            let ids = [];
+            for (let i = 0; i < dabs.length; i++) {
+                ids[i] = dabs[i].userName;
+            }
+            switch (obj.event) {
+                case 'Create':
+                    parent.layer.open({
+                        title: '添加'
+                        , type: 2
+                        , content: '[[@{/popup/permissionPopup.page}]]'
+                        , area: ['70%', '85%']
+                        , btn: ['保存', '关闭']
+                        , yes: function (index, layero) {
+                            let iframeWindow = parent.window['layui-layer-iframe' + index],
+                                submit = layero.find('iframe').contents().find("#LAY-user-role-submit"),
+                                otis = layero.find('iframe').contents().find("#layuiadmin-app-form-tags")
+                                , kh = otis.find('select[name="kh"]').val(),
+                                xm = otis.find('select[name="kh"] option:selected').text()
+                                , chk_value = new Map();
+                            iframeWindow.layui.form.on('submit(LAY-user-role-submit)', function (data) {
+                                if (kh === undefined || kh === '') {
+                                    return admin.warnMsg("教师必须选择！");
+                                }
+                                otis.find('input[name="limits"]:checked').each(function () {
+                                    let this_ = $(this);
+                                    chk_value.set(this_.val(), this_.attr("title"));
+                                });
+                                chk_value.set('xm', xm);
+                                chk_value.set('kh', kh);
+                                let obj = Object.create(null);
+                                for (let [k, v] of chk_value) {
+                                    obj[k] = v;
+                                }
+                                SavingFunction.req({
+                                    url: '[[@{/metadata/permission/save.json}]]'
+                                    , data: JSON.stringify(obj)
+                                    , dataType: 'json',
+                                    contentType: 'application/json;charset=utf-8'
+                                    , done: function () {
+                                        SavingFunction.successMsg('保存成功!');
+                                        form.render();
+                                        parent.layer.close(index);
+                                        userTable.reload();
+                                    }
+                                });
+
+                            });
+                            submit.trigger('click');
+                        }
+                    });
+                    break;
+                case 'del':
+                    if (dabs.length < 1) {
+                        return layer.msg('请选择一条记录后进行操作！');
+                    }
+                    layer.confirm('是否确认删除勾选的记录?', {icon: 3, title: '提示'}, function (index) {
+                        SavingFunction.req({
+                            url: '[[@{/metadata/permission/deletes.json}]]',
+                            data: JSON.stringify(ids)
+                            , dataType: "json",
+                            contentType: "application/json",
+                            done: function () {
+                                SavingFunction.successMsg('删除成功！');
+                                userTable.reload({page: {curr: 1}});
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+        table.on('tool(metadata-permission)', function (obj) {
+            let datas = obj.data;
+            if (obj.event === 'update') {
+                parent.layer.open({
+                    type: 2
+                    , title: '编辑权限'
+                    , content: '[[@{/popup/permissionPopup.page?id=}]]' + datas.userName
+                    , area: ['40%', '80%']
+                    , btn: ['确定', '取消']
+                    , yes: function (index, layero) {
+                        let iframeWindow = parent.window['layui-layer-iframe' + index],
+                            submit = layero.find('iframe').contents().find("#LAY-user-role-submit"),
+                            otis = layero.find('iframe').contents().find("#layuiadmin-app-form-tags")
+                            , chk_value = new Map();
+                        iframeWindow.layui.form.on('submit(LAY-user-role-submit)', function (data) {
+                            otis.find('input[name="limits"]:checked').each(function () {
+                                let this_ = $(this);
+                                chk_value.set(this_.val(), this_.attr("title"));
+                            });
+                            chk_value.set('xm', datas.name);
+                            chk_value.set('kh', datas.userName);
+                            let obj = Object.create(null);
+                            for (let [k, v] of chk_value) {
+                                obj[k] = v;
+                            }
+                            SavingFunction.req({
+                                url: '[[@{/metadata/permission/update.json}]]'
+                                , data: JSON.stringify(obj)
+                                , dataType: 'json',
+                                contentType: 'application/json;charset=utf-8'
+                                , done: function () {
+                                    SavingFunction.successMsg('保存成功!');
+                                    form.render();
+                                    parent.layer.close(index);
+                                    userTable.reload();
+                                }
+                            });
+
+                        });
+                        submit.trigger('click');
+                    }
+                });
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+package com.saving.metadata.listener;
+
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.saving.metadata.exception.ParamException;
+import com.saving.metadata.param.MetaDataFiledsParam;
+import com.saving.metadata.pojo.MetaDataFileds;
+import com.saving.metadata.pojo.MetaDataTables;
+import com.saving.metadata.service.MetaDataFiledsService;
+import com.saving.metadata.service.MetaDataTablesService;
+import com.saving.metadata.utils.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author: 陈志强
+ * @date: 2019/12/24 17:26
+ * @Description:
+ */
+@Slf4j
+public class UpdateMetaDataFiledsListener extends AnalysisEventListener<MetaDataFileds> {
+
+    private final List<String> resultList = new ArrayList<>(Arrays.asList("C", "B", "T", "N", "M"));
+    private final MetaDataFiledsService metaDataFiledsService;
+    private final MetaDataTablesService metaDataTablesService;
+    private final String tableId;
+    private final Integer isStandard;
+    List<MetaDataFileds> list = new ArrayList<MetaDataFileds>();
+
+    public UpdateMetaDataFiledsListener(String tableId, Integer isStandard, MetaDataFiledsService metaDataFiledsService, MetaDataTablesService metaDataTablesService) {
+        this.metaDataFiledsService = metaDataFiledsService;
+        this.metaDataTablesService = metaDataTablesService;
+        this.tableId = tableId;
+        this.isStandard = isStandard;
+    }
+
+
+    @Override
+    public void invoke(MetaDataFileds data, AnalysisContext context) {
+        log.info("解析到一条数据:{}", JsonMapperUtil.object2String(data));
+        list.add(data);
+    }
+
+    /**
+     * 所有数据解析完成了 都会来调用
+     *
+     * @param context
+     */
+    @Override
+    public void doAfterAllAnalysed(AnalysisContext context) {
+        saveData();
+        log.info("所有数据解析完成！");
+    }
+
+    /**
+     * 加上存储数据库
+     */
+    private void saveData() {
+        List<MetaDataFiledsParam> paramLists = Lists.newArrayList();
+        Map<String, String> filedMaps = Maps.newLinkedHashMap();
+        List<String> lists = Lists.newArrayList();
+        MetaDataTables metaDataTables = metaDataTablesService.getById(tableId);
+        if (metaDataTables == null) {
+            throw new ParamException("找不到对应的表主键信息！请检查后重试！");
+        }
+        int count = metaDataFiledsService.count(new QueryWrapper<MetaDataFileds>().lambda()
+                .eq(MetaDataFileds::getTableId, tableId)
+                .eq(MetaDataFileds::getIsDelete, 0));
+        list.forEach(LambdaUtils.consumerWithIndex((obj, index) -> {
+            obj.setTableId(tableId);
+            obj.setIsStandard(isStandard == null ? 0 : isStandard);
+            obj.setId(UUID64Utils.get64UUIDString());
+            obj.setFiledName(obj.getFiledName().replaceAll(" ", ""));
+            obj.setTableName(metaDataTables.getTableName() + "(" + metaDataTables.getChineseTableName() + ")");
+            obj.setIsNotNull("M".equals(obj.getConstraints()) || obj.getIsPrimary() != null ? 1 : 0);
+            obj.setIsDecimals(obj.getDecimalLength() != null ? 1 : 0);
+            obj.setIsPrimary(obj.getIsPrimary() == null ? 0 : 1);
+            obj.setSort(String.valueOf(index + 1 + count));
+            obj.setCdmpVersion(DateUtil.getYyyyMmDd());
+            MetaDataFiledsParam param = MetaDataFiledsParam.builder().build();
+            BeanUtils.copyProperties(obj, param);
+            paramLists.add(param);
+        }));
+        BeanValidator.getCheckListMsg(BeanValidator.validateList(paramLists));
+        StringBuffer errorMsgs = new StringBuffer();
+        list.forEach(LambdaUtils.consumerWithIndex((obj, index) -> {
+            String errorMsg = "第" + index + "行错误:";
+            String s = metaDataFiledsService.checkFiled(obj);
+            if (StringUtils.isNotEmpty(s)) {
+                errorMsgs.append(errorMsg).append(s);
+            }
+            if (!resultList.contains(obj.getStorageType())) {
+                errorMsgs.append(errorMsg).append(obj.getStorageType() + "数据类型不正确请输入正确的数据类型！");
+            }
+            if (filedMaps.get(obj.getFiledName()) != null) {
+                errorMsgs.append(obj.getFiledName()).append(obj.getFiledName()).append("存在同样的字段名!");
+            } else {
+                filedMaps.put(obj.getFiledName(), obj.getFiledName());
+                lists.add(obj.getFiledName());
+            }
+        }));
+        if (StringUtils.isNotEmpty(errorMsgs.toString())) {
+            throw new ParamException(errorMsgs.toString());
+        }
+        List<MetaDataFileds> list = metaDataFiledsService.list(new QueryWrapper<MetaDataFileds>().lambda()
+                .eq(MetaDataFileds::getTableId, tableId)
+                .in(MetaDataFileds::getFiledName, lists));
+        list.forEach(obj -> errorMsgs.append(obj.getFiledName()));
+        if (StringUtils.isNotEmpty(errorMsgs.toString())) {
+            errorMsgs.append("存在同样的字段记录!");
+            throw new ParamException(errorMsgs.toString());
+        }
+
+        log.info("{}条数据，开始存储数据库！", this.list.size());
+        metaDataFiledsService.saveBatch(this.list, 200);
+        log.info("存储数据库成功！");
+    }
+}

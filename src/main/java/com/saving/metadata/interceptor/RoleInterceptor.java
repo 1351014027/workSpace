@@ -1,0 +1,101 @@
+package com.saving.metadata.interceptor;
+
+import com.saving.metadata.common.ResponseCode;
+import com.saving.metadata.exception.PermissionException;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+
+
+/**
+ * @author Administrator
+ * @author: 陈志强
+ * @date: 2020/5/25 16:02
+ * @Description: 权限控制拦截器
+ */
+@Component
+@Slf4j
+public class RoleInterceptor extends HandlerInterceptorAdapter {
+
+    private static final String JSONSUFFIX = ".json";
+
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        String url = request.getRequestURI();
+        List<String> roleLists = (List<String>) request.getSession().getAttribute("metadataRoles");
+        checkRole(url, "/apiPermission/", 0, roleLists, "校本数据API", "状态数据API", "超级管理员");
+        checkRole(url, "/apiTableLog/", 0, roleLists, "系统日志", "超级管理员");
+        checkRole(url, "/conversionRecord/", 0, roleLists, "数据交换作业", "超级管理员");
+        checkRole(url, "/revisionlog/", 0, roleLists, "超级管理员");
+        checkRole(url, "/metaDataFileds/", 0, roleLists, "元数据维护", "专家权限（查看）", "专家权限（查看限制）", "超级管理员");
+        checkRole(url, "/metaDataTables/", 0, roleLists, "元数据维护", "专家权限（查看）", "专家权限（查看限制）", "超级管理员");
+        checkRole(url, "/chartDisplay/", 0, roleLists, "元数据维护", "超级管理员", "专家权限（查看）");
+        checkRole(url, "/dwdxxbjz/", 0, roleLists, "多键值选项", "超级管理员");
+        checkRole(url, "/dwdxxbzdmys/", 0, roleLists, "多键值选项", "超级管理员");
+        checkRole(url, "/cdmp/schooleCode/", 0, roleLists, "超级管理员");
+        checkRole(url, "/backupMessage/", 0, roleLists, "数据备份", "超级管理员");
+        checkRole(url, "/fileStore/", 0, roleLists, "标准文件管理", "专家权限（查看）", "专家权限（查看限制）", "超级管理员");
+        checkRole(url, "/upload/download/", 0, roleLists, "标准文件管理", "专家权限（查看）", "专家权限（查看限制）", "超级管理员");
+        checkRole(url, "/upload/deletes.json", 1, roleLists, "标准文件管理", "超级管理员");
+        checkRole(url, "/upload/uploadFile.json", 1, roleLists, "标准文件管理", "超级管理员");
+        checkRole(url, "/upload/uploadFiles.json", 1, roleLists, "标准文件管理", "超级管理员");
+        checkRole(url, "/permission/", 0, roleLists, "权限分配", "超级管理员");
+        checkRole(url, "/hierarchy/", 0, roleLists, "类型管理", "超级管理员");
+        checkRole(url, "/operationTableLog/", 0, roleLists, "系统日志", "超级管理员");
+        checkRole(url, "/tysjgl/", 0, roleLists, "贴源数据管理", "超级管理员");
+        checkRole(url, "/apiTable/", 0, roleLists, "软件资产", "超级管理员");
+        checkRole(url, "/option/", 0, roleLists, "选项管理", "超级管理员");
+        return true;
+    }
+
+    /**
+     * @param url
+     * @param interfaceName
+     * @param type
+     * @param roleLists
+     * @param roleName
+     */
+    private void checkRole(String url, String interfaceName, int type, List<String> roleLists, String... roleName) {
+        int isRole = 0;
+        if (url.endsWith(JSONSUFFIX) && CollectionUtils.isNotEmpty(roleLists)) {
+            for (String thisRoleName : roleName) {
+                if (type == 1) {
+                    isRole = isPermissionError(url.endsWith(interfaceName), roleLists, thisRoleName);
+                } else if (type == 0) {
+                    isRole = isPermissionError(url.contains(interfaceName), roleLists, thisRoleName);
+                }
+                if (isRole == 1) {
+                    break;
+                }
+            }
+            if (isRole == 0) {
+                throw new PermissionException(ResponseCode.ERRORPPERSSION);
+            }
+        }
+    }
+
+    /**
+     * @param isUrl        是否进行判断
+     * @param roleLists    权限点集合
+     * @param thisRoleName 权限点名称
+     * @return 10代表不需要效验 1 代表效验通过， 0 代表效验不通过
+     */
+    private int isPermissionError(boolean isUrl, List<String> roleLists, String thisRoleName) {
+        if (isUrl) {
+            if (roleLists.contains(thisRoleName)) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            return 10;
+        }
+    }
+
+}
